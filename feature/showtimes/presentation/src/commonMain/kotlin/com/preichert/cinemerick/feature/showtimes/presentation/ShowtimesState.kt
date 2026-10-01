@@ -51,6 +51,7 @@ data class FilmGroupUi(
 
 data class ShowingUi(
     val day: String,
+    val date: String,
     val time: String,
     val cinema: Cinema,
     val format: String? = null

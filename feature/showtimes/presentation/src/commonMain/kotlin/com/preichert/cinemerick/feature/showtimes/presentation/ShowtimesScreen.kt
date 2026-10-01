@@ -666,10 +666,15 @@ private fun ShowingRow(showing: ShowingUi) {
         itemVerticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
+        Badge(
             text = showing.day,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.widthIn(min = 56.dp)
+            container = MaterialTheme.colorScheme.primary,
+            content = MaterialTheme.colorScheme.onPrimary
+        )
+        Badge(
+            text = showing.date,
+            container = MaterialTheme.colorScheme.tertiaryContainer,
+            content = MaterialTheme.colorScheme.onTertiaryContainer
         )
         Badge(
             text = showing.time,
@@ -829,8 +834,8 @@ private fun previewState() = ShowtimesState(
         FilmGroupUi(
             title = "Film Name",
             showings = listOf(
-                ShowingUi("Giovedì", "21:00", Cinema.THE_SPACE, "2D · VO"),
-                ShowingUi("Giovedì", "21:30", Cinema.UCI, "2D · ENG · sub ITA")
+                ShowingUi("Giovedì", "01/10", "21:00", Cinema.THE_SPACE, "2D · VO"),
+                ShowingUi("Giovedì", "01/10", "21:30", Cinema.UCI, "2D · ENG · sub ITA")
             )
         )
     )

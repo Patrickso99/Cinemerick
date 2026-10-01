@@ -19,6 +19,17 @@ class ShowtimesLogicTest {
         Showing(title, thursday, LocalTime.parse("21:00"), Cinema.UCI, format)
 
     @Test
+    fun fetchIsNeededOnlyForNewDaysOrCinemas() {
+        val days = setOf(thursday, friday)
+        val cinemas = setOf(Cinema.UCI, Cinema.THE_SPACE)
+
+        assertEquals(false, needsFetch(days, cinemas, setOf(thursday), setOf(Cinema.UCI)))
+        assertEquals(false, needsFetch(days, cinemas, days, cinemas))
+        assertEquals(true, needsFetch(days, cinemas, days, cinemas + Cinema.NOTORIOUS))
+        assertEquals(true, needsFetch(days, cinemas, days + LocalDate(2026, 10, 3), cinemas))
+    }
+
+    @Test
     fun tagsAreParsedFromFormat() {
         assertEquals(setOf("2D", "INFINITY VISION", "VO"), showing("A", "2D · INFINITY VISION · VO").tags)
         assertEquals(setOf("2D"), showing("A", null).tags)

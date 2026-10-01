@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.domain
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 
@@ -23,3 +24,11 @@ fun List<Showing>.filterShowings(
         afterMin && beforeMax && notStarted && matchesFilm && visibleFormat
     }.distinct()
 }
+
+/** Already fetched results cover the request when it asks for no new day and no new cinema. */
+fun needsFetch(
+    fetchedDays: Set<LocalDate>,
+    fetchedCinemas: Set<Cinema>,
+    days: Set<LocalDate>,
+    cinemas: Set<Cinema>
+): Boolean = !fetchedDays.containsAll(days) || !fetchedCinemas.containsAll(cinemas)
