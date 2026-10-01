@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -436,22 +437,22 @@ private fun ColumnScope.ResultsSection(
 private fun FilmGroupCard(group: FilmGroupUi) {
     SectionCard(modifier = Modifier.fillMaxWidth()) {
         SelectionContainer {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Spacing.lg),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md)
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
-                group.posterUrl?.let { PosterImage(url = it, contentDescription = group.title) }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                    group.posterUrl?.let { PosterImage(url = it, contentDescription = group.title) }
                     Text(
                         text = group.title,
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f)
                     )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     group.showings.forEach { showing -> ShowingRow(showing) }
                 }
             }
@@ -530,15 +531,16 @@ private fun CinemaAppBadge(cinema: Cinema, container: Color, content: Color) {
 
 @Composable
 private fun ShowingRow(showing: ShowingUi) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        itemVerticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
             text = showing.day,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.widthIn(min = 72.dp)
+            modifier = Modifier.widthIn(min = 56.dp)
         )
         Badge(
             text = showing.time,
@@ -577,6 +579,8 @@ private fun Badge(text: String, container: Color, content: Color, bold: Boolean 
             color = content,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = if (bold) FontWeight.Bold else null,
+            maxLines = 1,
+            softWrap = false,
             modifier = Modifier.padding(horizontal = Spacing.sm, vertical = Spacing.xs)
         )
     }
