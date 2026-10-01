@@ -31,4 +31,7 @@
     <string name="calendar_prev_month">Mese precedente</string>
     <string name="calendar_next_month">Mese successivo</string>
     <string name="calendar_done">Fine</string>
+    <string name="formats_title">Formato</string>
+    <string name="formats_hint">Tocca per nascondere un formato</string>
+    <string name="formats_show_all">Mostra tutti</string>
 </resources>

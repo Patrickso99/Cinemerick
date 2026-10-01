@@ -15,6 +15,45 @@ class ShowtimesLogicTest {
     private fun showing(title: String, day: LocalDate, time: String, cinema: Cinema) =
         Showing(title, day, LocalTime.parse(time), cinema)
 
+    private fun showing(title: String, format: String?) =
+        Showing(title, thursday, LocalTime.parse("21:00"), Cinema.UCI, format)
+
+    @Test
+    fun tagsAreParsedFromFormat() {
+        assertEquals(setOf("2D", "INFINITY VISION", "VO"), showing("A", "2D · INFINITY VISION · VO").tags)
+        assertEquals(setOf("2D"), showing("A", null).tags)
+        assertEquals(setOf("VO", "2D"), showing("A", "VO").tags)
+        assertEquals(setOf("3D", "VO"), showing("A", "3D · VO").tags)
+    }
+
+    @Test
+    fun displayFormatAddsImpliedDimension() {
+        assertEquals("2D", showing("A", null).displayFormat)
+        assertEquals("2D · VO", showing("A", "VO").displayFormat)
+        assertEquals("3D · VO", showing("A", "3D · VO").displayFormat)
+    }
+
+    @Test
+    fun availableTagsAreSortedAndDistinct() {
+        val tags = listOf(showing("A", "3D · VO"), showing("B", "2D"), showing("C", null), showing("D", "3D"))
+            .availableTags()
+
+        assertEquals(listOf("2D", "3D", "VO"), tags)
+    }
+
+    @Test
+    fun hiddenTagsDropMatchingShowingsAndUntaggedCountAs2D() {
+        val showings = listOf(showing("A", "3D · VO"), showing("B", "2D"), showing("C", null))
+        val ranges = listOf(DayRange(thursday))
+
+        val result = showings.filterShowings(ranges, emptyList(), farPast, hiddenTags = setOf("3D", "VO"))
+        val no2d = showings.filterShowings(ranges, emptyList(), farPast, hiddenTags = setOf("2D"))
+
+        assertEquals(listOf("B", "C"), result.map { it.title })
+        assertEquals(listOf("A"), no2d.map { it.title })
+        assertEquals(3, showings.filterShowings(ranges, emptyList(), farPast).size)
+    }
+
     @Test
     fun sameFilmFromBothCinemasIsGroupedWithShortestTitleAsHeader() {
         val groups = listOf(

@@ -18,7 +18,9 @@ data class ShowtimesState(
     val groups: List<FilmGroupUi> = emptyList(),
     val pollText: String = "",
     val optionsCount: Int = 0,
-    val cinemaErrors: List<CinemaErrorUi> = emptyList()
+    val cinemaErrors: List<CinemaErrorUi> = emptyList(),
+    val hiddenTags: Set<String> = emptySet(),
+    val availableTags: List<String> = emptyList()
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated)
 }

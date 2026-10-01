@@ -1,12 +1,15 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
+import com.russhwolf.settings.Settings
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val showtimesDataModule = module {
+    single<FilterPreferences> { SettingsFilterPreferences(Settings()) }
     singleOf(::TheSpaceTokenProvider)
     singleOf(::KtorUciShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorNotoriousShowtimesDataSource) bind ShowtimesDataSource::class

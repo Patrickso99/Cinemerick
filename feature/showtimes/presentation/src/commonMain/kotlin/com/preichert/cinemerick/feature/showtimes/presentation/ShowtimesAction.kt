@@ -13,6 +13,8 @@ sealed interface ShowtimesAction {
     data class OnMaxTimeChange(val date: LocalDate, val value: String) : ShowtimesAction
     data class OnFilmFilterChange(val value: String) : ShowtimesAction
     data class OnCinemaToggle(val cinema: Cinema) : ShowtimesAction
+    data class OnFormatToggle(val tag: String) : ShowtimesAction
+    data object OnFormatsReset : ShowtimesAction
     data object OnGenerateClick : ShowtimesAction
     data object OnCopyClick : ShowtimesAction
     data object OnClearClick : ShowtimesAction

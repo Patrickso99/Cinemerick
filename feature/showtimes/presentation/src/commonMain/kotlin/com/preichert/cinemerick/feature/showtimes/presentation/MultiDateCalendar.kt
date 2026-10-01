@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
@@ -40,6 +41,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
 
+// Keeps day cells compact on wide screens, where the calendar is shown inline.
+private val MAX_CALENDAR_WIDTH = 320.dp
+
 /**
  * Month calendar with multiple selection. Dates before [minDate] are disabled.
  * Material3's DatePicker only supports a single date or a contiguous range, hence this grid.
@@ -54,7 +58,7 @@ fun MultiDateCalendar(
     var firstOfMonth by remember { mutableStateOf(LocalDate(minDate.year, minDate.month, 1)) }
     val minMonth = remember(minDate) { LocalDate(minDate.year, minDate.month, 1) }
 
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Column(modifier = modifier.fillMaxWidth().widthIn(max = MAX_CALENDAR_WIDTH), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { firstOfMonth = firstOfMonth.plus(-1, DateTimeUnit.MONTH) },

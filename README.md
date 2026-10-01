@@ -1,15 +1,15 @@
 # Cinemerick
 
-![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-blue?logo=kotlin)
-![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.12.1-brightgreen?logo=jetpackcompose)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue?logo=kotlin)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-brightgreen?logo=jetpackcompose)
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-orange)
-![Ktor](https://img.shields.io/badge/Ktor-3.6.0-purple)
+![Ktor](https://img.shields.io/badge/Ktor-3.5.2-purple)
 
-A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (Space Cinema, UCI, Notorious, Cinergia, Cristallo) and generates shareable poll text for group chats.
+A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (The Space Cinema, UCI, Notorious, Cinergia, Cristallo) and generates shareable poll text for group chats.
 
 ## Features
 
-- 🎬 **Multi-source aggregation**: Query Space Cinema (Silea), UCI (Marcon), Notorious (Ferrara), Cinergia (Conegliano, via 18tickets) and Cristallo (Oderzo) simultaneously
+- 🎬 **Multi-source aggregation**: Query The Space Cinema (Silea), UCI (Marcon), Notorious (Ferrara), Cinergia (Conegliano, via 18tickets) and Cristallo (Oderzo) simultaneously
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
 - 🏢 **Cinema selection**: Choose which chains to query (The Space / Silea, UCI / Marcon, Notorious / Ferrara, Cinergia / Conegliano, Cristallo / Oderzo); all are on by default and excluded chains are never fetched
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
@@ -19,6 +19,8 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap
 - 🌓 **Dark mode**: Adaptive purple theme (light & dark)
 - 📱 **Responsive design**: Optimized layouts for mobile, tablet, and desktop screens
+- 🗓️ **Inline calendar**: On larger screens the day picker is shown inside the filters panel (a dialog on mobile)
+- 🧱 **Results grid**: Film cards flow into a multi-column grid on larger screens (a single list on mobile)
 - 🏗️ **MVI architecture**: Clean separation of state, actions, and events
 - 🔧 **Koin DI**: Lightweight dependency injection across all modules
 - 🔐 **Error resilience**: One cinema failure doesn't hide results from others
@@ -53,7 +55,9 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 
 - **`:feature:showtimes:data`**: Data layer
   - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing) / `KtorCinergiaShowtimesDataSource` / `KtorCristalloShowtimesDataSource` (HTML parsing): Platform HTTP clients
-  - `TheSpaceTokenProvider`: Extracts JWT from Space Cinema pages
+  - `NotoriousParser` / `CinergiaParser` / `CristalloParser`: HTML parsers for the cinemas without a JSON API (each with a `*ParserTest`)
+  - `HtmlEntities` (`unescapeHtml`): Decodes named and numeric HTML entities in scraped text
+  - `TheSpaceTokenProvider`: Extracts JWT from The Space Cinema pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
   - DTOs and mappers to/from domain models
 
@@ -132,6 +136,7 @@ Open http://localhost:8080 (or the reported URL) in your browser.
 
 ```bash
 ./gradlew :feature:showtimes:domain:allTests
+./gradlew :feature:showtimes:data:allTests   # HTML parsers
 ```
 
 ## Design System
@@ -161,6 +166,10 @@ Cinemerick uses a **custom purple tonal palette** inspired by Material Design 3:
 | Surface | Very Dark | `#1C1B1F` |
 | Error | Light Red | `#F2B8B5` |
 
+### Cinema Brand Colors
+
+`CinemaBrandColors` (in `Color.kt`) defines one accent color per cinema, used for its badge in the results (e.g. Cinergia `#414C4C`, Cristallo `#D22D27`). When adding a cinema, also add its logo to `design/logos/` and update `design/generate_icons.py`, which regenerates the app icons for all platforms.
+
 ### Typography
 
 - **Titles**: SemiBold / Bold weights for emphasis
@@ -174,7 +183,7 @@ The app automatically adapts to screen size and orientation:
 - **Mobile Portrait** (< 600 dp width): Single column, stacked filters and results
 - **Mobile Landscape** (≥ 600 dp width, < 840 dp height): Two-column layout (filters left, results right)
 - **Tablet Portrait** (600–840 dp width): Centered two-panel layout
-- **Tablet Landscape & Desktop** (≥ 840 dp width): Wide two-panel layout, max content width 1200 dp
+- **Tablet Landscape & Desktop** (≥ 840 dp width): Fixed header with two panels (filters / results) that scroll independently; max content width 1200 dp on tablet and 1400 dp on desktop, where the results panel is wider (0.8 : 1.2)
 
 ## Project Structure
 
@@ -199,7 +208,7 @@ Cinemerick/
 1. **Choose cinemas** (both selected by default)
 2. **User selects days** and time ranges in the filter panel
 3. **Optional: filter by film title** (comma-separated)
-4. **Tap "Generate"** to fetch showtimes from Space Cinema, UCI, Notorious, Cinergia and Cristallo
+4. **Tap "Generate"** to fetch showtimes from The Space Cinema, UCI, Notorious, Cinergia and Cristallo
 5. **Results appear** grouped by film title with poster, cinema and time
 6. **Tap "Copy"** to copy the poll text to clipboard
 7. **Paste** into your group chat and start the poll 🎬
@@ -220,7 +229,7 @@ If one cinema API fails, results from the other are still displayed, with an err
 This is a personal project, but contributions and suggestions are welcome. Please ensure:
 - All comments and commit messages are in **English**
 - Code follows the existing modular structure
-- Tests pass: `./gradlew :feature:showtimes:domain:allTests`
+- Tests pass: `./gradlew :feature:showtimes:domain:allTests :feature:showtimes:data:allTests`
 
 ## License
 

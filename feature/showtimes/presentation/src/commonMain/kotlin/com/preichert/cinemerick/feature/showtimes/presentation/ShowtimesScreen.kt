@@ -101,6 +101,9 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.days_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.film_filter
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_hint
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_show_all
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
@@ -244,6 +247,51 @@ private fun ColumnScope.FiltersSection(
                             selectedLabelColor = onContainer
                         )
                     )
+                }
+            }
+        }
+    }
+
+    // Format filter, only after a search: selected chips are shown, deselected ones are hidden.
+    if (state.hasGenerated && state.availableTags.isNotEmpty()) {
+        SectionCard(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Spacing.lg),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                Text(
+                    text = stringResource(Res.string.formats_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = Spacing.lg)
+                )
+                Text(
+                    text = stringResource(Res.string.formats_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = Spacing.lg)
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    modifier = Modifier.padding(horizontal = Spacing.lg)
+                ) {
+                    state.availableTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag !in state.hiddenTags,
+                            onClick = { onAction(ShowtimesAction.OnFormatToggle(tag)) },
+                            label = { Text(tag) }
+                        )
+                    }
+                }
+                if (state.hiddenTags.isNotEmpty()) {
+                    TextButton(
+                        onClick = { onAction(ShowtimesAction.OnFormatsReset) },
+                        modifier = Modifier.padding(horizontal = Spacing.md)
+                    ) {
+                        Text(stringResource(Res.string.formats_show_all))
+                    }
                 }
             }
         }
