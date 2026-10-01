@@ -13,7 +13,7 @@ import org.koin.dsl.KoinAppDeclaration
 fun initKoin(config: KoinAppDeclaration? = null) {
     if (KoinPlatform.getKoinOrNull() != null) return
     Logger.setTag("Cinemerick")
-    Logger.i { "Cinemerick v${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE}) [${BuildKonfig.GIT_HASH}]" }
+    Logger.i { "Cinemerick v${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})" }
     startKoin {
         config?.invoke(this)
         modules(

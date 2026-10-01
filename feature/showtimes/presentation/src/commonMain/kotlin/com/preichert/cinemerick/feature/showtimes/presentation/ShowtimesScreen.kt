@@ -86,6 +86,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_tit
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_notorious
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
@@ -170,7 +171,7 @@ fun ShowtimesScreen(
                     CinemerickHeader(
                         title = stringResource(Res.string.app_title),
                         subtitle = stringResource(Res.string.app_subtitle),
-                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE}) [${BuildKonfig.GIT_HASH}]"
+                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})"
                     )
                 },
                 filtersContent = {
@@ -563,12 +564,14 @@ private fun ShowingRow(showing: ShowingUi) {
 private fun Cinema.chipLabel() = when (this) {
     Cinema.THE_SPACE -> Res.string.cinema_the_space
     Cinema.UCI -> Res.string.cinema_uci
+    Cinema.NOTORIOUS -> Res.string.cinema_notorious
 }
 
-// UCI is blue, The Space is orange: brand colors, independent of the theme.
+// UCI is blue, The Space is orange, Notorious is silver: brand colors, independent of the theme.
 private fun Cinema.badgeColors(): Pair<Color, Color> = when (this) {
     Cinema.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
     Cinema.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
+    Cinema.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
 }
 
 @Composable

@@ -21,4 +21,8 @@ fun Cinema.appLinks(platform: AppPlatform): List<CinemaAppLink> = when (this) {
         AppPlatform.IOS -> listOf(CinemaAppLink("UCI Cinemas", "https://apps.apple.com/it/app/uci-cinemas-italia/id6746633899"))
         AppPlatform.DESKTOP, AppPlatform.WEB -> listOf(CinemaAppLink("UCI Cinemas", "https://ucicinemas.it/cinema/uci-cinemas-venezia-marcon"))
     }
+    Cinema.NOTORIOUS -> when (platform) {
+        AppPlatform.ANDROID -> listOf(CinemaAppLink("Notorious Cinemas", "https://play.google.com/store/apps/details?id=it.creaweb.notorious"))
+        AppPlatform.IOS, AppPlatform.DESKTOP, AppPlatform.WEB -> listOf(CinemaAppLink("Notorious Cinemas", "https://www.notoriouscinemas.it/ferrara/index.php"))
+    }
 }

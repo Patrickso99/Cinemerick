@@ -9,6 +9,7 @@ import org.koin.dsl.module
 val showtimesDataModule = module {
     singleOf(::TheSpaceTokenProvider)
     singleOf(::KtorUciShowtimesDataSource) bind ShowtimesDataSource::class
+    singleOf(::KtorNotoriousShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorTheSpaceShowtimesDataSource) bind ShowtimesDataSource::class
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
 }
