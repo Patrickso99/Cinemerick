@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_title">Cinemerick</string>
+    <string name="days_title">Giorni</string>
+    <string name="range_from">Dalle</string>
+    <string name="range_to">Alle</string>
+    <string name="film_filter">Film (separati da virgola, opzionale)</string>
+    <string name="generate">Genera</string>
+    <string name="copy">Copia</string>
+    <string name="copied">Copiato negli appunti</string>
+    <string name="select_day">Seleziona almeno un giorno</string>
+    <string name="invalid_time">Orario non valido: usa il formato HH:MM</string>
+    <string name="no_results">Nessuna proiezione trovata con questi filtri</string>
+    <string name="options_count">%1$d opzioni</string>
+</resources>
