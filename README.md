@@ -52,8 +52,8 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
   - `DayRange`, `FilmTitles`, `Showing`: Domain value objects
 
 - **`:feature:showtimes:data`**: Data layer
-  - `KtorSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource`: Platform HTTP clients
-  - `SpaceTokenProvider`: Extracts JWT from Space Cinema pages
+  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource`: Platform HTTP clients
+  - `TheSpaceTokenProvider`: Extracts JWT from Space Cinema pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
   - DTOs and mappers to/from domain models
 

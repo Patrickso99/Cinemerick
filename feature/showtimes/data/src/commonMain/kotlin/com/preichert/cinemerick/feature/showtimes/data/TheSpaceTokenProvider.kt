@@ -9,7 +9,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 // The Space API wants the JWT that the cinema page hands out as the `microservicesToken` cookie.
-class SpaceTokenProvider(
+class TheSpaceTokenProvider(
     private val httpClient: HttpClient
 ) {
     private val mutex = Mutex()

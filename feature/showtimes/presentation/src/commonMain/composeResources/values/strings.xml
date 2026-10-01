@@ -7,8 +7,8 @@
     <string name="open_cinema_app">Apri app %1$s</string>
     <string name="cancel">Annulla</string>
     <string name="cinemas_title">Cinema</string>
-    <string name="cinema_silea">Silea (The Space)</string>
-    <string name="cinema_marcon">Marcon (UCI)</string>
+    <string name="cinema_the_space">Silea (The Space)</string>
+    <string name="cinema_uci">Marcon (UCI)</string>
     <string name="film_filter">Film (separati da virgola, opzionale)</string>
     <string name="generate">Genera</string>
     <string name="copy">Copia</string>

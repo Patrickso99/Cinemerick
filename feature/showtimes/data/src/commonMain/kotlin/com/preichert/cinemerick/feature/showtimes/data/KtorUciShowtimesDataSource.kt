@@ -17,7 +17,7 @@ class KtorUciShowtimesDataSource(
     private val httpClient: HttpClient
 ) : ShowtimesDataSource {
 
-    override val cinema = Cinema.MARCON
+    override val cinema = Cinema.UCI
 
     override suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
         coroutineScope {

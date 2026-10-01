@@ -14,12 +14,12 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
 
-class KtorSpaceShowtimesDataSource(
+class KtorTheSpaceShowtimesDataSource(
     private val httpClient: HttpClient,
-    private val tokenProvider: SpaceTokenProvider
+    private val tokenProvider: TheSpaceTokenProvider
 ) : ShowtimesDataSource {
 
-    override val cinema = Cinema.SILEA
+    override val cinema = Cinema.THE_SPACE
 
     override suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network> {
         val token = when (val result = tokenProvider.getToken()) {
@@ -44,7 +44,7 @@ class KtorSpaceShowtimesDataSource(
     }
 
     private suspend fun requestDay(day: LocalDate, token: String): Result<List<Showing>, DataError.Network> =
-        httpClient.get<SpaceFilmsDto>(
+        httpClient.get<TheSpaceFilmsDto>(
             url = "$API_URL?showingDate=${day}T00:00:00&minEmbargoLevel=3" +
                 "&includesSession=true&includeSessionAttributes=true",
             headers = mapOf(HttpHeaders.Authorization to "Bearer $token")

@@ -85,8 +85,8 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_sub
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_marcon
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_silea
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
@@ -561,14 +561,14 @@ private fun ShowingRow(showing: ShowingUi) {
 }
 
 private fun Cinema.chipLabel() = when (this) {
-    Cinema.SILEA -> Res.string.cinema_silea
-    Cinema.MARCON -> Res.string.cinema_marcon
+    Cinema.THE_SPACE -> Res.string.cinema_the_space
+    Cinema.UCI -> Res.string.cinema_uci
 }
 
-// Marcon is UCI (blue), Silea is The Space (orange): brand colors, independent of the theme.
+// UCI is blue, The Space is orange: brand colors, independent of the theme.
 private fun Cinema.badgeColors(): Pair<Color, Color> = when (this) {
-    Cinema.SILEA -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
-    Cinema.MARCON -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
+    Cinema.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
+    Cinema.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
 }
 
 @Composable
@@ -694,8 +694,8 @@ private fun previewState() = ShowtimesState(
         FilmGroupUi(
             title = "Film Name",
             showings = listOf(
-                ShowingUi("Giovedì", "21:00", Cinema.SILEA, "2D · VO"),
-                ShowingUi("Giovedì", "21:30", Cinema.MARCON, "2D · ENG · sub ITA")
+                ShowingUi("Giovedì", "21:00", Cinema.THE_SPACE, "2D · VO"),
+                ShowingUi("Giovedì", "21:30", Cinema.UCI, "2D · ENG · sub ITA")
             )
         )
     )

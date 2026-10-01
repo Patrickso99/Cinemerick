@@ -22,4 +22,4 @@ fun List<Showing>.groupByFilm(): List<FilmGroup> {
 
 // UCI posters are preferred; The Space's are the fallback.
 private fun List<Showing>.posterUrl(): String? =
-    (firstOrNull { it.cinema == Cinema.MARCON && it.posterUrl != null } ?: firstOrNull { it.posterUrl != null })?.posterUrl
+    (firstOrNull { it.cinema == Cinema.UCI && it.posterUrl != null } ?: firstOrNull { it.posterUrl != null })?.posterUrl

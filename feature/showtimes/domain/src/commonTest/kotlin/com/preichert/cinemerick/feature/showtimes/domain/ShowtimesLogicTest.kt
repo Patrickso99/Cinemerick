@@ -18,10 +18,10 @@ class ShowtimesLogicTest {
     @Test
     fun sameFilmFromBothCinemasIsGroupedWithShortestTitleAsHeader() {
         val groups = listOf(
-            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", Cinema.SILEA),
-            showing("Heart of the Beast", thursday, "21:40", Cinema.MARCON),
-            showing("Naza", friday, "21:40", Cinema.SILEA),
-            showing("Naza C.A.", friday, "19:40", Cinema.MARCON)
+            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", Cinema.THE_SPACE),
+            showing("Heart of the Beast", thursday, "21:40", Cinema.UCI),
+            showing("Naza", friday, "21:40", Cinema.THE_SPACE),
+            showing("Naza C.A.", friday, "19:40", Cinema.UCI)
         ).groupByFilm()
 
         // Group titles are the shortest originals
@@ -37,7 +37,7 @@ class ShowtimesLogicTest {
         )
         // Cinema and time ordering is preserved
         assertEquals(
-            listOf(Cinema.MARCON, Cinema.SILEA),
+            listOf(Cinema.UCI, Cinema.THE_SPACE),
             groups.first().showings.map { it.cinema }
         )
         assertEquals(
@@ -49,8 +49,8 @@ class ShowtimesLogicTest {
     @Test
     fun pollTextUsesGroupTitleForAllCinemas() {
         val text = listOf(
-            showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", Cinema.SILEA),
-            showing("Heart of the Beast", thursday, "21:40", Cinema.MARCON)
+            showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", Cinema.THE_SPACE),
+            showing("Heart of the Beast", thursday, "21:40", Cinema.UCI)
         ).groupByFilm().toPollText()
 
         assertEquals(
@@ -90,9 +90,9 @@ class ShowtimesLogicTest {
     @Test
     fun differentFormatsOfSameFilmAreNotGroupedTogether() {
         val groups = listOf(
-            showing("Avatar 2D", thursday, "21:00", Cinema.SILEA),
-            showing("Avatar 3D", thursday, "19:00", Cinema.MARCON),
-            showing("Avatar XL", friday, "21:30", Cinema.SILEA)
+            showing("Avatar 2D", thursday, "21:00", Cinema.THE_SPACE),
+            showing("Avatar 3D", thursday, "19:00", Cinema.UCI),
+            showing("Avatar XL", friday, "21:30", Cinema.THE_SPACE)
         ).groupByFilm()
 
         // Each format variant has a different filmKey, so they are separate groups
@@ -106,10 +106,10 @@ class ShowtimesLogicTest {
     @Test
     fun perDayRangeIsApplied() {
         val showings = listOf(
-            showing("Digger", thursday, "19:00", Cinema.SILEA),
-            showing("Digger", thursday, "21:30", Cinema.MARCON),
-            showing("Digger", friday, "21:30", Cinema.MARCON),
-            showing("Digger", friday, "23:15", Cinema.MARCON)
+            showing("Digger", thursday, "19:00", Cinema.THE_SPACE),
+            showing("Digger", thursday, "21:30", Cinema.UCI),
+            showing("Digger", friday, "21:30", Cinema.UCI),
+            showing("Digger", friday, "23:15", Cinema.UCI)
         )
         val ranges = listOf(
             DayRange(thursday, min = LocalTime.parse("21:00"), max = LocalTime.parse("22:30")),
@@ -120,8 +120,8 @@ class ShowtimesLogicTest {
 
         assertEquals(
             listOf(
-                showing("Digger", thursday, "21:30", Cinema.MARCON),
-                showing("Digger", friday, "23:15", Cinema.MARCON)
+                showing("Digger", thursday, "21:30", Cinema.UCI),
+                showing("Digger", friday, "23:15", Cinema.UCI)
             ),
             result
         )
@@ -131,9 +131,9 @@ class ShowtimesLogicTest {
     fun pastShowingsOfTodayAreDropped() {
         val now = LocalDateTime(2026, 10, 1, 20, 0)
         val showings = listOf(
-            showing("Digger", thursday, "19:40", Cinema.SILEA),
-            showing("Digger", thursday, "20:00", Cinema.SILEA),
-            showing("Digger", thursday, "21:00", Cinema.SILEA)
+            showing("Digger", thursday, "19:40", Cinema.THE_SPACE),
+            showing("Digger", thursday, "20:00", Cinema.THE_SPACE),
+            showing("Digger", thursday, "21:00", Cinema.THE_SPACE)
         )
 
         val result = showings.filterShowings(listOf(DayRange(thursday)), emptyList(), now)
@@ -143,7 +143,7 @@ class ShowtimesLogicTest {
 
     @Test
     fun pollLineMatchesPythonFormat() {
-        val line = showing("Digger", thursday, "21:00", Cinema.SILEA).toPollLine()
+        val line = showing("Digger", thursday, "21:00", Cinema.THE_SPACE).toPollLine()
 
         assertEquals("Digger (Giovedì - 21:00 - Silea)", line)
     }
@@ -151,7 +151,7 @@ class ShowtimesLogicTest {
     @Test
     fun pollLineAppendsFormatWhenPresent() {
         val day = LocalDate(2026, 10, 1)
-        val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), Cinema.MARCON, "XL")
+        val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), Cinema.UCI, "XL")
         assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon - XL)", xl.toPollLine())
         assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon)", xl.copy(format = null).toPollLine())
     }
@@ -159,7 +159,7 @@ class ShowtimesLogicTest {
     @Test
     fun sameTimeInDifferentFormatsIsNotMerged() {
         val day = LocalDate(2026, 10, 1)
-        val xl = Showing("Avengers", day, LocalTime.parse("20:15"), Cinema.MARCON, "XL")
+        val xl = Showing("Avengers", day, LocalTime.parse("20:15"), Cinema.UCI, "XL")
         val twoD = xl.copy(format = "2D")
         assertEquals(2, listOf(xl, twoD).distinct().size)
     }

@@ -15,12 +15,12 @@ fun UciProgrammingDto.toShowings(day: LocalDate): List<Showing> {
             .flatMap { (format, variant) ->
                 variant.performances
                     .filter { it.day == dayText && it.actualStartAt.isNotBlank() }
-                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), Cinema.MARCON, format, movie.poster?.takeIf { it.isNotBlank() }) }
+                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), Cinema.UCI, format, movie.poster?.takeIf { it.isNotBlank() }) }
             }
     }
 }
 
-fun SpaceFilmsDto.toShowings(day: LocalDate): List<Showing> {
+fun TheSpaceFilmsDto.toShowings(day: LocalDate): List<Showing> {
     val dayText = day.toString()
     return result.filter { it.filmTitle.isNotBlank() }.flatMap { film ->
         film.showingGroups
@@ -28,7 +28,7 @@ fun SpaceFilmsDto.toShowings(day: LocalDate): List<Showing> {
             .filter { it.startTime.take(10) == dayText && it.startTime.length >= 16 }
             .map {
                 Showing(
-                    cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), Cinema.SILEA,
+                    cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), Cinema.THE_SPACE,
                     it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() }
                 )
             }
@@ -44,7 +44,7 @@ private fun UciVariantDto.toFormat(screen: String): String? =
     ).joinToString(" · ").ifEmpty { null }
 
 // e.g. "2D", "2D · EPIC", "2D · INFINITY VISION · VO"
-private fun SpaceSessionDto.toFormat(): String? {
+private fun TheSpaceSessionDto.toFormat(): String? {
     val names = attributes.filter { it.name.isNotBlank() }
     return listOfNotNull(
         names.firstOrNull { it.attributeType == "Session" && it.name in DIMENSIONS }?.name,
