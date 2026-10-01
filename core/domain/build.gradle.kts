@@ -1,3 +1,3 @@
 plugins {
-    id("cinemerick.kmp.library")
+    id("com.preichert.convention.kmp.library")
 }

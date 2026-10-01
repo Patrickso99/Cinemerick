@@ -1,19 +1,19 @@
 plugins {
-    id("cinemerick.kmp.library")
-    id("cinemerick.ktor")
-    id("cinemerick.koin")
-    id("cinemerick.kotlinx-serialization")
+    id("com.preichert.convention.kmp.library")
+    id("com.preichert.convention.ktor")
+    id("com.preichert.convention.koin")
+    id("com.preichert.convention.serialization")
 }
 
 kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":core:domain"))
-            implementation(lib("coroutines-core"))
+            implementation(libs.coroutines.core)
         }
-        androidMain.dependencies { implementation(lib("ktor-okhttp")) }
-        getByName("desktopMain").dependencies { implementation(lib("ktor-okhttp")) }
-        iosMain.dependencies { implementation(lib("ktor-darwin")) }
-        wasmJsMain.dependencies { implementation(lib("ktor-js")) }
+        androidMain.dependencies { implementation(libs.ktor.okhttp) }
+        getByName("desktopMain").dependencies { implementation(libs.ktor.okhttp) }
+        iosMain.dependencies { implementation(libs.ktor.darwin) }
+        wasmJsMain.dependencies { implementation(libs.ktor.js) }
     }
 }

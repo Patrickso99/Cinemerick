@@ -1,5 +1,5 @@
 plugins {
-    id("cinemerick.kmp.feature")
+    id("com.preichert.convention.cmp.feature")
 }
 
 kotlin {

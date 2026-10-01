@@ -1,14 +1,14 @@
 plugins {
-    id("cinemerick.kmp.compose")
+    id("com.preichert.convention.cmp.library")
 }
 
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(project(":core:domain"))
-        implementation(lib("androidx-lifecycle-runtime-compose"))
-        implementation(lib("coroutines-core"))
-        implementation(lib("compose-material3-adaptive"))
-        implementation(lib("compose-material3-adaptive-layout"))
+        implementation(libs.androidx.lifecycle.runtime.compose)
+        implementation(libs.coroutines.core)
+        implementation(libs.compose.material3.adaptive)
+        implementation(libs.compose.material3.adaptive.layout)
     }
 }
 

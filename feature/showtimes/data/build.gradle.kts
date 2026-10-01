@@ -1,7 +1,7 @@
 plugins {
-    id("cinemerick.kmp.library")
-    id("cinemerick.koin")
-    id("cinemerick.kotlinx-serialization")
+    id("com.preichert.convention.kmp.library")
+    id("com.preichert.convention.koin")
+    id("com.preichert.convention.serialization")
 }
 
 kotlin {
@@ -9,7 +9,7 @@ kotlin {
         implementation(project(":core:domain"))
         implementation(project(":core:data"))
         implementation(project(":feature:showtimes:domain"))
-        implementation(lib("coroutines-core"))
-        implementation(lib("datetime"))
+        implementation(libs.coroutines.core)
+        implementation(libs.datetime)
     }
 }

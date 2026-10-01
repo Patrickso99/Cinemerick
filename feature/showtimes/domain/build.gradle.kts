@@ -1,10 +1,10 @@
 plugins {
-    id("cinemerick.kmp.library")
+    id("com.preichert.convention.kmp.library")
 }
 
 kotlin {
     sourceSets.commonMain.dependencies {
         api(project(":core:domain"))
-        api(lib("datetime"))
+        api(libs.datetime)
     }
 }

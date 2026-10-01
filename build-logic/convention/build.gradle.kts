@@ -4,13 +4,14 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.preichert.cinemerick.convention.buildlogic"
+group = "com.preichert.convention.buildlogic"
 
 dependencies {
-    compileOnly(libs.build.android.gradle.plugin)
-    compileOnly(libs.build.kotlin.gradle.plugin)
-    compileOnly(libs.build.compose.gradle.plugin)
-    compileOnly(libs.build.compose.compiler)
+    implementation(libs.build.android.gradle.plugin)
+    implementation(libs.build.kotlin.gradle.plugin)
+    implementation(libs.build.compose.gradle.plugin)
+    implementation(libs.build.compose.compiler)
+    implementation(libs.build.kotlin.serialization)
 }
 
 java {
@@ -34,31 +35,35 @@ tasks {
 gradlePlugin {
     plugins {
         register("androidApplication") {
-            id = "cinemerick.android.application"
+            id = "com.preichert.convention.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+        register("cmpApplication") {
+            id = "com.preichert.convention.cmp.application"
+            implementationClass = "CmpApplicationConventionPlugin"
+        }
         register("kmpLibrary") {
-            id = "cinemerick.kmp.library"
+            id = "com.preichert.convention.kmp.library"
             implementationClass = "KmpLibraryConventionPlugin"
         }
         register("cmpLibrary") {
-            id = "cinemerick.kmp.compose"
+            id = "com.preichert.convention.cmp.library"
             implementationClass = "CmpLibraryConventionPlugin"
         }
         register("cmpFeature") {
-            id = "cinemerick.kmp.feature"
+            id = "com.preichert.convention.cmp.feature"
             implementationClass = "CmpFeatureConventionPlugin"
         }
         register("koin") {
-            id = "cinemerick.koin"
+            id = "com.preichert.convention.koin"
             implementationClass = "KoinConventionPlugin"
         }
         register("ktor") {
-            id = "cinemerick.ktor"
+            id = "com.preichert.convention.ktor"
             implementationClass = "KtorConventionPlugin"
         }
         register("serialization") {
-            id = "cinemerick.kotlinx-serialization"
+            id = "com.preichert.convention.serialization"
             implementationClass = "SerializationConventionPlugin"
         }
     }

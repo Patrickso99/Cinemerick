@@ -1,5 +1,5 @@
 plugins {
-    id("cinemerick.android.application")
+    id("com.preichert.convention.cmp.application")
 }
 
 kotlin {
@@ -12,19 +12,19 @@ kotlin {
             implementation(project(":feature:showtimes:domain"))
             implementation(project(":feature:showtimes:data"))
             implementation(project(":feature:showtimes:presentation"))
-            implementation(lib("compose-runtime"))
-            implementation(lib("compose-foundation"))
-            implementation(lib("compose-material3"))
-            implementation(lib("compose-ui"))
-            implementation(lib("koin-core"))
-            implementation(lib("koin-compose"))
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
         }
         androidMain.dependencies {
-            implementation(lib("koin-android"))
-            implementation(lib("androidx-activity-compose"))
+            implementation(libs.koin.android)
+            implementation(libs.androidx.activity.compose)
         }
         getByName("desktopMain").dependencies {
-            implementation(lib("coroutines-swing"))
+            implementation(libs.coroutines.swing)
         }
     }
 }
