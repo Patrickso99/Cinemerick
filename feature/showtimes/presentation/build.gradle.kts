@@ -8,6 +8,8 @@ kotlin {
         implementation(project(":core:presentation"))
         implementation(project(":core:design-system"))
         implementation(project(":feature:showtimes:domain"))
+        implementation(libs.kermit)
+        implementation(libs.coil.compose)
     }
 }
 

@@ -10,6 +10,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(libs.coroutines.core)
+        implementation(libs.kermit)
         }
         androidMain.dependencies { implementation(libs.ktor.okhttp) }
         getByName("desktopMain").dependencies { implementation(libs.ktor.okhttp) }

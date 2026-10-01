@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,11 +23,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
@@ -63,22 +70,22 @@ fun CinemerickAdaptiveLayout(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                        .padding(horizontal = Spacing.lg, vertical = Spacing.xl),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.lg),
                 ) {
                     filtersContent()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Spacing.lg))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                        .padding(Spacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
                 ) {
                     resultsContent()
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(Spacing.xl))
                 Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
             }
         }
@@ -90,8 +97,8 @@ fun CinemerickAdaptiveLayout(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
             ) {
                 Column(
                     modifier = Modifier
@@ -101,22 +108,18 @@ fun CinemerickAdaptiveLayout(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     header()
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(Spacing.lg))
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
                     ) {
                         filtersContent()
                     }
                 }
-                Column(
+                Panel(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                        .fillMaxHeight(),
+                    scrollable = true,
                 ) {
                     resultsContent()
                 }
@@ -138,27 +141,13 @@ fun CinemerickAdaptiveLayout(
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                         .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        .padding(Spacing.xl),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
+                    Panel(modifier = Modifier.weight(1f)) {
                         filtersContent()
                     }
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
+                    Panel(modifier = Modifier.weight(1f)) {
                         resultsContent()
                     }
                 }
@@ -183,27 +172,13 @@ fun CinemerickAdaptiveLayout(
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                         .widthIn(max = 1200.dp)
                         .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        .padding(Spacing.xl),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
+                    Panel(modifier = Modifier.weight(1f)) {
                         filtersContent()
                     }
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
+                    Panel(modifier = Modifier.weight(1f)) {
                         resultsContent()
                     }
                 }
@@ -214,39 +189,81 @@ fun CinemerickAdaptiveLayout(
 }
 
 /**
- * Gradient header composable for app branding and visual appeal.
+ * Panel that groups a section on wide layouts: tonal surface with a subtle outline.
+ */
+@Composable
+private fun Panel(
+    modifier: Modifier = Modifier,
+    scrollable: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+    ) {
+        Column(
+            modifier = Modifier
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+            content = content,
+        )
+    }
+}
+
+/**
+ * Gradient header with decorative circles, used for app branding.
  */
 @Composable
 fun CinemerickHeader(
     title: String,
     subtitle: String? = null,
+    version: String? = null,
     modifier: Modifier = Modifier,
 ) {
-    val brush = Brush.verticalGradient(PurpleGradient)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val brush = Brush.linearGradient(if (isDark) PurpleGradientDark else PurpleGradient)
+    val accent = MaterialTheme.colorScheme.secondaryContainer
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
             .background(brush)
+            .drawBehind {
+                drawCircle(Color.White.copy(alpha = 0.08f), radius = size.height * 0.9f, center = Offset(size.width * 0.95f, size.height * 0.1f))
+                drawCircle(accent.copy(alpha = 0.18f), radius = size.height * 0.45f, center = Offset(size.width * 0.78f, size.height * 0.95f))
+            }
             // Gradient extends behind the status bar; content stays clear of it.
             .windowInsetsPadding(
                 WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
             )
-            .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 32.dp),
+            .padding(start = Spacing.xl, end = Spacing.xl, top = Spacing.xl, bottom = Spacing.xxl),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        androidx.compose.material3.Text(
-            text = title,
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onPrimary,
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.White,
+            )
+            if (version != null) {
+                Text(
+                    text = "v$version",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = Spacing.xs),
+                )
+            }
+        }
         if (subtitle != null) {
-            androidx.compose.material3.Text(
+            Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                color = Color.White.copy(alpha = 0.85f),
             )
         }
     }

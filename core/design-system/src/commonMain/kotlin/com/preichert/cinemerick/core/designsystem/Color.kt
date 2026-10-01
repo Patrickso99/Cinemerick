@@ -10,10 +10,10 @@ object CinemerickColors {
     val lightPrimaryContainer = Color(0xFFEADDFF)
     val lightOnPrimaryContainer = Color(0xFF21005D)
 
-    val lightSecondary = Color(0xFF7D5260)
+    val lightSecondary = Color(0xFF8A5100)
     val lightOnSecondary = Color(0xFFFFFFFF)
-    val lightSecondaryContainer = Color(0xFFFFD8E4)
-    val lightOnSecondaryContainer = Color(0xFF2F111D)
+    val lightSecondaryContainer = Color(0xFFFFDCBE)
+    val lightOnSecondaryContainer = Color(0xFF2C1600)
 
     val lightTertiary = Color(0xFF7D5260)
     val lightOnTertiary = Color(0xFFFFFFFF)
@@ -46,10 +46,10 @@ object CinemerickColors {
     val darkPrimaryContainer = Color(0xFF4F378B)
     val darkOnPrimaryContainer = Color(0xFFEADDFF)
 
-    val darkSecondary = Color(0xFFFFB1C6)
-    val darkOnSecondary = Color(0xFF5A1D34)
-    val darkSecondaryContainer = Color(0xFF78334B)
-    val darkOnSecondaryContainer = Color(0xFFFFD8E4)
+    val darkSecondary = Color(0xFFFFB870)
+    val darkOnSecondary = Color(0xFF4A2800)
+    val darkSecondaryContainer = Color(0xFF693C00)
+    val darkOnSecondaryContainer = Color(0xFFFFDCBE)
 
     val darkTertiary = Color(0xFFFFB1C6)
     val darkOnTertiary = Color(0xFF5A1D34)
@@ -89,3 +89,11 @@ val PurpleGradientDark = listOf(
     Color(0xFF4F378B),
     Color(0xFF6A4C93),
 )
+
+// Cinema brand colors: fixed in light and dark mode so each cinema is always recognizable.
+object CinemaBrandColors {
+    val uciBlue = Color(0xFF1F3F7A)
+    val onUciBlue = Color(0xFFFFFFFF)
+    val theSpaceOrange = Color(0xFFE8650A)
+    val onTheSpaceOrange = Color(0xFFFFFFFF)
+}

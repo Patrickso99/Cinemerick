@@ -12,6 +12,10 @@ dependencies {
     implementation(libs.build.compose.gradle.plugin)
     implementation(libs.build.compose.compiler)
     implementation(libs.build.kotlin.serialization)
+    // BuildKonfig pulls Kotlin 2.4 transitively; the project is pinned to libs.versions.kotlin.
+    implementation(libs.build.buildkonfig) {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 java {
@@ -53,6 +57,10 @@ gradlePlugin {
         register("cmpFeature") {
             id = "com.preichert.convention.cmp.feature"
             implementationClass = "CmpFeatureConventionPlugin"
+        }
+        register("buildKonfig") {
+            id = "com.preichert.convention.buildkonfig"
+            implementationClass = "BuildKonfigConventionPlugin"
         }
         register("koin") {
             id = "com.preichert.convention.koin"

@@ -18,6 +18,9 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.kermit)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)

@@ -12,8 +12,8 @@ fun DayOfWeek.italianName(): String = when (this) {
     DayOfWeek.SUNDAY -> "Domenica"
 }
 
-fun Showing.toPollLine(): String =
-    "$title (${day.dayOfWeek.italianName()} - $time - ${cinema.displayName})"
+fun Showing.toPollLine(title: String = this.title): String =
+    "$title (${day.dayOfWeek.italianName()} - $time - ${cinema.displayName}${format?.let { " - $it" }.orEmpty()})"
 
 fun List<FilmGroup>.toPollText(): String =
-    flatMap { group -> group.showings.map { it.toPollLine() } }.joinToString("\n")
+    flatMap { group -> group.showings.map { it.toPollLine(group.title) } }.joinToString("\n")

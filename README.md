@@ -11,6 +11,10 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 
 - 🎬 **Multi-source aggregation**: Query Space Cinema (Silea) and UCI cinemas simultaneously
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
+- 🏢 **Cinema selection**: Choose which chains to query (Silea / The Space, Marcon / UCI); both are on by default and excluded chains are never fetched
+- 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
+- 🏷️ **Version in the header**: Shown as `v1.0.0 (20261001) [abc1234]` (version name, date-based code, git short hash)
+- 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🎞️ **Film filtering**: Narrow results by comma-separated film titles
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap
 - 🌓 **Dark mode**: Adaptive purple theme (light & dark)
@@ -66,6 +70,7 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 - `cinemerick.kmp.compose`: Compose Multiplatform setup
 - `cinemerick.kmp.feature`: Feature module structure
 - `cinemerick.koin`: Koin DI setup
+- `cinemerick.buildkonfig`: Generates `BuildKonfig` (`VERSION_NAME`, `VERSION_CODE`, `GIT_HASH`) in `:core:domain`; the version is defined once in `AppVersion.kt` and shared with the Android and desktop packaging
 - `cinemerick.ktor`: Ktor client configuration
 - `cinemerick.kotlinx-serialization`: Serialization plugin
 
@@ -73,16 +78,19 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 
 | Library | Version |
 |---------|---------|
-| **Kotlin** | 2.4.20 |
-| **Compose Multiplatform** | 1.12.1 |
+| **Kotlin** | 2.3.21 |
+| **Compose Multiplatform** | 1.10.3 |
 | **Material 3** | 1.9.0 |
-| **Ktor Client** | 3.6.0 |
+| **Ktor Client** | 3.5.2 |
 | **Koin** | 4.2.2 |
+| **Kermit** (logging) | 2.2.0 |
+| **Coil** (images) | 3.4.0 |
+| **BuildKonfig** | 0.23.0 |
 | **Kotlinx Serialization** | 1.11.0 |
 | **Kotlinx Datetime** | 0.8.0 |
 | **Kotlinx Coroutines** | 1.11.0 |
-| **Lifecycle** | 2.11.0 |
-| **Activity** (Android) | 1.13.0 |
+| **Lifecycle** | 2.8.1 |
+| **Activity** (Android) | 1.9.0 |
 | **AGP** | 9.2.1 |
 
 ## Getting Started
@@ -188,12 +196,13 @@ Cinemerick/
 
 ## How It Works
 
-1. **User selects days** and time ranges in the filter panel
-2. **Optional: filter by film title** (comma-separated)
-3. **Tap "Generate"** to fetch showtimes from Space Cinema and UCI
-4. **Results appear** grouped by film title, showing cinema and time
-5. **Tap "Copy"** to copy the poll text to clipboard
-6. **Paste** into your group chat and start the poll 🎬
+1. **Choose cinemas** (both selected by default)
+2. **User selects days** and time ranges in the filter panel
+3. **Optional: filter by film title** (comma-separated)
+4. **Tap "Generate"** to fetch showtimes from Space Cinema and UCI
+5. **Results appear** grouped by film title with poster, cinema and time
+6. **Tap "Copy"** to copy the poll text to clipboard
+7. **Paste** into your group chat and start the poll 🎬
 
 Example poll text:
 ```

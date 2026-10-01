@@ -11,11 +11,14 @@ data class UciProgrammingDto(
 @Serializable
 data class UciMovieDto(
     val title: String = "",
+    val poster: String? = null,
     val screens: List<Map<String, List<UciVariantDto>>> = emptyList()
 )
 
 @Serializable
 data class UciVariantDto(
+    val language: UciNamedDto? = null,
+    val subtitles: UciNamedDto? = null,
     val performances: List<UciPerformanceDto> = emptyList()
 )
 
@@ -23,4 +26,9 @@ data class UciVariantDto(
 data class UciPerformanceDto(
     val day: String = "",
     @SerialName("actual_start_at") val actualStartAt: String = ""
+)
+
+@Serializable
+data class UciNamedDto(
+    val name: String = ""
 )

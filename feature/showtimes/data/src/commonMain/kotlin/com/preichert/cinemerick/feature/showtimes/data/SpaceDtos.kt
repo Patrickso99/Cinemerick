@@ -10,6 +10,7 @@ data class SpaceFilmsDto(
 @Serializable
 data class SpaceFilmDto(
     val filmTitle: String = "",
+    val posterImageSrc: String? = null,
     val showingGroups: List<SpaceShowingGroupDto> = emptyList()
 )
 
@@ -20,5 +21,12 @@ data class SpaceShowingGroupDto(
 
 @Serializable
 data class SpaceSessionDto(
-    val startTime: String = ""
+    val startTime: String = "",
+    val attributes: List<SpaceAttributeDto> = emptyList()
+)
+
+@Serializable
+data class SpaceAttributeDto(
+    val name: String = "",
+    val attributeType: String = ""
 )

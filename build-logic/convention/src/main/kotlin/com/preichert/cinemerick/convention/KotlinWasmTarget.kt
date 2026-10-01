@@ -8,6 +8,13 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 internal fun Project.configureWasmTarget() {
     extensions.configure<KotlinMultiplatformExtension> {
         @OptIn(ExperimentalWasmDsl::class)
-        wasmJs { browser() }
+        wasmJs {
+            browser()
+            if (project.path == ":app") {
+                browser { commonWebpackConfig { outputFileName = "composeApp.js" } }
+                outputModuleName.set("composeApp")
+                binaries.executable()
+            }
+        }
     }
 }
