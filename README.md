@@ -5,13 +5,13 @@
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-orange)
 ![Ktor](https://img.shields.io/badge/Ktor-3.6.0-purple)
 
-A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (Space Cinema, UCI, Notorious) and generates shareable poll text for group chats.
+A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (Space Cinema, UCI, Notorious, Cinergia) and generates shareable poll text for group chats.
 
 ## Features
 
-- 🎬 **Multi-source aggregation**: Query Space Cinema (Silea), UCI (Marcon) and Notorious (Ferrara) simultaneously
+- 🎬 **Multi-source aggregation**: Query Space Cinema (Silea), UCI (Marcon), Notorious (Ferrara) and Cinergia (Conegliano, via 18tickets) simultaneously
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
-- 🏢 **Cinema selection**: Choose which chains to query (Silea / The Space, Marcon / UCI, Ferrara / Notorious); all are on by default and excluded chains are never fetched
+- 🏢 **Cinema selection**: Choose which chains to query (The Space / Silea, UCI / Marcon, Notorious / Ferrara, Cinergia / Conegliano); all are on by default and excluded chains are never fetched
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
 - 🏷️ **Version in the header**: Shown as `v1.0.0 (20261001) [abc1234]` (version name, date-based code, git short hash)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
@@ -52,7 +52,7 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
   - `DayRange`, `FilmTitles`, `Showing`: Domain value objects
 
 - **`:feature:showtimes:data`**: Data layer
-  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing): Platform HTTP clients
+  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing) / `KtorCinergiaShowtimesDataSource` (HTML parsing): Platform HTTP clients
   - `TheSpaceTokenProvider`: Extracts JWT from Space Cinema pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
   - DTOs and mappers to/from domain models
@@ -199,7 +199,7 @@ Cinemerick/
 1. **Choose cinemas** (both selected by default)
 2. **User selects days** and time ranges in the filter panel
 3. **Optional: filter by film title** (comma-separated)
-4. **Tap "Generate"** to fetch showtimes from Space Cinema, UCI and Notorious
+4. **Tap "Generate"** to fetch showtimes from Space Cinema, UCI, Notorious and Cinergia
 5. **Results appear** grouped by film title with poster, cinema and time
 6. **Tap "Copy"** to copy the poll text to clipboard
 7. **Paste** into your group chat and start the poll 🎬

@@ -98,4 +98,6 @@ object CinemaBrandColors {
     val onTheSpaceOrange = Color(0xFFFFFFFF)
     val notoriousSilver = Color(0xFFA4A5A6)
     val onNotoriousSilver = Color(0xFF1A1A1A)
+    val cinergia = Color(0xFF414C4C)
+    val onCinergia = Color(0xFFFFFFFF)
 }

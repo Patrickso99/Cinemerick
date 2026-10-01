@@ -25,4 +25,5 @@ fun Cinema.appLinks(platform: AppPlatform): List<CinemaAppLink> = when (this) {
         AppPlatform.ANDROID -> listOf(CinemaAppLink("Notorious Cinemas", "https://play.google.com/store/apps/details?id=it.creaweb.notorious"))
         AppPlatform.IOS, AppPlatform.DESKTOP, AppPlatform.WEB -> listOf(CinemaAppLink("Notorious Cinemas", "https://www.notoriouscinemas.it/ferrara/index.php"))
     }
+    Cinema.CINERGIA -> listOf(CinemaAppLink("Cinergia Conegliano", "https://coneglianocinergia.18tickets.it"))
 }

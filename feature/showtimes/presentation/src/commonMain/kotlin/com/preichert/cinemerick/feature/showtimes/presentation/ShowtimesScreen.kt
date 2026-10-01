@@ -86,6 +86,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_tit
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cinergia
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_notorious
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
@@ -565,13 +566,15 @@ private fun Cinema.chipLabel() = when (this) {
     Cinema.THE_SPACE -> Res.string.cinema_the_space
     Cinema.UCI -> Res.string.cinema_uci
     Cinema.NOTORIOUS -> Res.string.cinema_notorious
+    Cinema.CINERGIA -> Res.string.cinema_cinergia
 }
 
-// UCI is blue, The Space is orange, Notorious is silver: brand colors, independent of the theme.
+// UCI is blue, The Space is orange, Notorious is silver, Cinergia is dark grey: brand colors, independent of the theme.
 private fun Cinema.badgeColors(): Pair<Color, Color> = when (this) {
     Cinema.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
     Cinema.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
     Cinema.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
+    Cinema.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
 }
 
 @Composable

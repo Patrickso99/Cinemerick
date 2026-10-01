@@ -1,7 +1,7 @@
-"""Builds the Cinemerick app icon: UCI (top-left), The Space (middle) and Notorious (bottom-right), split by two parallel diagonals.
+"""Builds the Cinemerick app icon: UCI, The Space, Cinergia and Notorious from the top-left to the bottom-right, split by three parallel diagonals.
 
 Run from the repo root: python3 design/generate_icons.py [--install]
-Sources: design/logos/uci.jpg, the_space.jpg, notorious.jpg (480x480). Outputs: design/out/*.png;
+Sources: design/logos/uci.jpg, the_space.jpg, notorious.jpg (480x480), cinergia.png (transparent wordmark). Outputs: design/out/*.png;
 --install also copies them where each platform expects them.
 """
 import shutil
@@ -19,33 +19,35 @@ OUT.mkdir(exist_ok=True)
 UCI = Image.open(ROOT / "logos" / "uci.jpg").convert("RGB")
 SPACE = Image.open(ROOT / "logos" / "the_space.jpg").convert("RGB")
 NOTORIOUS = Image.open(ROOT / "logos" / "notorious.jpg").convert("RGB")
+_cinergia = Image.open(ROOT / "logos" / "cinergia.png").convert("RGBA")
+CINERGIA = _cinergia.crop(_cinergia.getchannel("A").getbbox())
+CINERGIA_BG = (0x41, 0x4C, 0x4C)  # same as the Cinergia badge color
 
 SS = 2  # supersampling for smooth diagonal edges
 LINE = (255, 255, 255)
 
-# The separators are the lines x + y = CUT_A * size and x + y = CUT_B * size (both run bottom-left to top-right).
-CUT_A, CUT_B = 0.68, 1.32
+# The separators are the lines x + y = cut * size (they run bottom-left to top-right), one between each pair of neighbouring areas.
+CUTS = (0.52, 1.0, 1.48)
 
-# Per-logo placement, as fractions of the canvas: logo width (UCI, The Space: the square jpg) and centre of the logo.
-UCI_WIDTH, UCI_CENTER = 0.42, (0.245, 0.245)
-SPACE_WIDTH, SPACE_CENTER = 0.56, (0.50, 0.50)
-NOTORIOUS_WIDTH, NOTORIOUS_CENTER = 0.50, (0.80, 0.80)
+# Per-logo placement, as fractions of the canvas: logo width and centre of the logo (UCI, The Space, Notorious: the square jpg).
+UCI_WIDTH, UCI_CENTER = 0.32, (0.165, 0.165)
+SPACE_WIDTH, SPACE_CENTER = 0.38, (0.38, 0.38)
+CINERGIA_WIDTH, CINERGIA_CENTER = 0.40, (0.62, 0.62)
+NOTORIOUS_WIDTH, NOTORIOUS_CENTER = 0.30, (0.84, 0.84)
 
 
 def place(logo, size, width, center, bg, scale):
-    """Pastes the square `logo` (width as a fraction of the canvas, centred on `center`), both pulled towards the canvas centre by `scale`."""
+    """Pastes `logo` (width as a fraction of the canvas, aspect kept, centred on `center`), both pulled towards the canvas centre by `scale`."""
     canvas = bg.copy() if isinstance(bg, Image.Image) else Image.new("RGB", (size, size), bg)
-    if logo.mode == "RGBA":
-        s = int(size * width * scale)
-        cx = size * (0.5 + (center[0] - 0.5) * scale)
-        cy = size * (0.5 + (center[1] - 0.5) * scale)
-        canvas.paste(logo.resize((s, s), Image.LANCZOS), (int(cx - s / 2), int(cy - s / 2)), logo.resize((s, s), Image.LANCZOS))
-        return canvas
-    s = int(size * width * scale)
-    resized = logo.resize((s, s), Image.LANCZOS)
+    w = int(size * width * scale)
+    resized = logo.resize((w, int(logo.height * w / logo.width)), Image.LANCZOS)
     cx = size * (0.5 + (center[0] - 0.5) * scale)
     cy = size * (0.5 + (center[1] - 0.5) * scale)
-    canvas.paste(resized, (int(cx - s / 2), int(cy - s / 2)))
+    pos = (int(cx - resized.width / 2), int(cy - resized.height / 2))
+    if resized.mode == "RGBA":
+        canvas.paste(resized, pos, resized)
+    else:
+        canvas.paste(resized, pos)
     return canvas
 
 
@@ -65,7 +67,7 @@ def notorious_layer(size):
 
 def cuts(logo_scale):
     """Separator positions, pulled towards the centre together with the logos."""
-    return tuple(1 + (cut - 1) * logo_scale for cut in (CUT_A, CUT_B))
+    return tuple(1 + (cut - 1) * logo_scale for cut in CUTS)
 
 
 def diagonal_mask(size, cut, above):
@@ -82,22 +84,25 @@ def diagonal_mask(size, cut, above):
 
 def compose(size, logo_scale=1.0, line_width=0.014):
     big = size * SS
-    uci = place(UCI, big, UCI_WIDTH, UCI_CENTER, UCI.getpixel((2, 2)), logo_scale)
-    space = place(SPACE, big, SPACE_WIDTH, SPACE_CENTER, SPACE.getpixel((2, 2)), logo_scale)
     silver, ink = notorious_layer(big)
-    notorious = place(ink, big, NOTORIOUS_WIDTH, NOTORIOUS_CENTER, silver, logo_scale)
-    cut_a, cut_b = cuts(logo_scale)
-    img = Image.composite(uci, space, diagonal_mask(big, cut_a, above=True))
-    img = Image.composite(notorious, img, diagonal_mask(big, cut_b, above=False))
+    areas = [
+        place(UCI, big, UCI_WIDTH, UCI_CENTER, UCI.getpixel((2, 2)), logo_scale),
+        place(SPACE, big, SPACE_WIDTH, SPACE_CENTER, SPACE.getpixel((2, 2)), logo_scale),
+        place(CINERGIA, big, CINERGIA_WIDTH, CINERGIA_CENTER, CINERGIA_BG, logo_scale),
+        place(ink, big, NOTORIOUS_WIDTH, NOTORIOUS_CENTER, silver, logo_scale),
+    ]
+    img = areas[0]
+    for area, cut in zip(areas[1:], cuts(logo_scale)):
+        img = Image.composite(area, img, diagonal_mask(big, cut, above=False))
     if line_width:
         draw = ImageDraw.Draw(img)
-        for cut in (cut_a, cut_b):
+        for cut in cuts(logo_scale):
             draw.line([(cut * big, 0), (0, cut * big)], fill=LINE, width=int(big * line_width))
     return img.resize((size, size), Image.LANCZOS)
 
 
 def separators_only(size, logo_scale=1.0, line_width=0.014):
-    """Transparent layer holding just the two diagonal lines (Android adaptive foreground)."""
+    """Transparent layer holding just the diagonal lines (Android adaptive foreground)."""
     big = size * SS
     layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     draw = ImageDraw.Draw(layer)
