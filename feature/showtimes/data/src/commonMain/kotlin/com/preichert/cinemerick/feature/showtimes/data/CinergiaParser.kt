@@ -45,7 +45,3 @@ private fun scheduleIsFor(schedule: String, day: LocalDate): Boolean {
     val (dd, mm, yyyy) = SCHEDULE_DAY.find(schedule)?.destructured ?: return true
     return "$yyyy-$mm-$dd" == day.toString()
 }
-
-private fun String.unescapeHtml(): String =
-    replace("&amp;", "&").replace("&quot;", "\"").replace("&#39;", "'").replace("&apos;", "'")
-        .replace("&lt;", "<").replace("&gt;", ">")

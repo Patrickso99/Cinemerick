@@ -9,8 +9,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -78,6 +82,8 @@ import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.core.domain.BuildKonfig
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.presentation.currentPlatform
+import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
+import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Cinema
 import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -87,6 +93,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.calenda
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cinergia
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cristallo
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_notorious
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
@@ -145,12 +152,16 @@ fun ShowtimesScreen(
     onAction: (ShowtimesAction) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
+    val configuration = currentDeviceConfiguration()
+    // Larger screens show the calendar inline in the filters panel instead of a dialog.
+    val inlineCalendar = !configuration.isMobile
+
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding()) }
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            state.calendar?.let { calendar ->
+            state.calendar?.takeIf { !inlineCalendar }?.let { calendar ->
                 AlertDialog(
                     onDismissRequest = { onAction(ShowtimesAction.OnCalendarDismiss) },
                     text = {
@@ -176,10 +187,18 @@ fun ShowtimesScreen(
                     )
                 },
                 filtersContent = {
-                    FiltersSection(state = state, onAction = onAction)
+                    FiltersSection(
+                        state = state,
+                        onAction = onAction,
+                        inlineCalendar = inlineCalendar
+                    )
                 },
                 resultsContent = {
-                    ResultsSection(state = state, onAction = onAction)
+                    ResultsSection(
+                        state = state,
+                        onAction = onAction,
+                        configuration = configuration
+                    )
                 }
             )
         }
@@ -192,7 +211,8 @@ fun ShowtimesScreen(
 @Composable
 private fun ColumnScope.FiltersSection(
     state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+    onAction: (ShowtimesAction) -> Unit,
+    inlineCalendar: Boolean
 ) {
     // Cinema selection
     SectionCard(modifier = Modifier.fillMaxWidth()) {
@@ -208,8 +228,9 @@ private fun ColumnScope.FiltersSection(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = Spacing.lg)
             )
-            Row(
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                 modifier = Modifier.padding(horizontal = Spacing.lg)
             ) {
                 Cinema.entries.forEach { cinema ->
@@ -254,11 +275,27 @@ private fun ColumnScope.FiltersSection(
                     label = { Text(stringResource(Res.string.quick_weekend)) }
                 )
             }
-            FilledTonalButton(
-                onClick = { onAction(ShowtimesAction.OnCalendarOpen) },
-                modifier = Modifier.padding(horizontal = Spacing.lg)
-            ) {
-                Text(stringResource(Res.string.pick_days))
+            val calendar = state.calendar
+            if (inlineCalendar && calendar != null) {
+                MultiDateCalendar(
+                    selected = state.days.mapTo(mutableSetOf()) { it.date },
+                    minDate = calendar.minDate,
+                    onToggle = { onAction(ShowtimesAction.OnDayToggle(it)) },
+                    modifier = Modifier.padding(horizontal = Spacing.lg)
+                )
+                TextButton(
+                    onClick = { onAction(ShowtimesAction.OnCalendarDismiss) },
+                    modifier = Modifier.padding(horizontal = Spacing.md)
+                ) {
+                    Text(stringResource(Res.string.calendar_done))
+                }
+            } else {
+                FilledTonalButton(
+                    onClick = { onAction(ShowtimesAction.OnCalendarOpen) },
+                    modifier = Modifier.padding(horizontal = Spacing.lg)
+                ) {
+                    Text(stringResource(Res.string.pick_days))
+                }
             }
             if (state.days.isNotEmpty()) {
                 LazyRow(
@@ -362,7 +399,8 @@ private fun LocalDate.shortDate(): String =
 @Composable
 private fun ColumnScope.ResultsSection(
     state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+    onAction: (ShowtimesAction) -> Unit,
+    configuration: DeviceConfiguration
 ) {
     // Errors
     state.cinemaErrors.forEach { error ->
@@ -423,21 +461,55 @@ private fun ColumnScope.ResultsSection(
         }
     }
 
-    // Results groups
-    state.groups.forEach { group ->
-        val visibleState = remember(group) { MutableTransitionState(false).apply { targetState = true } }
-        AnimatedVisibility(
-            visibleState = visibleState,
-            enter = fadeIn() + slideInVertically { it / 8 }
-        ) {
-            FilmGroupCard(group)
+    // Results groups: single list on mobile, multi-column grid on larger screens
+    if (configuration.isMobile) {
+        state.groups.forEach { group -> AnimatedFilmGroupCard(group, large = false) }
+    } else {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceAtLeast(1)
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                state.groups.chunked(columns).forEach { rowGroups ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        modifier = Modifier.height(IntrinsicSize.Max)
+                    ) {
+                        rowGroups.forEach { group ->
+                            AnimatedFilmGroupCard(
+                                group = group,
+                                large = true,
+                                modifier = Modifier.weight(1f).fillMaxHeight()
+                            )
+                        }
+                        // Keep the last row's cards the same width as the others
+                        repeat(columns - rowGroups.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
         }
     }
 }
 
+private val MIN_GRID_CARD_WIDTH = 340.dp
+
 @Composable
-private fun FilmGroupCard(group: FilmGroupUi) {
-    SectionCard(modifier = Modifier.fillMaxWidth()) {
+private fun AnimatedFilmGroupCard(
+    group: FilmGroupUi,
+    large: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val visibleState = remember(group) { MutableTransitionState(false).apply { targetState = true } }
+    AnimatedVisibility(
+        visibleState = visibleState,
+        enter = fadeIn() + slideInVertically { it / 8 },
+        modifier = modifier
+    ) {
+        FilmGroupCard(group, large = large)
+    }
+}
+
+@Composable
+private fun FilmGroupCard(group: FilmGroupUi, large: Boolean) {
+    SectionCard(modifier = Modifier.fillMaxSize()) {
         SelectionContainer {
             Column(
                 modifier = Modifier
@@ -446,11 +518,18 @@ private fun FilmGroupCard(group: FilmGroupUi) {
                 verticalArrangement = Arrangement.spacedBy(Spacing.md)
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                    group.posterUrl?.let { PosterImage(url = it, contentDescription = group.title) }
+                    group.posterUrl?.let {
+                        PosterImage(
+                            url = it,
+                            contentDescription = group.title,
+                            width = if (large) 132.dp else 96.dp
+                        )
+                    }
                     Text(
                         text = group.title,
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = if (large) MaterialTheme.typography.headlineSmall
+                        else MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -463,7 +542,7 @@ private fun FilmGroupCard(group: FilmGroupUi) {
 }
 
 @Composable
-private fun PosterImage(url: String, contentDescription: String) {
+private fun PosterImage(url: String, contentDescription: String, width: Dp = 96.dp) {
     var isEnlarged by remember { mutableStateOf(false) }
 
     AsyncImage(
@@ -471,7 +550,7 @@ private fun PosterImage(url: String, contentDescription: String) {
         contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
         modifier = Modifier
-            .width(96.dp)
+            .width(width)
             .aspectRatio(2f / 3f)
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -567,14 +646,16 @@ private fun Cinema.chipLabel() = when (this) {
     Cinema.UCI -> Res.string.cinema_uci
     Cinema.NOTORIOUS -> Res.string.cinema_notorious
     Cinema.CINERGIA -> Res.string.cinema_cinergia
+    Cinema.CRISTALLO -> Res.string.cinema_cristallo
 }
 
-// UCI is blue, The Space is orange, Notorious is silver, Cinergia is dark grey: brand colors, independent of the theme.
+// UCI is blue, The Space is orange, Notorious is silver, Cinergia is dark grey, Cristallo is red: brand colors, independent of the theme.
 private fun Cinema.badgeColors(): Pair<Color, Color> = when (this) {
     Cinema.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
     Cinema.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
     Cinema.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
     Cinema.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
+    Cinema.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
 }
 
 @Composable
@@ -713,6 +794,18 @@ private fun ShowtimesScreenPreview() {
     CinemerickTheme {
         ShowtimesScreen(
             state = previewState(),
+            onAction = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(widthDp = 1280, heightDp = 800)
+@Composable
+private fun ShowtimesScreenDesktopPreview() {
+    CinemerickTheme {
+        ShowtimesScreen(
+            state = previewState().let { it.copy(groups = it.groups + it.groups + it.groups) },
             onAction = {},
             snackbarHostState = remember { SnackbarHostState() }
         )

@@ -16,7 +16,6 @@ private val TIME = Regex("class=\"orario_\"[^>]*>\\s*(\\d{1,2}:\\d{2})\\s*<")
 private val TAG = Regex("<[^>]*>")
 private val YEAR_TAG = Regex("\\s*\\[\\d{4}]")
 private val NEW_BADGE = Regex("^NEW!\\s*")
-private val NUMERIC_ENTITY = Regex("&#(\\d+);")
 
 // e.g. "DIGGER [2026] | ORIGINAL VERSION" -> title "Digger", format "VO"
 private const val ORIGINAL_VERSION = "ORIGINAL VERSION"
@@ -45,13 +44,3 @@ private fun parseFilm(film: String, daysByMonthDay: Map<Pair<Int, Int>, LocalDat
         }
     }.toList()
 }
-
-private val NAMED_ENTITIES = mapOf(
-    "&amp;" to "&", "&quot;" to "\"", "&apos;" to "'", "&nbsp;" to " ", "&lt;" to "<", "&gt;" to ">",
-    "&agrave;" to "à", "&egrave;" to "è", "&eacute;" to "é", "&igrave;" to "ì", "&ograve;" to "ò", "&ugrave;" to "ù",
-    "&Agrave;" to "À", "&Egrave;" to "È", "&Eacute;" to "É", "&Igrave;" to "Ì", "&Ograve;" to "Ò", "&Ugrave;" to "Ù"
-)
-
-private fun String.unescapeHtml(): String =
-    NAMED_ENTITIES.entries.fold(this) { text, (entity, char) -> text.replace(entity, char) }
-        .replace(NUMERIC_ENTITY) { it.groupValues[1].toInt().toChar().toString() }

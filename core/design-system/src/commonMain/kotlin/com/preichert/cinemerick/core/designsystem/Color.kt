@@ -100,4 +100,6 @@ object CinemaBrandColors {
     val onNotoriousSilver = Color(0xFF1A1A1A)
     val cinergia = Color(0xFF414C4C)
     val onCinergia = Color(0xFFFFFFFF)
+    val cristallo = Color(0xFFD22D27)
+    val onCristallo = Color(0xFFFFFFFF)
 }

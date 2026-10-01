@@ -4,5 +4,6 @@ enum class Cinema(val displayName: String) {
     THE_SPACE("Silea"),
     UCI("Marcon"),
     NOTORIOUS("Ferrara"),
-    CINERGIA("Conegliano")
+    CINERGIA("Conegliano"),
+    CRISTALLO("Oderzo")
 }

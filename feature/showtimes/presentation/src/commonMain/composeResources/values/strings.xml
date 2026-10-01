@@ -11,6 +11,7 @@
     <string name="cinema_uci">UCI (Marcon)</string>
     <string name="cinema_notorious">Notorious (Ferrara)</string>
     <string name="cinema_cinergia">Cinergia (Conegliano)</string>
+    <string name="cinema_cristallo">Cristallo (Oderzo)</string>
     <string name="film_filter">Film (separati da virgola, opzionale)</string>
     <string name="generate">Genera</string>
     <string name="copy">Copia</string>

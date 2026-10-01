@@ -155,34 +155,44 @@ fun CinemerickAdaptiveLayout(
             }
         }
 
-        // Tablet landscape and desktop: centered two-panel layout
+        // Tablet landscape and desktop: fixed header, two panels scrolling independently
         DeviceConfiguration.TABLET_LANDSCAPE,
         DeviceConfiguration.DESKTOP -> {
+            val isDesktop = configuration == DeviceConfiguration.DESKTOP
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(rememberScrollState()),
+                    .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
             ) {
                 header()
                 Row(
                     modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .widthIn(max = 1200.dp)
+                        .weight(1f)
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                        .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
                         .fillMaxWidth()
                         .padding(Spacing.xl),
                     horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
                 ) {
-                    Panel(modifier = Modifier.weight(1f)) {
+                    Panel(
+                        modifier = Modifier
+                            .weight(if (isDesktop) 0.8f else 1f)
+                            .fillMaxHeight(),
+                        scrollable = true,
+                    ) {
                         filtersContent()
                     }
-                    Panel(modifier = Modifier.weight(1f)) {
+                    Panel(
+                        modifier = Modifier
+                            .weight(if (isDesktop) 1.2f else 1f)
+                            .fillMaxHeight(),
+                        scrollable = true,
+                    ) {
                         resultsContent()
                     }
                 }
-                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
             }
         }
     }

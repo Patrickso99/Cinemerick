@@ -1,122 +1,109 @@
-"""Builds the Cinemerick app icon: UCI, The Space, Cinergia and Notorious from the top-left to the bottom-right, split by three parallel diagonals.
+"""Builds the Cinemerick app icon: the five cinema logos as round badges around a play button, on a purple gradient.
 
 Run from the repo root: python3 design/generate_icons.py [--install]
-Sources: design/logos/uci.jpg, the_space.jpg, notorious.jpg (480x480), cinergia.png (transparent wordmark). Outputs: design/out/*.png;
+Sources: design/logos/uci.jpg, the_space.jpg, notorious.jpg, cristallo.jpg (square jpgs), cinergia.png (transparent wordmark). Outputs: design/out/*.png;
 --install also copies them where each platform expects them.
 """
+import math
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).parent
 REPO = ROOT.parent
 OUT = ROOT / "out"
 OUT.mkdir(exist_ok=True)
 
-UCI = Image.open(ROOT / "logos" / "uci.jpg").convert("RGB")
-SPACE = Image.open(ROOT / "logos" / "the_space.jpg").convert("RGB")
-NOTORIOUS = Image.open(ROOT / "logos" / "notorious.jpg").convert("RGB")
+SS = 2  # supersampling for smooth edges
+
 _cinergia = Image.open(ROOT / "logos" / "cinergia.png").convert("RGBA")
-CINERGIA = _cinergia.crop(_cinergia.getchannel("A").getbbox())
 CINERGIA_BG = (0x41, 0x4C, 0x4C)  # same as the Cinergia badge color
 
-SS = 2  # supersampling for smooth diagonal edges
-LINE = (255, 255, 255)
 
-# The separators are the lines x + y = cut * size (they run bottom-left to top-right), one between each pair of neighbouring areas.
-CUTS = (0.52, 1.0, 1.48)
-
-# Per-logo placement, as fractions of the canvas: logo width and centre of the logo (UCI, The Space, Notorious: the square jpg).
-UCI_WIDTH, UCI_CENTER = 0.32, (0.165, 0.165)
-SPACE_WIDTH, SPACE_CENTER = 0.38, (0.38, 0.38)
-CINERGIA_WIDTH, CINERGIA_CENTER = 0.40, (0.62, 0.62)
-NOTORIOUS_WIDTH, NOTORIOUS_CENTER = 0.30, (0.84, 0.84)
+def square_logo(name):
+    return Image.open(ROOT / "logos" / name).convert("RGB")
 
 
-def place(logo, size, width, center, bg, scale):
-    """Pastes `logo` (width as a fraction of the canvas, aspect kept, centred on `center`), both pulled towards the canvas centre by `scale`."""
-    canvas = bg.copy() if isinstance(bg, Image.Image) else Image.new("RGB", (size, size), bg)
-    w = int(size * width * scale)
-    resized = logo.resize((w, int(logo.height * w / logo.width)), Image.LANCZOS)
-    cx = size * (0.5 + (center[0] - 0.5) * scale)
-    cy = size * (0.5 + (center[1] - 0.5) * scale)
-    pos = (int(cx - resized.width / 2), int(cy - resized.height / 2))
-    if resized.mode == "RGBA":
-        canvas.paste(resized, pos, resized)
-    else:
-        canvas.paste(resized, pos)
+def cinergia_logo():
+    """The transparent wordmark centred on a dark grey square."""
+    word = _cinergia.crop(_cinergia.getchannel("A").getbbox())
+    canvas = Image.new("RGB", (480, 480), CINERGIA_BG)
+    w = 400
+    word = word.resize((w, int(word.height * w / word.width)), Image.LANCZOS)
+    canvas.paste(word, ((480 - w) // 2, (480 - word.height) // 2), word)
     return canvas
 
 
-def notorious_layer(size):
-    """Notorious: the blue NC lettering and sketch lines of the logo, keyed out of its silver square and drawn on our own silver gradient,
-    so the logo can be sized freely without its square edge showing."""
-    blue = NOTORIOUS.getpixel((150, 240))
-    r, _, b = NOTORIOUS.split()
-    alpha = ImageChops.subtract(b, r).point(lambda v: min(255, max(0, (v - 20) * 4)))
-    ink = Image.new("RGB", NOTORIOUS.size, blue)
-    ink.putalpha(alpha)
+# Clockwise from the top: logo and the zoom that fits it in its circle (the square's corners are cropped away).
+BADGES = [
+    (square_logo("uci.jpg"), 1.0),
+    (square_logo("the_space.jpg"), 0.9),
+    (cinergia_logo(), 1.0),
+    (square_logo("notorious.jpg"), 1.0),
+    (square_logo("cristallo.jpg"), 0.92),
+]
+RING_RADIUS = 0.285  # of the canvas, centre of a badge to the canvas centre
+BADGE_DIAMETER = 0.30
+GRADIENT = ((0x2A, 0x14, 0x45), (0x6A, 0x4C, 0x93))  # the app's purple, dark at the top-left
+
+
+def gradient_background(size):
     vertical = Image.linear_gradient("L").resize((size, size))
-    gradient = ImageChops.add(vertical, vertical.transpose(Image.TRANSPOSE), scale=2)  # light at the top-left, dark at the bottom-right
-    light, dark = (206, 207, 208), (0xA4, 0xA5, 0xA6)
-    return Image.composite(Image.new("RGB", (size, size), dark), Image.new("RGB", (size, size), light), gradient), ink
+    mix = ImageChops.add(vertical, vertical.transpose(Image.TRANSPOSE), scale=2)
+    return Image.composite(Image.new("RGB", (size, size), GRADIENT[1]), Image.new("RGB", (size, size), GRADIENT[0]), mix)
 
 
-def cuts(logo_scale):
-    """Separator positions, pulled towards the centre together with the logos."""
-    return tuple(1 + (cut - 1) * logo_scale for cut in CUTS)
-
-
-def diagonal_mask(size, cut, above):
-    """White on the side of the line x + y = cut*size that holds the top-left corner (`above`) or the bottom-right one."""
-    mask = Image.new("L", (size, size), 0)
-    c = cut * size
-    far = 3 * size
-    if above:
-        ImageDraw.Draw(mask).polygon([(-far, -far), (c + far, -far), (-far, c + far)], fill=255)
-    else:
-        ImageDraw.Draw(mask).polygon([(c + far, -far), (c + far, c + far), (-far, c + far)], fill=255)
-    return mask
-
-
-def compose(size, logo_scale=1.0, line_width=0.014):
-    big = size * SS
-    silver, ink = notorious_layer(big)
-    areas = [
-        place(UCI, big, UCI_WIDTH, UCI_CENTER, UCI.getpixel((2, 2)), logo_scale),
-        place(SPACE, big, SPACE_WIDTH, SPACE_CENTER, SPACE.getpixel((2, 2)), logo_scale),
-        place(CINERGIA, big, CINERGIA_WIDTH, CINERGIA_CENTER, CINERGIA_BG, logo_scale),
-        place(ink, big, NOTORIOUS_WIDTH, NOTORIOUS_CENTER, silver, logo_scale),
-    ]
-    img = areas[0]
-    for area, cut in zip(areas[1:], cuts(logo_scale)):
-        img = Image.composite(area, img, diagonal_mask(big, cut, above=False))
-    if line_width:
-        draw = ImageDraw.Draw(img)
-        for cut in cuts(logo_scale):
-            draw.line([(cut * big, 0), (0, cut * big)], fill=LINE, width=int(big * line_width))
-    return img.resize((size, size), Image.LANCZOS)
-
-
-def separators_only(size, logo_scale=1.0, line_width=0.014):
-    """Transparent layer holding just the diagonal lines (Android adaptive foreground)."""
+def badges_layer(size, scale=1.0):
+    """Transparent layer with the five round badges (white rim, soft shadow) and a play button in the middle, pulled towards the centre by `scale`."""
     big = size * SS
     layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(layer)
-    for cut in cuts(logo_scale):
-        draw.line([(cut * big, 0), (0, cut * big)], fill=LINE + (255,), width=int(big * line_width))
-    return layer.resize((size, size), Image.LANCZOS)
+    shadow = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = int(big * BADGE_DIAMETER * scale)
+    rim = max(2, int(d * 0.045))
+    for i, (logo, zoom) in enumerate(BADGES):
+        angle = -math.pi / 2 + i * 2 * math.pi / 5
+        cx = big / 2 + math.cos(angle) * big * RING_RADIUS * scale
+        cy = big / 2 + math.sin(angle) * big * RING_RADIUS * scale
+        inner = d - 2 * rim
+        face = Image.new("RGB", (inner, inner), logo.getpixel((2, 2)))
+        scaled = logo.resize((int(inner * zoom), int(inner * zoom)), Image.LANCZOS)
+        face.paste(scaled, ((inner - scaled.width) // 2, (inner - scaled.height) // 2))
+        mask = Image.new("L", (inner * 2, inner * 2), 0)
+        ImageDraw.Draw(mask).ellipse([0, 0, inner * 2 - 1, inner * 2 - 1], fill=255)
+        mask = mask.resize((inner, inner), Image.LANCZOS)
+        pos = (int(cx - d / 2), int(cy - d / 2))
+        ring = Image.new("L", (d * 2, d * 2), 0)
+        ImageDraw.Draw(ring).ellipse([0, 0, d * 2 - 1, d * 2 - 1], fill=255)
+        ring = ring.resize((d, d), Image.LANCZOS)
+        ImageDraw.Draw(shadow).ellipse([pos[0], pos[1] + d * 0.05, pos[0] + d, pos[1] + d * 1.05], fill=(0, 0, 0, 110))
+        layer.paste(Image.new("RGBA", (d, d), (255, 255, 255, 255)), pos, ring)
+        layer.paste(face, (pos[0] + rim, pos[1] + rim), mask)
+    # A white rounded play triangle in the middle.
+    r = big * 0.075 * scale
+    pts = [(big / 2 - r * 0.62, big / 2 - r), (big / 2 - r * 0.62, big / 2 + r), (big / 2 + r * 1.05, big / 2)]
+    play = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    ImageDraw.Draw(play).polygon(pts, fill=(255, 255, 255, 235))
+    play = play.filter(ImageFilter.GaussianBlur(big * 0.0008))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(big * 0.012))
+    out = Image.alpha_composite(shadow, layer)
+    out = Image.alpha_composite(out, play)
+    return out.resize((size, size), Image.LANCZOS)
+
+
+def compose(size):
+    img = gradient_background(size).convert("RGBA")
+    return Image.alpha_composite(img, badges_layer(size)).convert("RGB")  # iOS requires no transparency
 
 
 def build():
-    master = compose(1024)  # iOS requires no transparency
+    master = compose(1024)
     master.save(OUT / "icon-1024.png")
-    # Android adaptive layers are 108dp with a 66dp safe zone: keep logos inside the central 66%
-    compose(432, logo_scale=0.72, line_width=0).save(OUT / "ic_launcher_background.png")
-    separators_only(432, logo_scale=0.72).save(OUT / "ic_launcher_foreground.png")
+    # Android adaptive layers are 108dp with a 66dp safe zone: keep the badges inside the central 66%
+    gradient_background(432).save(OUT / "ic_launcher_background.png")
+    badges_layer(432, scale=0.72).save(OUT / "ic_launcher_foreground.png")
     return master
 
 
