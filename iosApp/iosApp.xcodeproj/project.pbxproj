@@ -271,7 +271,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "-framework ComposeApp";
-				PRODUCT_BUNDLE_IDENTIFIER = it.cinemerick.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.preichert.cinemerick.ios;
 				PRODUCT_NAME = Cinemerick;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -294,7 +294,7 @@
 					"@executable_path/Frameworks",
 				);
 				OTHER_LDFLAGS = "-framework ComposeApp";
-				PRODUCT_BUNDLE_IDENTIFIER = it.cinemerick.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = com.preichert.cinemerick.ios;
 				PRODUCT_NAME = Cinemerick;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -1,6 +1,6 @@
 name: iosApp
 options:
-  bundleIdPrefix: it.cinemerick
+  bundleIdPrefix: com.preichert.cinemerick
   deploymentTarget:
     iOS: "16.0"
 settings:
@@ -23,7 +23,7 @@ targets:
           ./gradlew :app:embedAndSignAppleFrameworkForXcode
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: it.cinemerick.ios
+        PRODUCT_BUNDLE_IDENTIFIER: com.preichert.cinemerick.ios
         PRODUCT_NAME: Cinemerick
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Cinemerick

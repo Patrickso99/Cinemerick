@@ -13,5 +13,5 @@ kotlin {
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "it.cinemerick.feature.showtimes.presentation.resources"
+    packageOfResClass = "com.preichert.cinemerick.feature.showtimes.presentation.resources"
 }

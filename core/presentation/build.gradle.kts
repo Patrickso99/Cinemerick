@@ -7,10 +7,12 @@ kotlin {
         implementation(project(":core:domain"))
         implementation(lib("androidx-lifecycle-runtime-compose"))
         implementation(lib("coroutines-core"))
+        implementation(lib("compose-material3-adaptive"))
+        implementation(lib("compose-material3-adaptive-layout"))
     }
 }
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "it.cinemerick.core.presentation.resources"
+    packageOfResClass = "com.preichert.cinemerick.core.presentation.resources"
 }
