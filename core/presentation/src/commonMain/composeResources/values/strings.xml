@@ -5,5 +5,5 @@
     <string name="error_server">Errore del server del cinema</string>
     <string name="error_access_denied">Accesso ai dati del cinema negato</string>
     <string name="error_serialization">Risposta del cinema non riconosciuta</string>
-    <string name="error_unknown">Impossibile leggere i dati del cinema</string>
+    <string name="error_unknown">Non è stato possibile reperire i dati dal cinema</string>
 </resources>

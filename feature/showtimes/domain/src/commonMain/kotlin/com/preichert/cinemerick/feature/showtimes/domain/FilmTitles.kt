@@ -2,6 +2,7 @@ package com.preichert.cinemerick.feature.showtimes.domain
 
 private val whitespace = Regex("\\s+")
 private val specialChars = Regex("[^a-z0-9 ]")
+private val languageSuffixPattern = Regex(""" - (Lingua originale|Original Language|VO|Dubbed|20 Anni|Extended|Director'?s).*$""", RegexOption.IGNORE_CASE)
 private val diacriticsMap = mapOf(
     'à' to 'a', 'á' to 'a', 'â' to 'a', 'ã' to 'a', 'ä' to 'a', 'å' to 'a',
     'è' to 'e', 'é' to 'e', 'ê' to 'e', 'ë' to 'e',
@@ -26,15 +27,33 @@ fun cleanTitle(raw: String): String {
 // Two cinemas name the same film differently ("Naza" / "Naza C.A.", "X - Sottotitolo"): compare on this key.
 // Also handles diacritics: "La città dei vivi" == "La citta dei vivi" == "La Citta' Dei Vivi"
 // Removes all special characters to handle punctuation variants: "Coyote Vs Acme" == "Coyote Vs. Acme"
+// Normalizes language/format suffixes: "Linkin Park: Unshatter" == "LINKIN PARK UNSHATTER - Lingua originale"
 fun filmKey(title: String): String {
     val normalized = title.map { diacriticsMap[it] ?: it }.joinToString("")
-    return normalized.lowercase()
-        .replace(" c.a.", "")
-        .split(" - ")
-        .first()
-        .replace(specialChars, "")
-        .replace(whitespace, " ")
-        .trim()
+    val lowercased = normalized.lowercase().replace(" c.a.", "")
+    val hasColonAndDash = lowercased.contains(":") && lowercased.contains(" - ")
+
+    return if (hasColonAndDash) {
+        // When colon and dash both exist, the dash is likely a language suffix
+        // Remove language suffix and split on colon-to-dash conversion, keeping only main title
+        lowercased.replace(languageSuffixPattern, "")
+            .replace(": ", " - ")
+            .split(" - ")
+            .first()
+    } else if (lowercased.contains(":")) {
+        // Colon without language suffix: keep colon content by converting to space
+        lowercased.replace(languageSuffixPattern, "")
+            .replace(": ", " ")
+    } else {
+        // No colon: use original split logic for dash-separated subtitles
+        lowercased.replace(languageSuffixPattern, "")
+            .replace(": ", " - ")
+            .split(" - ")
+            .first()
+    }
+    .replace(specialChars, "")
+    .replace(whitespace, " ")
+    .trim()
 }
 
 private fun String.toTitleCase(): String {

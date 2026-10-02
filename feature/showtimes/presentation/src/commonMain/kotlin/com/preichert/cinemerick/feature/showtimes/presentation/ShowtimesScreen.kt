@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -65,6 +67,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -391,11 +394,17 @@ private fun ColumnScope.FiltersSection(
 
     // Film filter
     SectionCard(modifier = Modifier.fillMaxWidth()) {
+        val focusManager = LocalFocusManager.current
         OutlinedTextField(
             value = state.filmFilter,
             onValueChange = { onAction(ShowtimesAction.OnFilmFilterChange(it)) },
             label = { Text(stringResource(Res.string.film_filter)) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = {
+                focusManager.clearFocus()
+                onAction(ShowtimesAction.OnGenerateClick)
+            }),
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier
                 .fillMaxWidth()
@@ -525,7 +534,13 @@ private fun ColumnScope.ResultsSection(
                 Text(stringResource(Res.string.copy), style = MaterialTheme.typography.titleSmall)
             }
             Text(
-                text = stringResource(Res.string.options_count, state.optionsCount),
+                text = buildString {
+                    append(stringResource(Res.string.options_count, state.optionsCount))
+                    state.elapsedTimeMillis?.let { millis ->
+                        val seconds = millis / 1000.0
+                        append(" (%.3fs)".format(seconds))
+                    }
+                },
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

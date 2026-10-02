@@ -251,4 +251,43 @@ class ShowtimesLogicTest {
         assertEquals("Coyote Vs Acme", groups.first().title)
         assertEquals(2, groups.first().showings.size)
     }
+
+    @Test
+    fun filmKeyHandlesColonAndDashSubtitleSeparators() {
+        // Colon and dash separators should produce the same key
+        assertEquals(filmKey("Cars - Motori Ruggenti"), filmKey("Cars: Motori Ruggenti - 20 Anni"))
+    }
+
+    @Test
+    fun carsMovieVariantsAreGroupedTogether() {
+        val groups = listOf(
+            showing("Cars - Motori Ruggenti", thursday, "17:00", Cinema.THE_SPACE),
+            showing("Cars: Motori Ruggenti - 20 Anni", thursday, "19:00", Cinema.UCI)
+        ).groupByFilm()
+
+        assertEquals(1, groups.size)
+        assertEquals("Cars - Motori Ruggenti", groups.first().title)
+        assertEquals(2, groups.first().showings.size)
+    }
+
+    @Test
+    fun filmKeyHandlesColonWithLanguageSuffix() {
+        // Colon with language suffix should keep both title and subtitle
+        assertEquals(filmKey("Linkin Park: Unshatter"), filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+        // Both should normalize to "linkin park unshatter"
+        assertEquals("linkin park unshatter", filmKey("Linkin Park: Unshatter"))
+        assertEquals("linkin park unshatter", filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+    }
+
+    @Test
+    fun linkinParkVariantsAreGroupedTogether() {
+        val groups = listOf(
+            showing("Linkin Park: Unshatter", thursday, "19:00", Cinema.THE_SPACE),
+            showing("LINKIN PARK UNSHATTER - LINGUA ORIGINALE", thursday, "21:00", Cinema.UCI)
+        ).groupByFilm()
+
+        assertEquals(1, groups.size)
+        assertEquals("Linkin Park: Unshatter", groups.first().title)
+        assertEquals(2, groups.first().showings.size)
+    }
 }

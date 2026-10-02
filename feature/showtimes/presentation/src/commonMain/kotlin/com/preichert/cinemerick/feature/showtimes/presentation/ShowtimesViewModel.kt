@@ -56,6 +56,7 @@ class ShowtimesViewModel(
     // Last fetched results, kept so filters apply instantly without refetching.
     private var lastFetch: Fetch? = null
     private var generateJob: Job? = null
+    private var refreshJob: Job? = null
 
     private class Fetch(
         val showings: List<Showing>,
@@ -118,15 +119,20 @@ class ShowtimesViewModel(
 
     // Results are already on screen: update them quietly. Cached data is filtered locally;
     // the network is only hit when a day or cinema that was never fetched gets selected.
+    // Debounced to avoid excessive fetches during rapid filter changes.
     private fun refresh() {
         val state = _state.value
         if (!state.hasGenerated) return
-        val fetch = lastFetch
-        val selectedDays = state.days.filter { it.isSelected }.mapTo(mutableSetOf()) { it.date }
-        val covered = !state.isLoading && fetch != null && !needsFetch(fetch.days, fetch.cinemas, selectedDays, state.selectedCinemas)
-        when {
-            covered -> _state.update { it.withResults(fetch) }
-            buildRanges(state) != null && selectedDays.isNotEmpty() -> generate(silent = true)
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            val fetch = lastFetch
+            val selectedDays = state.days.filter { it.isSelected }.mapTo(mutableSetOf()) { it.date }
+            val covered = !state.isLoading && fetch != null && !needsFetch(fetch.days, fetch.cinemas, selectedDays, state.selectedCinemas)
+            when {
+                covered -> _state.update { it.withResults(fetch) }
+                buildRanges(state) != null && selectedDays.isNotEmpty() -> generate(silent = true)
+            }
         }
     }
 
@@ -186,6 +192,7 @@ class ShowtimesViewModel(
 
         generateJob?.cancel()
         generateJob = viewModelScope.launch {
+            val startTimeMillis = System.currentTimeMillis()
             _state.update { it.copy(isLoading = true) }
 
             val cinemas = _state.value.selectedCinemas
@@ -203,9 +210,10 @@ class ShowtimesViewModel(
             }
 
             lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, cinemas, filmQueries, errors)
-            log.i { "Fetched ${showings.size} showing(s), ${errors.size} cinema error(s)" }
+            val elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis
+            log.i { "Fetched ${showings.size} showing(s), ${errors.size} cinema error(s) in ${elapsedTimeMillis}ms" }
             _state.update {
-                it.copy(isLoading = false, hasGenerated = true).withResults(lastFetch)
+                it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis).withResults(lastFetch)
             }
         }
     }

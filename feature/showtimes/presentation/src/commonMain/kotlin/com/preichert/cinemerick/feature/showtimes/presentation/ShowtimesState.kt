@@ -20,7 +20,8 @@ data class ShowtimesState(
     val optionsCount: Int = 0,
     val cinemaErrors: List<CinemaErrorUi> = emptyList(),
     val hiddenTags: Set<String> = emptySet(),
-    val availableTags: List<String> = emptyList()
+    val availableTags: List<String> = emptyList(),
+    val elapsedTimeMillis: Long? = null
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated)
 }
