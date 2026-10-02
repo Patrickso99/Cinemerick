@@ -2,6 +2,8 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
 import com.preichert.cinemerick.convention.AppVersion
 import com.preichert.cinemerick.convention.BASE_PACKAGE
+import com.preichert.cinemerick.convention.apply
+import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -10,7 +12,7 @@ class BuildKonfigConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
-            pluginManager.apply("com.codingfeline.buildkonfig")
+            pluginManager.apply(libs.plugins.buildkonfig)
 
             val gitHash = providers.exec {
                 commandLine("git", "rev-parse", "--short", "HEAD")

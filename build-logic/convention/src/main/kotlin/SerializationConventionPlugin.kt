@@ -1,19 +1,23 @@
+import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class SerializationConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("org.jetbrains.kotlin.multiplatform")
-                apply("org.jetbrains.kotlin.plugin.serialization")
+                apply(libs.plugins.kotlin.multiplatform)
+                apply(libs.plugins.kotlin.serialization)
             }
 
-            dependencies {
-                "commonMainImplementation"(libs.findLibrary("serialization-json").get())
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.commonMain.dependencies {
+                    implementation(libs.serialization.json)
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ private val SCHEDULE_MARKER = Regex("id='schedule-\\d+'")
 private val TITLE = Regex("class='movie__title'[^>]*>\\s*([^<\\s][^<]*?)\\s*</a>")
 private val POSTER = Regex("<img[^>]*src='([^']+)'")
 private val SCHEDULE_DAY = Regex("(\\d{2})/(\\d{2})/(\\d{4})")
-private val TIME = Regex("data-time='[^']*'[^>]*>\\s*<li[^>]*>.*?(\\d{1,2}:\\d{2})", RegexOption.DOT_MATCHES_ALL)
+private val TIME = Regex("data-time='[^']*'[^>]*>\\s*<li[^>]*>[\\s\\S]*?(\\d{1,2}:\\d{2})")
 private val ORIGINAL_LANGUAGE_PREFIX = Regex("^\\(\\s*V\\.?O\\.?S?\\.?\\s*\\)\\s*", RegexOption.IGNORE_CASE)
 
 // The site answers its day-switch call (`/film/fetch_films`) with a script that fills the page with an escaped HTML string.

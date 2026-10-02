@@ -16,6 +16,5 @@ kotlin {
         androidMain.dependencies { implementation(libs.ktor.okhttp) }
         getByName("desktopMain").dependencies { implementation(libs.ktor.okhttp) }
         iosMain.dependencies { implementation(libs.ktor.darwin) }
-        wasmJsMain.dependencies { implementation(libs.ktor.js) }
     }
 }

@@ -70,7 +70,6 @@ suspend inline fun safeResponse(
     } catch (e: CancellationException) {
         throw e
     } catch (e: Throwable) {
-        // Browser engines (CORS, offline) throw Errors, not Exceptions.
         logFailure("Request failed", e)
         return Result.Error(DataError.Network.UNKNOWN)
     }

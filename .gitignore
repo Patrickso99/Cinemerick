@@ -7,3 +7,7 @@ local.properties
 /iosApp/build/
 xcuserdata/
 .DS_Store
+dist/
+fastlane/report.xml
+fastlane/README.md
+fastlane/test_output/

@@ -1,25 +1,30 @@
+import com.preichert.cinemerick.convention.ConventionPlugin
+import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class CmpLibraryConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("com.preichert.convention.kmp.library")
-                apply("org.jetbrains.kotlin.plugin.compose")
-                apply("org.jetbrains.compose")
+                apply(ConventionPlugin.KMP_LIBRARY)
+                apply(libs.plugins.kotlin.compose)
+                apply(libs.plugins.compose.multiplatform)
             }
 
-            dependencies {
-                "commonMainImplementation"(libs.findLibrary("compose-runtime").get())
-                "commonMainImplementation"(libs.findLibrary("compose-foundation").get())
-                "commonMainImplementation"(libs.findLibrary("compose-material3").get())
-                "commonMainImplementation"(libs.findLibrary("compose-ui").get())
-                "commonMainImplementation"(libs.findLibrary("compose-resources").get())
-                "commonMainImplementation"(libs.findLibrary("compose-ui-tooling-preview").get())
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.commonMain.dependencies {
+                    implementation(libs.compose.runtime)
+                    implementation(libs.compose.foundation)
+                    implementation(libs.compose.material3)
+                    implementation(libs.compose.ui)
+                    implementation(libs.compose.resources)
+                    implementation(libs.compose.ui.tooling.preview)
+                }
             }
         }
     }

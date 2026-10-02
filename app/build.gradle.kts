@@ -22,10 +22,6 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
-        androidMain.dependencies {
-            implementation(libs.koin.android)
-            implementation(libs.androidx.activity.compose)
-        }
         getByName("desktopMain").dependencies {
             implementation(libs.coroutines.swing)
         }

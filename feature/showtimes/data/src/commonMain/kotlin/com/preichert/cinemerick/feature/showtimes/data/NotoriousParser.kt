@@ -5,13 +5,14 @@ import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.cleanTitle
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.number
 
 private const val SITE_ROOT = "https://www.notoriouscinemas.it/"
 
 private val FILM_CONTAINER = Regex("<div class=\"filmContainer[^\"]*\">")
-private val TITLE = Regex("<div class=\"titolo\">(.*?)</div>", RegexOption.DOT_MATCHES_ALL)
+private val TITLE = Regex("<div class=\"titolo\">([\\s\\S]*?)</div>")
 private val POSTER = Regex("<img src=\"([^\"]*img_switcher[^\"]*)\"")
-private val DAY = Regex("<div class=\"dayName\">[^<]*?(\\d{2})/(\\d{2})</div>(.*?)</li>", RegexOption.DOT_MATCHES_ALL)
+private val DAY = Regex("<div class=\"dayName\">[^<]*?(\\d{2})/(\\d{2})</div>([\\s\\S]*?)</li>")
 private val TIME = Regex("class=\"orario_\"[^>]*>\\s*(\\d{1,2}:\\d{2})\\s*<")
 private val TAG = Regex("<[^>]*>")
 private val YEAR_TAG = Regex("\\s*\\[\\d{4}]")
@@ -22,7 +23,7 @@ private const val ORIGINAL_VERSION = "ORIGINAL VERSION"
 
 // The page lists a whole week: per film its poster, then one `li.hours` per day (e.g. "Giovedì 01/10", no year) with the times.
 internal fun parseNotoriousShowings(html: String, days: List<LocalDate>): List<Showing> {
-    val daysByMonthDay = days.associateBy { it.monthNumber to it.dayOfMonth }
+    val daysByMonthDay = days.associateBy { it.month.number to it.day }
     val starts = FILM_CONTAINER.findAll(html).map { it.range.first }.toList()
     return starts.mapIndexed { index, start ->
         parseFilm(html.substring(start, starts.getOrNull(index + 1) ?: html.length), daysByMonthDay)

@@ -1,0 +1,120 @@
+ROOT = File.expand_path("..", __dir__)
+DIST = File.join(ROOT, "dist")
+
+def host_os
+  case RbConfig::CONFIG["host_os"]
+  when /darwin/ then :macos
+  when /mswin|mingw|cygwin/ then :windows
+  else :linux
+  end
+end
+
+def require_host(expected, format)
+  return if host_os == expected
+  UI.user_error!("#{format} can only be built on #{expected} (current host: #{host_os}); jpackage does not cross-compile.")
+end
+
+def run_gradle(task)
+  gradle(
+    task: task,
+    project_dir: ROOT,
+    gradle_path: File.join(ROOT, host_os == :windows ? "gradlew.bat" : "gradlew")
+  )
+end
+
+def collect(pattern)
+  files = Dir.glob(File.join(ROOT, pattern))
+  UI.user_error!("No artifact found for #{pattern}") if files.empty?
+  FileUtils.mkdir_p(DIST)
+  files.each do |file|
+    FileUtils.cp(file, DIST)
+    UI.success("dist/#{File.basename(file)}")
+  end
+end
+
+def build_apk(variant)
+  run_gradle(":androidApp:assemble#{variant.capitalize}")
+  pattern = variant == "debug" ? "androidApp/build/outputs/apk/debug/*.apk" : "androidApp/build/outputs/apk/release/*.apk"
+  collect(pattern)
+end
+
+def build_desktop(format)
+  gradle_task = case format
+    when :dmg then ":app:packageDmg"
+    when :exe then ":app:packageExe"
+    when :msi then ":app:packageMsi"
+    when :deb then ":app:packageDeb"
+  end
+  run_gradle(gradle_task)
+  pattern = "app/build/compose/binaries/main/#{format}/*"
+  collect(pattern)
+end
+
+platform :android do
+  desc "Debug APK"
+  lane :apk_debug do
+    build_apk("debug")
+  end
+
+  desc "Release APK (unsigned)"
+  lane :apk_release do
+    build_apk("release")
+  end
+end
+
+desc "macOS DMG (macOS only)"
+lane :desktop_dmg do
+  require_host(:macos, "DMG")
+  build_desktop(:dmg)
+end
+
+desc "Windows EXE installer (Windows only, requires WiX 3)"
+lane :desktop_exe do
+  require_host(:windows, "EXE")
+  build_desktop(:exe)
+end
+
+desc "Windows MSI installer (Windows only, requires WiX 3)"
+lane :desktop_msi do
+  require_host(:windows, "MSI")
+  build_desktop(:msi)
+end
+
+desc "Linux DEB package (Linux only)"
+lane :desktop_deb do
+  require_host(:linux, "DEB")
+  build_desktop(:deb)
+end
+
+platform :ios do
+  desc "Ad-hoc IPA (macOS only)"
+  lane :"ad-hoc" do
+    require_host(:macos, "IPA")
+    build_app(
+      project: File.join(ROOT, "iosApp/iosApp.xcodeproj"),
+      scheme: "iosApp",
+      configuration: "Release",
+      export_method: "ad-hoc",
+      output_directory: DIST,
+      output_name: "Cinemerick",
+      xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates",
+      clean: false
+    )
+  end
+end
+
+desc "Everything buildable on the current OS"
+lane :all_local do
+  UI.message("Building for host: #{host_os}")
+  build_apk("release")
+  case host_os
+  when :macos
+    build_desktop(:dmg)
+    sh("bundle exec fastlane ios ad-hoc")
+  when :windows
+    build_desktop(:exe)
+  else
+    build_desktop(:deb)
+  end
+end

@@ -7,6 +7,8 @@ plugins {
 group = "com.preichert.convention.buildlogic"
 
 dependencies {
+    // Exposes the generated `libs` accessors (LibrariesForLibs) to the plugin sources.
+    compileOnly(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
     implementation(libs.build.android.gradle.plugin)
     implementation(libs.build.kotlin.gradle.plugin)
     implementation(libs.build.compose.gradle.plugin)

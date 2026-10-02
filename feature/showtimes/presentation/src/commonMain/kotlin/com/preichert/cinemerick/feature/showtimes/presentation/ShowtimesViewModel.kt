@@ -192,7 +192,7 @@ class ShowtimesViewModel(
 
         generateJob?.cancel()
         generateJob = viewModelScope.launch {
-            val startTimeMillis = System.currentTimeMillis()
+            val startTimeMillis = Clock.System.now().toEpochMilliseconds()
             _state.update { it.copy(isLoading = true) }
 
             val cinemas = _state.value.selectedCinemas
@@ -210,7 +210,7 @@ class ShowtimesViewModel(
             }
 
             lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, cinemas, filmQueries, errors)
-            val elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis
+            val elapsedTimeMillis = Clock.System.now().toEpochMilliseconds() - startTimeMillis
             log.i { "Fetched ${showings.size} showing(s), ${errors.size} cinema error(s) in ${elapsedTimeMillis}ms" }
             _state.update {
                 it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis).withResults(lastFetch)

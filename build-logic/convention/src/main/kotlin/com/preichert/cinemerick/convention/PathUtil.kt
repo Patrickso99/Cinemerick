@@ -17,6 +17,6 @@ fun Project.pathToPackageName(): String {
 fun Project.pathToFrameworkName(): String {
     val parts = path.split(":", "-", "_", " ")
     return parts.joinToString("") { part ->
-        part.replaceFirstChar { it.titlecase(Locale.ROOT) }
+        part.replaceFirstChar { char -> char.titlecase(Locale.ROOT) }
     }
 }

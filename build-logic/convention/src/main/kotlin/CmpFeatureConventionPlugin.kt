@@ -1,24 +1,28 @@
+import com.preichert.cinemerick.convention.ConventionPlugin
 import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class CmpFeatureConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("com.preichert.convention.cmp.library")
-                apply("com.preichert.convention.koin")
+                apply(ConventionPlugin.CMP_LIBRARY)
+                apply(ConventionPlugin.KOIN)
             }
 
-            dependencies {
-                "commonMainImplementation"(libs.findLibrary("koin-compose").get())
-                "commonMainImplementation"(libs.findLibrary("koin-compose-viewmodel").get())
-                "commonMainImplementation"(libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())
-                "commonMainImplementation"(libs.findLibrary("androidx-lifecycle-runtime-compose").get())
-                "commonMainImplementation"(libs.findLibrary("coroutines-core").get())
-                "commonMainImplementation"(libs.findLibrary("datetime").get())
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.commonMain.dependencies {
+                    implementation(libs.koin.compose)
+                    implementation(libs.koin.compose.viewmodel)
+                    implementation(libs.androidx.lifecycle.viewmodel.compose)
+                    implementation(libs.androidx.lifecycle.runtime.compose)
+                    implementation(libs.coroutines.core)
+                    implementation(libs.datetime)
+                }
             }
         }
     }

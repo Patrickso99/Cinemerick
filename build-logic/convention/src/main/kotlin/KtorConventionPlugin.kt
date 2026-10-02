@@ -1,20 +1,22 @@
+import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class KtorConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
-            with(pluginManager) {
-                apply("org.jetbrains.kotlin.multiplatform")
-            }
+            pluginManager.apply(libs.plugins.kotlin.multiplatform)
 
-            dependencies {
-                "commonMainApi"(libs.findLibrary("ktor-core").get())
-                "commonMainImplementation"(libs.findLibrary("ktor-content-negotiation").get())
-                "commonMainImplementation"(libs.findLibrary("ktor-serialization-json").get())
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.commonMain.dependencies {
+                    api(libs.ktor.core)
+                    implementation(libs.ktor.content.negotiation)
+                    implementation(libs.ktor.serialization.json)
+                }
             }
         }
     }

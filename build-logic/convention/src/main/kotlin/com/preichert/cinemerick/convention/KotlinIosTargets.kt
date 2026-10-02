@@ -15,6 +15,7 @@ internal fun Project.configureIosTargets(
         ).forEach { iosTarget ->
             iosTarget.binaries.framework {
                 baseName = frameworkName
+                binaryOption("bundleId", "$BASE_PACKAGE.$frameworkName")
                 this.isStatic = isStatic
             }
         }

@@ -1,9 +1,9 @@
 # Cinemerick
 
-![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue?logo=kotlin)
-![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-brightgreen?logo=jetpackcompose)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-blue?logo=kotlin)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.12.1-brightgreen?logo=jetpackcompose)
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-orange)
-![Ktor](https://img.shields.io/badge/Ktor-3.5.2-purple)
+![Ktor](https://img.shields.io/badge/Ktor-3.6.0-purple)
 
 A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (The Space Cinema, UCI, Notorious, Cinergia, Cristallo) and generates shareable poll text for group chats.
 
@@ -13,17 +13,19 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
 - 🏢 **Cinema selection**: Choose which chains to query (The Space / Silea, UCI / Marcon, Notorious / Ferrara, Cinergia / Conegliano, Cristallo / Oderzo); all are on by default and excluded chains are never fetched
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
-- 🏷️ **Version in the header**: Shown as `v1.0.0 (20261001) [abc1234]` (version name, date-based code, git short hash)
+- 🏷️ **Version in the header**: Shown as `v1.0.8 (20261002) [abc1234]` (version name, date-based code, git short hash)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🎞️ **Film filtering**: Narrow results by comma-separated film titles
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap
-- 🌓 **Dark mode**: Adaptive purple theme (light & dark)
+- 🌓 **Dark mode**: Adaptive purple theme (light & dark) with quick theme toggle UI
 - 📱 **Responsive design**: Optimized layouts for mobile, tablet, and desktop screens
 - 🗓️ **Inline calendar**: On larger screens the day picker is shown inside the filters panel (a dialog on mobile)
+- ⏭️ **Tomorrow quick selection**: Jump directly to tomorrow's showtimes without manual date selection
+- 🎥 **Smart movie unification**: Handles accent variations in film titles across cinemas (e.g., "Café" vs "Cafe")
 - 🧱 **Results grid**: Film cards flow into a multi-column grid on larger screens (a single list on mobile)
 - 🏗️ **MVI architecture**: Clean separation of state, actions, and events
 - 🔧 **Koin DI**: Lightweight dependency injection across all modules
-- 🔐 **Error resilience**: One cinema failure doesn't hide results from others
+- 🔐 **Error resilience**: Debounce and retry logic for transient failures (HTTP 429 rate limits, 500 errors); one cinema failure doesn't hide results from others
 
 ## Platform Support
 
@@ -32,7 +34,6 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 | Android | ✅ API 26+ |
 | Desktop | ✅ JVM (Windows, macOS, Linux) |
 | iOS | ✅ arm64 + simulator |
-| Web | ✅ WebAssembly (wasm-js) |
 
 ## Architecture
 
@@ -82,7 +83,7 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 
 | Library | Version |
 |---------|---------|
-| **Kotlin** | 2.3.21 |
+| **Kotlin** | 2.4.20 |
 | **Compose Multiplatform** | 1.10.3 |
 | **Material 3** | 1.9.0 |
 | **Ktor Client** | 3.5.2 |
@@ -116,21 +117,61 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 
 Resize the window to see adaptive layouts (narrow → mobile, wide → tablet/desktop).
 
+To create a distributable DMG package for macOS:
+
+```bash
+./gradlew :app:packageDmg
+```
+
+Output: `app/build/compose/binaries/main/dmg/Cinemerick-1.0.8.dmg`
+
 #### Android
 
-```bash
-./gradlew :app:installDebug
-```
-
-Or open `iosApp/` in Xcode for iOS builds.
-
-#### Web (Wasm)
+Debug APK:
 
 ```bash
-./gradlew :app:wasmJsBrowserDevelopmentRun
+./gradlew :androidApp:installDebug
 ```
 
-Open http://localhost:8080 (or the reported URL) in your browser.
+Release APK (unsigned):
+
+```bash
+./gradlew :androidApp:assembleRelease
+```
+
+Output: `androidApp/build/outputs/apk/release/cinemerick-v1.0.8-{VERSION_CODE}.apk`
+
+> **APK Naming**: All generated APKs follow the convention `cinemerick-vX.X.X-{versionCode}[-debug].apk`, where the version code is auto-generated as `yyyyMMdd` (e.g., `20261002`). Example: `cinemerick-v1.0.8-20261002.apk`.
+
+#### iOS
+
+Open `iosApp/` in Xcode for iOS builds:
+
+```bash
+open iosApp/iosApp.xcodeproj
+```
+
+#### Fastlane (build artifacts)
+
+Fastlane only builds the artifacts and copies them into `dist/`; nothing is uploaded.
+
+Install Fastlane with `brew install fastlane` (or `bundle install` with Ruby 3.1+), then:
+
+```bash
+fastlane lanes
+fastlane android apk_release
+```
+
+| Lane | Output | Host OS |
+|------|--------|---------|
+| `android apk_debug` / `android apk_release` | `.apk` | any |
+| `desktop_dmg` | `.dmg` | macOS |
+| `desktop_exe` / `desktop_msi` | `.exe` / `.msi` (requires WiX 3) | Windows |
+| `desktop_deb` | `.deb` | Linux |
+| `ios ad-hoc` | ad-hoc `.ipa` | macOS |
+| `all_local` | everything buildable on the current OS | any |
+
+Desktop packages cannot be cross-compiled, so a lane run on the wrong OS fails with an explanatory message. The `Build artifacts` GitHub Actions workflow (manual run or `v*` tag) builds APK and DEB on Ubuntu, EXE and MSI on Windows, and DMG on macOS. The IPA is local only: the ad-hoc export needs your signing identity and a provisioning profile with registered devices.
 
 #### Tests
 
@@ -189,7 +230,8 @@ The app automatically adapts to screen size and orientation:
 
 ```
 Cinemerick/
-├── app/                              # Entry points (Android, Desktop, iOS, Web)
+├── androidApp/                       # Android application (manifest, MainActivity)
+├── app/                              # Shared entry points (Desktop, iOS, Android library)
 ├── core/
 │   ├── domain/                       # Result types, errors
 │   ├── data/                         # HTTP client, SafeCall, platform config
@@ -206,10 +248,10 @@ Cinemerick/
 ## How It Works
 
 1. **Choose cinemas** (both selected by default)
-2. **User selects days** and time ranges in the filter panel
+2. **User selects days** and time ranges in the filter panel (use "Tomorrow" quick selection or manually pick dates)
 3. **Optional: filter by film title** (comma-separated)
 4. **Tap "Generate"** to fetch showtimes from The Space Cinema, UCI, Notorious, Cinergia and Cristallo
-5. **Results appear** grouped by film title with poster, cinema and time
+5. **Results appear** grouped by film title with poster, cinema and time (unified across cinemas even with accent variations)
 6. **Tap "Copy"** to copy the poll text to clipboard
 7. **Paste** into your group chat and start the poll 🎬
 
@@ -222,7 +264,13 @@ Other Film (Friday 20:00 - Cinema 1)
 
 ## Error Handling
 
-If one cinema API fails, results from the other are still displayed, with an error message showing which cinema had issues. This graceful degradation ensures users always get partial results when possible.
+The app implements robust error handling for network resilience:
+
+- **Graceful degradation**: If one cinema API fails, results from the other cinemas are still displayed with an error message showing which cinema had issues. Users always get partial results when possible.
+- **Debounce & Retry**: Automatic retry logic with exponential backoff for transient failures:
+  - HTTP 429 (Rate Limited): Requests are debounced and retried after the server's retry-after delay
+  - HTTP 500 (Server Error): Automatic retry with exponential backoff for temporary server issues
+- **User experience**: Failed requests don't block the entire operation; the app continues fetching from working sources and surfaces errors in the UI
 
 ## Contributing
 

@@ -130,7 +130,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -537,8 +537,7 @@ private fun ColumnScope.ResultsSection(
                 text = buildString {
                     append(stringResource(Res.string.options_count, state.optionsCount))
                     state.elapsedTimeMillis?.let { millis ->
-                        val seconds = millis / 1000.0
-                        append(" (%.3fs)".format(seconds))
+                        append(" (${millis / 1000}.${(millis % 1000).toString().padStart(3, '0')}s)")
                     }
                 },
                 style = MaterialTheme.typography.labelLarge,

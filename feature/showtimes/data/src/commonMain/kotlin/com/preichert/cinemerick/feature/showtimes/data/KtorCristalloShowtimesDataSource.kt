@@ -15,6 +15,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 
 private val log = Logger.withTag("CristalloShowtimes")
 
@@ -45,7 +46,7 @@ class KtorCristalloShowtimesDataSource(
         }
 
     // The site wants "05-10-2026".
-    private fun LocalDate.siteFormat() = "${dayOfMonth.toString().padStart(2, '0')}-${monthNumber.toString().padStart(2, '0')}-$year"
+    private fun LocalDate.siteFormat() = "${day.toString().padStart(2, '0')}-${month.number.toString().padStart(2, '0')}-$year"
 
     private companion object {
         const val AJAX_URL = "https://www.cinemacristallo.com/wp-admin/admin-ajax.php"

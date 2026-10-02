@@ -18,6 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "Cinemerick"
 
 include(":app")
+include(":androidApp")
 include(":core:domain")
 include(":core:data")
 include(":core:presentation")

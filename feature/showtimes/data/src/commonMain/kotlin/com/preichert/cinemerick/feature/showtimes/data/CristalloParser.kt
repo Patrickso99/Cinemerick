@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 private const val FILM_MARKER = "<div class=\"amy-movie-item\">"
 private const val SHOWTIMES_MARKER = "amy-movie-item-showtimes"
 
-private val TITLE = Regex("class=\"amy-movie-field-title\">\\s*<a[^>]*>(.*?)</a>", RegexOption.DOT_MATCHES_ALL)
+private val TITLE = Regex("class=\"amy-movie-field-title\">\\s*<a[^>]*>([\\s\\S]*?)</a>")
 private val POSTER = Regex("<img[^>]*src=\"([^\"]+)\"")
 
 // Times read "19.30", sometimes with a leading space or a note ("12.30 INGRESSO 5€"): only the start of the span matters.

@@ -110,11 +110,10 @@ def build():
 def install_outputs(master):
     """Copies the generated icons where each platform expects them."""
     res = REPO / "app" / "src"
-    shutil.copy(OUT / "ic_launcher_background.png", res / "androidMain/res/drawable-nodpi/ic_launcher_background.png")
-    shutil.copy(OUT / "ic_launcher_foreground.png", res / "androidMain/res/drawable-nodpi/ic_launcher_foreground.png")
+    shutil.copy(OUT / "ic_launcher_background.png", REPO / "androidApp/src/main/res/drawable-nodpi/ic_launcher_background.png")
+    shutil.copy(OUT / "ic_launcher_foreground.png", REPO / "androidApp/src/main/res/drawable-nodpi/ic_launcher_foreground.png")
     shutil.copy(OUT / "icon-1024.png", REPO / "iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/icon-1024.png")
     master.resize((512, 512), Image.LANCZOS).save(res / "desktopMain/resources/icon.png")
-    master.resize((192, 192), Image.LANCZOS).save(res / "wasmJsMain/resources/favicon.png")
     master.save(res / "desktopMain/resources/icon.ico", sizes=[(s, s) for s in (16, 32, 48, 64, 128, 256)])
     with tempfile.TemporaryDirectory() as tmp:
         iconset = Path(tmp) / "icon.iconset"
