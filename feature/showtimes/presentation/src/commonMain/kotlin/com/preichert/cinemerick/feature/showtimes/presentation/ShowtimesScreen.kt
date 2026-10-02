@@ -5,6 +5,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -63,6 +66,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -114,6 +119,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.quick_t
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.quick_weekend
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.range_from
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.range_to
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.theme_dark
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_error
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_placeholder
 import kotlinx.coroutines.launch
@@ -125,9 +131,12 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ShowtimesRoot(
-    viewModel: ShowtimesViewModel = koinViewModel()
+    viewModel: ShowtimesViewModel = koinViewModel(),
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val darkPreference by themeViewModel.darkTheme.collectAsStateWithLifecycle()
+    val darkTheme = darkPreference ?: isSystemInDarkTheme()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     @Suppress("DEPRECATION")
@@ -142,18 +151,24 @@ fun ShowtimesRoot(
         }
     }
 
-    ShowtimesScreen(
-        state = state,
-        onAction = viewModel::onAction,
-        snackbarHostState = snackbarHostState
-    )
+    CinemerickTheme(darkTheme = darkTheme) {
+        ShowtimesScreen(
+            state = state,
+            onAction = viewModel::onAction,
+            snackbarHostState = snackbarHostState,
+            darkTheme = darkTheme,
+            onDarkThemeChange = themeViewModel::setDarkTheme
+        )
+    }
 }
 
 @Composable
 fun ShowtimesScreen(
     state: ShowtimesState,
     onAction: (ShowtimesAction) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     val configuration = currentDeviceConfiguration()
     // Larger screens show the calendar inline in the filters panel instead of a dialog.
@@ -186,7 +201,10 @@ fun ShowtimesScreen(
                     CinemerickHeader(
                         title = stringResource(Res.string.app_title),
                         subtitle = stringResource(Res.string.app_subtitle),
-                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})"
+                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})",
+                        trailing = {
+                            ThemeSwitch(darkTheme = darkTheme, onDarkThemeChange = onDarkThemeChange)
+                        }
                     )
                 },
                 filtersContent = {
@@ -841,6 +859,27 @@ private fun previewState() = ShowtimesState(
     )
 )
 
+@Composable
+private fun ThemeSwitch(
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit
+) {
+    val description = stringResource(Res.string.theme_dark)
+    Switch(
+        checked = darkTheme,
+        onCheckedChange = onDarkThemeChange,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            checkedTrackColor = Color.White.copy(alpha = 0.45f),
+            checkedBorderColor = Color.Transparent,
+            uncheckedThumbColor = Color.White,
+            uncheckedTrackColor = Color.White.copy(alpha = 0.18f),
+            uncheckedBorderColor = Color.White.copy(alpha = 0.7f),
+        ),
+        modifier = Modifier.semantics { contentDescription = description }
+    )
+}
+
 @Preview
 @Composable
 private fun ShowtimesScreenPreview() {
@@ -872,7 +911,8 @@ private fun ShowtimesScreenDarkPreview() {
         ShowtimesScreen(
             state = previewState(),
             onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
+            snackbarHostState = remember { SnackbarHostState() },
+            darkTheme = true
         )
     }
 }

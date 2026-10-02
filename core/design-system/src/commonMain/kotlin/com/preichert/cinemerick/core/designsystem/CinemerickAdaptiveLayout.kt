@@ -232,6 +232,7 @@ fun CinemerickHeader(
     subtitle: String? = null,
     version: String? = null,
     modifier: Modifier = Modifier,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val brush = Brush.linearGradient(if (isDark) PurpleGradientDark else PurpleGradient)
@@ -254,27 +255,39 @@ fun CinemerickHeader(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.displaySmall,
-                color = Color.White,
-            )
-            if (version != null) {
-                Text(
-                    text = "v$version",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(bottom = Spacing.xs),
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.displaySmall,
+                        color = Color.White,
+                    )
+                    if (version != null) {
+                        Text(
+                            text = "v$version",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(bottom = Spacing.xs),
+                        )
+                    }
+                }
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White.copy(alpha = 0.85f),
+                    )
+                }
             }
-        }
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White.copy(alpha = 0.85f),
-            )
+            trailing?.invoke()
         }
     }
 }

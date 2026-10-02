@@ -21,6 +21,7 @@
     <string name="no_results">Nessuna proiezione trovata con questi filtri</string>
     <string name="options_count">%1$d opzioni</string>
     <string name="app_subtitle">Genera le opzioni per il sondaggio del cinema</string>
+    <string name="theme_dark">Tema scuro</string>
     <string name="time_placeholder">HH o HH:MM</string>
     <string name="time_error">Orario non valido</string>
     <string name="quick_today">Oggi</string>

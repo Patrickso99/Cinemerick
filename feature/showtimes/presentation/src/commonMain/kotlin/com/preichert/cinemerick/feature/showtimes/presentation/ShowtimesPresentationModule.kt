@@ -5,4 +5,5 @@ import org.koin.dsl.module
 
 val showtimesPresentationModule = module {
     viewModelOf(::ShowtimesViewModel)
+    viewModelOf(::ThemeViewModel)
 }

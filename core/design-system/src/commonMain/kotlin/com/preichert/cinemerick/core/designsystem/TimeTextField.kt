@@ -14,7 +14,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 
 /**
- * Compact time field. Pass [errorText] to flag invalid input; a clear button appears when not blank.
+ * Compact time field on the numeric keypad. Digits are kept and a colon is inserted after the hour,
+ * so `HH` and `HH:MM` can both be entered without a text keyboard.
+ * Pass [errorText] to flag invalid input; a clear button appears when not blank.
  */
 @Composable
 fun TimeTextField(
@@ -29,7 +31,7 @@ fun TimeTextField(
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { onValueChange(it.toNumericTime()) },
         label = { Text(label) },
         placeholder = { Text(placeholder) },
         singleLine = true,
@@ -43,11 +45,16 @@ fun TimeTextField(
             }
         } else null,
         shape = MaterialTheme.shapes.medium,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = imeAction),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = imeAction),
         keyboardActions = KeyboardActions(
             onNext = { focusManager.moveFocus(FocusDirection.Next) },
             onDone = { focusManager.clearFocus() }
         ),
         modifier = modifier
     )
+}
+
+private fun String.toNumericTime(): String {
+    val digits = filter(Char::isDigit).take(4)
+    return if (digits.length <= 2) digits else "${digits.take(2)}:${digits.drop(2)}"
 }
