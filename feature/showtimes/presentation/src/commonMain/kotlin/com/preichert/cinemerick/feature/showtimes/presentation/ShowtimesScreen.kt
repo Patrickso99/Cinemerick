@@ -5,30 +5,30 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -56,9 +56,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -96,11 +96,11 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_sub
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cinergia
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cristallo
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_notorious
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
@@ -604,8 +604,21 @@ private fun FilmGroupCard(group: FilmGroupUi, large: Boolean) {
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    group.showings.forEach { showing -> ShowingRow(showing) }
+                Spacer(modifier = Modifier.height(Spacing.xs))
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
+                    group.showings.groupBy { it.date }.forEach { (date, showingsForDate) ->
+                        val dayName = showingsForDate.firstOrNull()?.day ?: ""
+                        Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                            Badge(
+                                text = "$dayName $date",
+                                container = MaterialTheme.colorScheme.primary,
+                                content = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.height(Spacing.xs))
+                            showingsForDate.forEach { showing -> ShowingRow(showing) }
+                        }
+                        Spacer(modifier = Modifier.height(Spacing.xs))
+                    }
                 }
             }
         }
@@ -689,16 +702,6 @@ private fun ShowingRow(showing: ShowingUi) {
         itemVerticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Badge(
-            text = showing.day,
-            container = MaterialTheme.colorScheme.primary,
-            content = MaterialTheme.colorScheme.onPrimary
-        )
-        Badge(
-            text = showing.date,
-            container = MaterialTheme.colorScheme.tertiaryContainer,
-            content = MaterialTheme.colorScheme.onTertiaryContainer
-        )
         Badge(
             text = showing.time,
             container = MaterialTheme.colorScheme.primaryContainer,
