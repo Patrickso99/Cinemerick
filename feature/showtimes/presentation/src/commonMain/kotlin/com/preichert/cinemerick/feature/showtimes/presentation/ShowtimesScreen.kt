@@ -116,6 +116,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.open_ci
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.options_count
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.pick_days
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.quick_today
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.quick_tomorrow
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.quick_weekend
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.range_from
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.range_to
@@ -335,6 +336,10 @@ private fun ColumnScope.FiltersSection(
                 AssistChip(
                     onClick = { onAction(ShowtimesAction.OnSelectToday) },
                     label = { Text(stringResource(Res.string.quick_today)) }
+                )
+                AssistChip(
+                    onClick = { onAction(ShowtimesAction.OnSelectTomorrow) },
+                    label = { Text(stringResource(Res.string.quick_tomorrow)) }
                 )
                 AssistChip(
                     onClick = { onAction(ShowtimesAction.OnSelectWeekend) },

@@ -8,6 +8,7 @@ sealed interface ShowtimesAction {
     data object OnCalendarOpen : ShowtimesAction
     data object OnCalendarDismiss : ShowtimesAction
     data object OnSelectToday : ShowtimesAction
+    data object OnSelectTomorrow : ShowtimesAction
     data object OnSelectWeekend : ShowtimesAction
     data class OnMinTimeChange(val date: LocalDate, val value: String) : ShowtimesAction
     data class OnMaxTimeChange(val date: LocalDate, val value: String) : ShowtimesAction

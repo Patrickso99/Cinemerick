@@ -20,6 +20,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.domain.needsFetch
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
 import com.preichert.cinemerick.feature.showtimes.domain.toPollText
+import com.preichert.cinemerick.feature.showtimes.domain.tomorrow
 import com.preichert.cinemerick.feature.showtimes.domain.upcomingWeekend
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copied
@@ -70,6 +71,7 @@ class ShowtimesViewModel(
             ShowtimesAction.OnCalendarOpen -> _state.update { it.copy(calendar = CalendarUi(minDate = today())) }
             ShowtimesAction.OnCalendarDismiss -> _state.update { it.copy(calendar = null) }
             ShowtimesAction.OnSelectToday -> { selectDays(listOf(today())); refresh() }
+            ShowtimesAction.OnSelectTomorrow -> { selectDays(listOf(tomorrow(today()))); refresh() }
             ShowtimesAction.OnSelectWeekend -> { selectDays(upcomingWeekend(today())); refresh() }
             is ShowtimesAction.OnMinTimeChange -> { updateDay(action.date) { it.copy(minTime = action.value) }; refresh() }
             is ShowtimesAction.OnMaxTimeChange -> { updateDay(action.date) { it.copy(maxTime = action.value) }; refresh() }

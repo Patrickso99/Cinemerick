@@ -18,6 +18,11 @@ fun monthGrid(year: Int, month: Month): List<LocalDate?> {
 }
 
 /**
+ * Tomorrow from [today].
+ */
+fun tomorrow(today: LocalDate): LocalDate = today.plus(1, DateTimeUnit.DAY)
+
+/**
  * The next weekend days from [today]: Saturday and Sunday, or only Sunday when today is Sunday.
  */
 fun upcomingWeekend(today: LocalDate): List<LocalDate> {
