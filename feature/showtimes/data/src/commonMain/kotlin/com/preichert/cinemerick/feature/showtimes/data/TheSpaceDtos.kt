@@ -3,6 +3,25 @@ package com.preichert.cinemerick.feature.showtimes.data
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class TheSpaceCinemasDto(
+    val result: List<TheSpaceCinemaGroupDto> = emptyList()
+)
+
+@Serializable
+data class TheSpaceCinemaGroupDto(
+    val alpha: String = "",
+    val cinemas: List<TheSpaceCinemaDto> = emptyList()
+)
+
+@Serializable
+data class TheSpaceCinemaDto(
+    val cinemaId: String = "",
+    val cinemaName: String = "",
+    val fullName: String = "",
+    val whatsOnUrl: String? = null
+)
+
+@Serializable
 data class TheSpaceFilmsDto(
     val result: List<TheSpaceFilmDto> = emptyList()
 )

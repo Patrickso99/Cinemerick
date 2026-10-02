@@ -9,9 +9,9 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 
 ## Features
 
-- 🎬 **Multi-source aggregation**: Query The Space Cinema (Silea), UCI (Marcon), Notorious (Ferrara), Cinergia (Conegliano, via 18tickets) and Cristallo (Oderzo) simultaneously
+- 🎬 **Multi-source aggregation**: Query 5 cinema chains (The Space, UCI, Notorious, Cinergia, Cristallo) with multiple venues per chain, discovered at runtime from each chain's API
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
-- 🏢 **Cinema selection**: Choose which chains to query (The Space / Silea, UCI / Marcon, Notorious / Ferrara, Cinergia / Conegliano, Cristallo / Oderzo); all are on by default and excluded chains are never fetched
+- 🏢 **Venue selection**: Choose which venues to query; venues are fetched at runtime from each chain's availability (no hardcoded limits)
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
 - 🏷️ **Version in the header**: Shown as `v1.0.8 (20261002) [abc1234]` (version name, date-based code, git short hash)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
@@ -49,8 +49,9 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 ### Feature Modules
 
 - **`:feature:showtimes:domain`**: Business logic
-  - `Cinema` / `CinemaShowings`: Core data models
-  - `ShowtimesRepository` / `ShowtimesDataSource`: Repository pattern
+  - `Chain` (enum) / `Venue` (runtime-discovered): Core data models replacing hardcoded Cinema
+  - `VenueShowings` / `CinemaShowings`: Result wrapper per venue
+  - `ShowtimesRepository` / `ShowtimesDataSource`: Repository pattern (now chain-based with venue discovery)
   - `ShowingFilter`, `ShowingFormatter`, `ShowingGrouping`: Filtering and formatting logic
   - `DayRange`, `FilmTitles`, `Showing`: Domain value objects
 

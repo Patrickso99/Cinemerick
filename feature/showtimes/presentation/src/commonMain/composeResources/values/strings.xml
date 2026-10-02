@@ -17,10 +17,11 @@
     <string name="copy">Copia</string>
     <string name="copied">Copiato negli appunti</string>
     <string name="select_day">Seleziona almeno un giorno</string>
+    <string name="select_venue">Seleziona almeno una sede</string>
     <string name="invalid_time">Orario non valido: usa HH o HH:MM</string>
     <string name="no_results">Nessuna proiezione trovata con questi filtri</string>
     <string name="options_count">%1$d proiezioni</string>
-    <string name="app_subtitle">Centralizzatore di film e orari nei tuoi cinema</string>
+    <string name="app_subtitle">Centralizzatore di film e orari per i cinema italiani</string>
     <string name="theme_dark">Tema scuro</string>
     <string name="time_placeholder">HH o HH:MM</string>
     <string name="time_error">Orario non valido</string>
@@ -36,4 +37,10 @@
     <string name="formats_title">Formato</string>
     <string name="formats_hint">Tocca per nascondere un formato</string>
     <string name="formats_show_all">Mostra tutti</string>
+    <string name="add_venue">Aggiungi sede</string>
+    <string name="search_venue">Cerca sede</string>
+    <string name="no_venues_found">Nessuna sede trovata</string>
+    <string name="venues_load_error">Errore nel caricamento delle sedi</string>
+    <string name="retry">Riprova</string>
+    <string name="done">Fatto</string>
 </resources>

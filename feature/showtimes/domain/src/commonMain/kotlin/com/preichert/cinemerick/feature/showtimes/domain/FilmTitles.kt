@@ -3,6 +3,7 @@ package com.preichert.cinemerick.feature.showtimes.domain
 private val whitespace = Regex("\\s+")
 private val specialChars = Regex("[^a-z0-9 ]")
 private val languageSuffixPattern = Regex(""" - (Lingua originale|Original Language|VO|Dubbed|20 Anni|Extended|Director'?s).*$""", RegexOption.IGNORE_CASE)
+private val formatSuffixPattern = Regex("""\s*\((infinity vision|epic|imax|dolby atmos|4dx|screenx|vo|v\.o\.|3d|2d|live action[^)]*)\)\s*$""", RegexOption.IGNORE_CASE)
 private val diacriticsMap = mapOf(
     'à' to 'a', 'á' to 'a', 'â' to 'a', 'ã' to 'a', 'ä' to 'a', 'å' to 'a',
     'è' to 'e', 'é' to 'e', 'ê' to 'e', 'ë' to 'e',
@@ -30,7 +31,7 @@ fun cleanTitle(raw: String): String {
 // Normalizes language/format suffixes: "Linkin Park: Unshatter" == "LINKIN PARK UNSHATTER - Lingua originale"
 fun filmKey(title: String): String {
     val normalized = title.map { diacriticsMap[it] ?: it }.joinToString("")
-    val lowercased = normalized.lowercase().replace(" c.a.", "")
+    val lowercased = normalized.lowercase().replace(" c.a.", "").replace(formatSuffixPattern, "")
     val hasColonAndDash = lowercased.contains(":") && lowercased.contains(" - ")
 
     return if (hasColonAndDash) {

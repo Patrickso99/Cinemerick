@@ -6,12 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.core.presentation.toUiText
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DayRange
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.availableTags
 import com.preichert.cinemerick.feature.showtimes.domain.displayFormat
 import com.preichert.cinemerick.feature.showtimes.domain.filterShowings
@@ -26,6 +27,8 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copied
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.invalid_time
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_day
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_venue
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.venues_load_error
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,9 +64,9 @@ class ShowtimesViewModel(
     private class Fetch(
         val showings: List<Showing>,
         val days: Set<LocalDate>,
-        val cinemas: Set<Cinema>,
+        val venues: Set<Venue>,
         val filmQueries: List<String>,
-        val errors: Map<Cinema, CinemaErrorUi>
+        val errors: Map<Venue, VenueErrorUi>
     )
 
     fun onAction(action: ShowtimesAction) {
@@ -77,12 +80,21 @@ class ShowtimesViewModel(
             is ShowtimesAction.OnMinTimeChange -> { updateDay(action.date) { it.copy(minTime = action.value) }; refresh() }
             is ShowtimesAction.OnMaxTimeChange -> { updateDay(action.date) { it.copy(maxTime = action.value) }; refresh() }
             is ShowtimesAction.OnFilmFilterChange -> _state.update { it.copy(filmFilter = action.value) }
-            is ShowtimesAction.OnCinemaToggle -> { toggleCinema(action.cinema); refresh() }
+            is ShowtimesAction.OnVenueToggle -> { toggleVenue(action.venue); refresh() }
+            is ShowtimesAction.OnVenuePickerOpen -> openVenuePicker(action.chain)
+            ShowtimesAction.OnVenuePickerDismiss -> _state.update { it.copy(venuePicker = null) }
+            is ShowtimesAction.OnVenueSearchChange -> _state.update { state ->
+                state.copy(venuePicker = state.venuePicker?.copy(query = action.query))
+            }
             is ShowtimesAction.OnFormatToggle -> toggleFormat(action.tag)
             ShowtimesAction.OnFormatsReset -> setHiddenTags(emptySet())
             ShowtimesAction.OnGenerateClick -> generate(silent = false)
             ShowtimesAction.OnCopyClick -> copy()
             ShowtimesAction.OnClearClick -> clear()
+            ShowtimesAction.OnVenuesReload -> {
+                val chain = _state.value.venuePicker?.chain
+                if (chain != null) openVenuePicker(chain)
+            }
         }
     }
 
@@ -104,15 +116,26 @@ class ShowtimesViewModel(
         }
     }
 
-    // At least one cinema must stay selected.
-    private fun toggleCinema(cinema: Cinema) {
+    private fun toggleVenue(venue: Venue) {
         _state.update { state ->
-            val cinemas = if (cinema in state.selectedCinemas) state.selectedCinemas - cinema else state.selectedCinemas + cinema
-            if (cinemas.isEmpty()) {
-                state
-            } else {
-                filterPreferences.setSelectedCinemas(cinemas)
-                state.copy(selectedCinemas = cinemas)
+            val venues = if (venue in state.selectedVenues) state.selectedVenues - venue else state.selectedVenues + venue
+            filterPreferences.setSelectedVenues(venues)
+            state.copy(selectedVenues = venues)
+        }
+    }
+
+    private fun openVenuePicker(chain: Chain) {
+        _state.update { it.copy(venuePicker = VenuePickerUi(chain = chain)) }
+        viewModelScope.launch {
+            val catalog = showtimesRepository.getVenues()
+            val chainVenues = catalog[chain]
+            val catalogUi = when (chainVenues) {
+                is Result.Success -> VenueCatalogUi.Loaded(chainVenues.data)
+                is Result.Failure -> VenueCatalogUi.Error(chainVenues.error.toUiText())
+                null -> VenueCatalogUi.Error(UiText.Resource(Res.string.venues_load_error))
+            }
+            _state.update { state ->
+                state.copy(venuePicker = state.venuePicker?.copy(catalog = catalogUi))
             }
         }
     }
@@ -128,7 +151,7 @@ class ShowtimesViewModel(
             kotlinx.coroutines.delay(500)
             val fetch = lastFetch
             val selectedDays = state.days.filter { it.isSelected }.mapTo(mutableSetOf()) { it.date }
-            val covered = !state.isLoading && fetch != null && !needsFetch(fetch.days, fetch.cinemas, selectedDays, state.selectedCinemas)
+            val covered = !state.isLoading && fetch != null && !needsFetch(fetch.days, fetch.venues, selectedDays, state.selectedVenues)
             when {
                 covered -> _state.update { it.withResults(fetch) }
                 buildRanges(state) != null && selectedDays.isNotEmpty() -> generate(silent = true)
@@ -142,15 +165,23 @@ class ShowtimesViewModel(
     }
 
     private fun setHiddenTags(tags: Set<String>) {
-        filterPreferences.setHiddenTags(tags)
         _state.update { it.copy(hiddenTags = tags).withResults(lastFetch) }
     }
 
-    private fun initialState() = ShowtimesState(
-        hiddenTags = filterPreferences.getHiddenTags(),
-        selectedCinemas = filterPreferences.getSelectedCinemas() ?: Cinema.entries.toSet()
+    private fun initialState() = freshState(
+        selectedVenues = filterPreferences.getSelectedVenues() ?: defaultVenues
     )
-        .let { it.copy(availableTags = it.hiddenTags.sorted()) }
+
+    private fun freshState(selectedVenues: Set<Venue>) = ShowtimesState(
+        selectedVenues = selectedVenues
+    )
+
+    private companion object {
+        val defaultVenues = setOf(
+            Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),
+            Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto")
+        )
+    }
 
     private fun newDay(date: LocalDate) = DayUi(date = date, label = date.toLabel(), isSelected = true)
 
@@ -164,7 +195,8 @@ class ShowtimesViewModel(
     private fun clear() {
         if (_state.value.isLoading) return
         lastFetch = null
-        _state.value = initialState()
+        filterPreferences.setSelectedVenues(emptySet())
+        _state.value = freshState(selectedVenues = emptySet())
     }
 
     private fun copy() {
@@ -195,23 +227,44 @@ class ShowtimesViewModel(
             val startTimeMillis = Clock.System.now().toEpochMilliseconds()
             _state.update { it.copy(isLoading = true) }
 
-            val cinemas = _state.value.selectedCinemas
-            val results = showtimesRepository.getShowings(ranges.map { it.date }, cinemas)
+            val venues = _state.value.selectedVenues
+            val results = showtimesRepository.getShowings(ranges.map { it.date }, venues)
             val showings = mutableListOf<Showing>()
-            val errors = mutableMapOf<Cinema, CinemaErrorUi>()
-            results.forEach { cinemaShowings ->
-                when (val result = cinemaShowings.result) {
+            val errors = mutableMapOf<Venue, VenueErrorUi>()
+            results.forEach { venueShowings ->
+                when (val result = venueShowings.result) {
                     is Result.Success -> showings += result.data
-                    is Result.Error -> errors[cinemaShowings.cinema] = CinemaErrorUi(
-                        cinemaName = cinemaShowings.cinema.displayName,
-                        message = result.error.toUiText()
-                    )
+                    is Result.Failure -> {
+                        val errorCode = result.error.let { error ->
+                            when (error) {
+                                com.preichert.cinemerick.core.domain.DataError.Network.BAD_REQUEST -> " (400)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.UNAUTHORIZED -> " (401)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.FORBIDDEN -> " (403)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.NOT_FOUND -> " (404)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.CONFLICT -> " (409)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.TOO_MANY_REQUESTS -> " (429)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.REQUEST_TIMEOUT -> " (408)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.SERVER_ERROR -> " (500)"
+                                com.preichert.cinemerick.core.domain.DataError.Network.SERVICE_UNAVAILABLE -> " (503)"
+                                else -> ""
+                            }
+                        }
+                        val baseUiText = result.error.toUiText()
+                        val message = when (baseUiText) {
+                            is UiText.Resource -> UiText.Resource(baseUiText.id)
+                            is UiText.DynamicString -> UiText.DynamicString(baseUiText.value + errorCode)
+                        }
+                        errors[venueShowings.venue] = VenueErrorUi(
+                            venueName = venueShowings.venue.name,
+                            message = message
+                        )
+                    }
                 }
             }
 
-            lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, cinemas, filmQueries, errors)
+            lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, venues, filmQueries, errors)
             val elapsedTimeMillis = Clock.System.now().toEpochMilliseconds() - startTimeMillis
-            log.i { "Fetched ${showings.size} showing(s), ${errors.size} cinema error(s) in ${elapsedTimeMillis}ms" }
+            log.i { "Fetched ${showings.size} showing(s), ${errors.size} venue error(s) in ${elapsedTimeMillis}ms" }
             _state.update {
                 it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis).withResults(lastFetch)
             }
@@ -226,20 +279,20 @@ class ShowtimesViewModel(
         DayRange(day.date, (min as ParsedTime.Valid).value, (max as ParsedTime.Valid).value)
     }
 
-    // Applies the days/times/cinemas selected now plus the hidden format tags to the last fetched showings.
+    // Applies the days/times/venues selected now plus the hidden format tags to the last fetched showings.
     // An invalid time range leaves the list as it is.
     private fun ShowtimesState.withResults(fetch: Fetch?): ShowtimesState {
         if (fetch == null) return this
         val ranges = buildRanges(this) ?: return this
         val now = now()
-        val showings = fetch.showings.filter { it.cinema in selectedCinemas }
+        val showings = fetch.showings.filter { it.venue in selectedVenues }
         val groups = showings
             .filterShowings(ranges, fetch.filmQueries, now, hiddenTags)
             .groupByFilm()
         // Tags come from the unfiltered-by-format results, so hidden ones stay toggleable.
         val tags = showings.filterShowings(ranges, fetch.filmQueries, now).availableTags()
         return copy(
-            cinemaErrors = fetch.errors.filterKeys { it in selectedCinemas }.values.toList(),
+            venueErrors = fetch.errors.filterKeys { it in selectedVenues }.values.toList(),
             groups = groups.map { group ->
                 FilmGroupUi(
                     title = group.title,
@@ -249,7 +302,7 @@ class ShowtimesViewModel(
                             day = showing.day.dayOfWeek.italianName(),
                             date = showing.day.toDateLabel(),
                             time = showing.time.toString(),
-                            cinema = showing.cinema,
+                            venue = showing.venue,
                             format = showing.displayFormat
                         )
                     }

@@ -24,11 +24,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -39,6 +42,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
@@ -78,6 +82,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.preichert.cinemerick.core.designsystem.CinemaBrandColors
@@ -92,7 +97,8 @@ import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.presentation.currentPlatform
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_subtitle
@@ -131,6 +137,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.add_venue
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_venues_found
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.search_venue
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.retry
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.done
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -200,6 +211,16 @@ fun ShowtimesScreen(
                     }
                 )
             }
+            state.venuePicker?.let { picker ->
+                VenuePickerDialog(
+                    picker = picker,
+                    selectedVenues = state.selectedVenues,
+                    onDismiss = { onAction(ShowtimesAction.OnVenuePickerDismiss) },
+                    onSearchChange = { onAction(ShowtimesAction.OnVenueSearchChange(it)) },
+                    onVenueToggle = { onAction(ShowtimesAction.OnVenueToggle(it)) },
+                    onReload = { onAction(ShowtimesAction.OnVenuesReload) }
+                )
+            }
             CinemerickAdaptiveLayout(
                 header = {
                     CinemerickHeader(
@@ -239,7 +260,7 @@ private fun ColumnScope.FiltersSection(
     onAction: (ShowtimesAction) -> Unit,
     inlineCalendar: Boolean
 ) {
-    // Cinema selection
+    // Cinema selection by chain
     SectionCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -253,22 +274,42 @@ private fun ColumnScope.FiltersSection(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = Spacing.lg)
             )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-                modifier = Modifier.padding(horizontal = Spacing.lg)
-            ) {
-                Cinema.entries.forEach { cinema ->
-                    val (container, onContainer) = cinema.badgeColors()
-                    FilterChip(
-                        selected = cinema in state.selectedCinemas,
-                        onClick = { onAction(ShowtimesAction.OnCinemaToggle(cinema)) },
-                        label = { Text(stringResource(cinema.chipLabel())) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = container,
-                            selectedLabelColor = onContainer
-                        )
+            Chain.entries.forEach { chain ->
+                val chainVenues = state.selectedVenues.filter { it.chain == chain }
+                val (container, onContainer) = chain.badgeColors()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Spacing.lg),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    Text(
+                        text = chain.displayName(),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    ) {
+                        chainVenues.forEach { venue ->
+                            FilterChip(
+                                selected = true,
+                                onClick = { onAction(ShowtimesAction.OnVenueToggle(venue)) },
+                                label = { Text(venue.name, style = MaterialTheme.typography.labelLarge) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = container.copy(alpha = 0.6f),
+                                    selectedLabelColor = onContainer.copy(alpha = 0.9f)
+                                )
+                            )
+                        }
+                        OutlinedButton(
+                            onClick = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) },
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Text(stringResource(Res.string.add_venue))
+                        }
+                    }
                 }
             }
         }
@@ -483,7 +524,7 @@ private fun ColumnScope.ResultsSection(
     configuration: DeviceConfiguration
 ) {
     // Errors
-    state.cinemaErrors.forEach { error ->
+    state.venueErrors.forEach { error ->
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
@@ -496,7 +537,7 @@ private fun ColumnScope.ResultsSection(
             ) {
                 Text("⚠", color = MaterialTheme.colorScheme.onErrorContainer)
                 Text(
-                    text = "${error.cinemaName}: ${error.message.asString()}",
+                    text = "${error.venueName}: ${error.message.asString()}",
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -672,11 +713,11 @@ private fun PosterImage(url: String, contentDescription: String, width: Dp = 96.
     }
 }
 
-// Tapping the badge opens the cinema's app (or website); several options are offered in a dialog.
+// Tapping the badge opens the venue's app (or website); several options are offered in a dialog.
 @Composable
-private fun CinemaAppBadge(cinema: Cinema, container: Color, content: Color) {
+private fun CinemaAppBadge(venue: Venue, container: Color, content: Color) {
     val uriHandler = LocalUriHandler.current
-    val links = remember(cinema) { cinema.appLinks(currentPlatform) }
+    val links = remember(venue) { venue.appLinks(currentPlatform) }
     var isChoosing by remember { mutableStateOf(false) }
 
     Box(
@@ -684,13 +725,13 @@ private fun CinemaAppBadge(cinema: Cinema, container: Color, content: Color) {
             if (links.size == 1) uriHandler.openUri(links.first().url) else isChoosing = true
         }
     ) {
-        Badge(text = cinema.displayName, container = container, content = content)
+        Badge(text = venue.name, container = container, content = content)
     }
 
     if (isChoosing) {
         AlertDialog(
             onDismissRequest = { isChoosing = false },
-            title = { Text(stringResource(Res.string.open_cinema_app, cinema.displayName)) },
+            title = { Text(stringResource(Res.string.open_cinema_app, venue.name)) },
             text = {
                 Column {
                     links.forEach { link ->
@@ -722,8 +763,8 @@ private fun ShowingRow(showing: ShowingUi) {
             content = MaterialTheme.colorScheme.onPrimaryContainer,
             bold = true
         )
-        val (container, content) = showing.cinema.badgeColors()
-        CinemaAppBadge(cinema = showing.cinema, container = container, content = content)
+        val (container, content) = showing.venue.chain.badgeColors()
+        CinemaAppBadge(venue = showing.venue, container = container, content = content)
         showing.format?.let {
             Badge(
                 text = it,
@@ -734,21 +775,20 @@ private fun ShowingRow(showing: ShowingUi) {
     }
 }
 
-private fun Cinema.chipLabel() = when (this) {
-    Cinema.THE_SPACE -> Res.string.cinema_the_space
-    Cinema.UCI -> Res.string.cinema_uci
-    Cinema.NOTORIOUS -> Res.string.cinema_notorious
-    Cinema.CINERGIA -> Res.string.cinema_cinergia
-    Cinema.CRISTALLO -> Res.string.cinema_cristallo
+private fun Chain.displayName(): String = when (this) {
+    Chain.THE_SPACE -> "The Space"
+    Chain.UCI -> "UCI Cinemas"
+    Chain.NOTORIOUS -> "Notorious"
+    Chain.CINERGIA -> "Cinergia"
+    Chain.CRISTALLO -> "Cristallo"
 }
 
-// UCI is blue, The Space is orange, Notorious is silver, Cinergia is dark grey, Cristallo is red: brand colors, independent of the theme.
-private fun Cinema.badgeColors(): Pair<Color, Color> = when (this) {
-    Cinema.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
-    Cinema.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
-    Cinema.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
-    Cinema.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
-    Cinema.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
+private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
+    Chain.THE_SPACE -> CinemaBrandColors.theSpaceOrange to CinemaBrandColors.onTheSpaceOrange
+    Chain.UCI -> CinemaBrandColors.uciBlue to CinemaBrandColors.onUciBlue
+    Chain.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
+    Chain.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
+    Chain.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
 }
 
 @Composable
@@ -860,26 +900,31 @@ private fun DayRangeRow(
     }
 }
 
-private fun previewState() = ShowtimesState(
-    days = listOf(
-        DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true),
-        DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24"),
-        DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25"),
-        DayUi(LocalDate(2026, 10, 4), "dom 04/10")
-    ),
-    hasGenerated = true,
-    pollText = "Film Name (Giovedì - 21:00 - Silea)",
-    optionsCount = 2,
-    groups = listOf(
-        FilmGroupUi(
-            title = "Film Name",
-            showings = listOf(
-                ShowingUi("Giovedì", "01/10", "21:00", Cinema.THE_SPACE, "2D · VO"),
-                ShowingUi("Giovedì", "01/10", "21:30", Cinema.UCI, "2D · ENG · sub ITA")
+private fun previewState(): ShowtimesState {
+    val sileaVenue = Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto")
+    val marconVenue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
+    return ShowtimesState(
+        days = listOf(
+            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true),
+            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24"),
+            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25"),
+            DayUi(LocalDate(2026, 10, 4), "dom 04/10")
+        ),
+        selectedVenues = setOf(sileaVenue, marconVenue),
+        hasGenerated = true,
+        pollText = "Film Name (Giovedì - 21:00 - Silea)",
+        optionsCount = 2,
+        groups = listOf(
+            FilmGroupUi(
+                title = "Film Name",
+                showings = listOf(
+                    ShowingUi("Giovedì", "01/10", "21:00", sileaVenue, "2D · VO"),
+                    ShowingUi("Giovedì", "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
+                )
             )
         )
     )
-)
+}
 
 @Composable
 private fun ThemeSwitch(
@@ -936,6 +981,152 @@ private fun ShowtimesScreenDarkPreview() {
             snackbarHostState = remember { SnackbarHostState() },
             darkTheme = true
         )
+    }
+}
+
+@Composable
+private fun VenuePickerDialog(
+    picker: VenuePickerUi,
+    selectedVenues: Set<Venue>,
+    onDismiss: () -> Unit,
+    onSearchChange: (String) -> Unit,
+    onVenueToggle: (Venue) -> Unit,
+    onReload: () -> Unit = {}
+) {
+    val focusManager = LocalFocusManager.current
+    var localQuery by remember { mutableStateOf("") }
+    var localSelected by remember { mutableStateOf(selectedVenues) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .padding(Spacing.lg),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.lg),
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                Text(
+                    text = stringResource(Res.string.search_venue),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                OutlinedTextField(
+                    value = localQuery,
+                    onValueChange = { localQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(Res.string.search_venue)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+                )
+                when (val catalog = picker.catalog) {
+                    is VenueCatalogUi.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    }
+                    is VenueCatalogUi.Loaded -> {
+                        val filtered = remember(catalog.venues, localQuery) {
+                            filteredVenues(catalog.venues, localQuery)
+                        }
+                        if (filtered.isEmpty()) {
+                            Text(
+                                text = stringResource(Res.string.no_venues_found),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 300.dp),
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                            ) {
+                                items(filtered, key = { it.key }) { venue ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                localSelected = if (venue in localSelected) {
+                                                    localSelected - venue
+                                                } else {
+                                                    localSelected + venue
+                                                }
+                                            }
+                                            .padding(Spacing.sm),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                                    ) {
+                                        Checkbox(
+                                            checked = venue in localSelected,
+                                            onCheckedChange = {
+                                                localSelected = if (venue in localSelected) {
+                                                    localSelected - venue
+                                                } else {
+                                                    localSelected + venue
+                                                }
+                                            }
+                                        )
+                                        Column {
+                                            Text(venue.name)
+                                            venue.region?.let {
+                                                Text(
+                                                    it,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    is VenueCatalogUi.Error -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                        ) {
+                            Text(
+                                text = catalog.message.asString(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            OutlinedButton(onClick = onReload) {
+                                Text(stringResource(Res.string.retry))
+                            }
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.End),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(Res.string.cancel))
+                    }
+                    Button(onClick = {
+                        onSearchChange(localQuery)
+                        val venuesToAdd = localSelected - selectedVenues
+                        val venuesToRemove = selectedVenues - localSelected
+                        venuesToAdd.forEach { onVenueToggle(it) }
+                        venuesToRemove.forEach { onVenueToggle(it) }
+                        onDismiss()
+                    }) {
+                        Text(stringResource(Res.string.done))
+                    }
+                }
+            }
+        }
     }
 }
 

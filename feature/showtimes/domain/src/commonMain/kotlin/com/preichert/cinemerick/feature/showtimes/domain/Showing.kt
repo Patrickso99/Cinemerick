@@ -7,7 +7,7 @@ data class Showing(
     val title: String,
     val day: LocalDate,
     val time: LocalTime,
-    val cinema: Cinema,
+    val venue: Venue,
     val format: String? = null,
     val posterUrl: String? = null
 )

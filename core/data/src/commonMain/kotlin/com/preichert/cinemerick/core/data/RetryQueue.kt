@@ -84,11 +84,11 @@ class RetryQueue(private val scope: CoroutineScope) {
                 queue.remove(request.id)
                 (request.onResult as (Result<Any, DataError.Network>) -> Unit)(result as Result<Any, DataError.Network>)
             }
-            result is Result.Error && result.error.isRetryable() && request.attempts < MAX_ATTEMPTS -> {
+            result is Result.Failure && result.error.isRetryable() && request.attempts < MAX_ATTEMPTS -> {
                 request.nextRetryTime = clock.now().toEpochMilliseconds() + getBackoffDelay(request.attempts).inWholeMilliseconds
                 log.d { "Scheduled retry for ${request.id} in ${getBackoffDelay(request.attempts)}" }
             }
-            result is Result.Error -> {
+            result is Result.Failure -> {
                 queue.remove(request.id)
                 (request.onResult as (Result<Any, DataError.Network>) -> Unit)(result as Result<Any, DataError.Network>)
             }

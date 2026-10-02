@@ -5,9 +5,10 @@ import com.preichert.cinemerick.core.data.get
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.domain.map
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -17,19 +18,31 @@ class KtorUciShowtimesDataSource(
     private val httpClient: HttpClient
 ) : ShowtimesDataSource {
 
-    override val cinema = Cinema.UCI
+    override val chain = Chain.UCI
 
-    override suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
-        coroutineScope {
-            days.map { day -> async { fetchDay(day) } }.awaitAll().mergeResults()
+    override suspend fun getVenues(): Result<List<Venue>, DataError.Network> =
+        httpClient.get<UciTheatresDto>(THEATRES_URL).map { dto ->
+            dto.data.map { theatre ->
+                Venue(
+                    chain = Chain.UCI,
+                    id = theatre.slug,
+                    name = theatre.name.removePrefix("UCI Cinemas "),
+                    region = theatre.region.ifEmpty { null },
+                    webUrl = "https://ucicinemas.it/cinema/${theatre.slug}"
+                )
+            }
         }
 
-    private suspend fun fetchDay(day: LocalDate): Result<List<Showing>, DataError.Network> =
-        httpClient.get<UciProgrammingDto>("$BASE_URL/$day").map { it.toShowings(day) }
+    override suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
+        coroutineScope {
+            days.map { day -> async { fetchDay(venue, day) } }.awaitAll().mergeResults()
+        }
+
+    private suspend fun fetchDay(venue: Venue, day: LocalDate): Result<List<Showing>, DataError.Network> =
+        httpClient.get<UciProgrammingDto>("$THEATRES_URL_BASE/${venue.id}/programming/$day").map { it.toShowings(venue, day) }
 
     private companion object {
-        const val BASE_URL =
-            "https://myuci---uci-backend-production-nfluwp7wga-oc.a.run.app" +
-                "/api/theatres/uci-cinemas-venezia-marcon/programming"
+        const val THEATRES_URL = "https://myuci---uci-backend-production-nfluwp7wga-oc.a.run.app/api/theatres"
+        const val THEATRES_URL_BASE = "https://myuci---uci-backend-production-nfluwp7wga-oc.a.run.app/api/theatres"
     }
 }

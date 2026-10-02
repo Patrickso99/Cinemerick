@@ -6,9 +6,10 @@ import io.ktor.client.statement.bodyAsText
 import com.preichert.cinemerick.core.data.getResponse
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -24,22 +25,27 @@ class KtorCristalloShowtimesDataSource(
     private val httpClient: HttpClient
 ) : ShowtimesDataSource {
 
-    override val cinema = Cinema.CRISTALLO
+    override val chain = Chain.CRISTALLO
 
     // One request per day: only a couple at a time, to go easy on a small WordPress site.
     private val permits = Semaphore(MAX_CONCURRENT_REQUESTS)
 
-    override suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
+    override suspend fun getVenues(): Result<List<Venue>, DataError.Network> =
+        Result.Success(listOf(
+            Venue(Chain.CRISTALLO, "oderzo", "Oderzo", "Veneto", "https://www.cinemacristallo.com")
+        ))
+
+    override suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
         coroutineScope {
-            days.map { day -> async { permits.withPermit { fetchDay(day) } } }.awaitAll().mergeResults()
+            days.map { day -> async { permits.withPermit { fetchDay(venue, day) } } }.awaitAll().mergeResults()
         }
 
-    private suspend fun fetchDay(day: LocalDate): Result<List<Showing>, DataError.Network> =
+    private suspend fun fetchDay(venue: Venue, day: LocalDate): Result<List<Showing>, DataError.Network> =
         when (val response = httpClient.getResponse("$AJAX_URL?action=$ACTION&param=$PARAM&date=${day.siteFormat()}&option=$OPTION")) {
-            is Result.Error -> response
+            is Result.Failure -> response
             is Result.Success -> {
                 val body = response.data.bodyAsText()
-                val showings = parseCristalloShowings(body, day)
+                val showings = parseCristalloShowings(body, venue, day)
                 log.d { "$day: ${body.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

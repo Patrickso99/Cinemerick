@@ -1,12 +1,12 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.cleanTitle
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
-fun UciProgrammingDto.toShowings(day: LocalDate): List<Showing> {
+fun UciProgrammingDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
     val dayText = day.toString()
     return data.filter { it.title.isNotBlank() }.flatMap { movie ->
         movie.screens
@@ -15,12 +15,12 @@ fun UciProgrammingDto.toShowings(day: LocalDate): List<Showing> {
             .flatMap { (format, variant) ->
                 variant.performances
                     .filter { it.day == dayText && it.actualStartAt.isNotBlank() }
-                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), Cinema.UCI, format, movie.poster?.takeIf { it.isNotBlank() }) }
+                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), venue, format, movie.poster?.takeIf { it.isNotBlank() }) }
             }
     }
 }
 
-fun TheSpaceFilmsDto.toShowings(day: LocalDate): List<Showing> {
+fun TheSpaceFilmsDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
     val dayText = day.toString()
     return result.filter { it.filmTitle.isNotBlank() }.flatMap { film ->
         film.showingGroups
@@ -28,7 +28,7 @@ fun TheSpaceFilmsDto.toShowings(day: LocalDate): List<Showing> {
             .filter { it.startTime.take(10) == dayText && it.startTime.length >= 16 }
             .map {
                 Showing(
-                    cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), Cinema.THE_SPACE,
+                    cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), venue,
                     it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() }
                 )
             }

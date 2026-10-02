@@ -4,6 +4,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class UciTheatresDto(
+    val data: List<UciTheatreDto> = emptyList()
+)
+
+@Serializable
+data class UciTheatreDto(
+    val id: Int = 0,
+    val name: String = "",
+    val slug: String = "",
+    val city: String = "",
+    val province: String = "",
+    val region: String = ""
+)
+
+@Serializable
 data class UciProgrammingDto(
     val data: List<UciMovieDto> = emptyList()
 )

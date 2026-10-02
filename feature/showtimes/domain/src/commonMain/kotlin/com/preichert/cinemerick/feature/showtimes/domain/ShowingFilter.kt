@@ -25,10 +25,10 @@ fun List<Showing>.filterShowings(
     }.distinct()
 }
 
-/** Already fetched results cover the request when it asks for no new day and no new cinema. */
+/** Already fetched results cover the request when it asks for no new day and no new venue. */
 fun needsFetch(
     fetchedDays: Set<LocalDate>,
-    fetchedCinemas: Set<Cinema>,
+    fetchedVenues: Set<Venue>,
     days: Set<LocalDate>,
-    cinemas: Set<Cinema>
-): Boolean = !fetchedDays.containsAll(days) || !fetchedCinemas.containsAll(cinemas)
+    venues: Set<Venue>
+): Boolean = !fetchedDays.containsAll(days) || !fetchedVenues.containsAll(venues)

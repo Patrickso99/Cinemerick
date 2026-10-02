@@ -7,7 +7,7 @@ data class FilmGroup(
 )
 
 fun List<Showing>.groupByFilm(): List<FilmGroup> {
-    val showingOrder = compareBy<Showing>({ it.day }, { it.time }, { it.cinema.displayName })
+    val showingOrder = compareBy<Showing>({ it.day }, { it.time }, { it.venue.name })
 
     return groupBy { filmKey(it.title) }
         .entries
@@ -20,6 +20,6 @@ fun List<Showing>.groupByFilm(): List<FilmGroup> {
         }
 }
 
-// UCI posters are preferred; The Space's are the fallback.
+// UCI posters are preferred; others are the fallback.
 private fun List<Showing>.posterUrl(): String? =
-    (firstOrNull { it.cinema == Cinema.UCI && it.posterUrl != null } ?: firstOrNull { it.posterUrl != null })?.posterUrl
+    (firstOrNull { it.venue.chain == Chain.UCI && it.posterUrl != null } ?: firstOrNull { it.posterUrl != null })?.posterUrl

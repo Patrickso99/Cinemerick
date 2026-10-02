@@ -5,6 +5,7 @@ import com.preichert.cinemerick.core.domain.Result
 import kotlinx.datetime.LocalDate
 
 interface ShowtimesDataSource {
-    val cinema: Cinema
-    suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network>
+    val chain: Chain
+    suspend fun getVenues(): Result<List<Venue>, DataError.Network>
+    suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network>
 }

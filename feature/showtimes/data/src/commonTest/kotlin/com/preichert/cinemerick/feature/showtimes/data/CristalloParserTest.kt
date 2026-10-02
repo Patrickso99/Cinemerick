@@ -1,6 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
@@ -9,6 +10,7 @@ import kotlin.test.assertEquals
 class CristalloParserTest {
 
     private val day = LocalDate(2026, 10, 4)
+    private val venueCristallo = Venue(Chain.CRISTALLO, "oderzo", "Oderzo", null, null)
 
     private fun film(title: String, poster: String, vararg times: String) = """
         <div class="amy-movie-item">
@@ -34,27 +36,27 @@ class CristalloParserTest {
     fun parsesFilmsTimesAndPoster() {
         val html = film("DIGGER", "https://x/digger.jpg", "17.00", "21.15") + film("CARAVAGGIO", "https://x/car.jpg", "19.00")
 
-        val showings = parseCristalloShowings(html, day)
+        val showings = parseCristalloShowings(html, venueCristallo, day)
 
         assertEquals(listOf("Digger", "Digger", "Caravaggio"), showings.map { it.title })
         assertEquals(listOf(LocalTime(17, 0), LocalTime(21, 15), LocalTime(19, 0)), showings.map { it.time })
         assertEquals("https://x/digger.jpg", showings.first().posterUrl)
         assertEquals(setOf(day), showings.map { it.day }.toSet())
-        assertEquals(setOf(Cinema.CRISTALLO), showings.map { it.cinema }.toSet())
+        assertEquals(setOf(venueCristallo), showings.map { it.venue }.toSet())
     }
 
     @Test
     fun readsTimesWithLeadingSpaceAndEntranceNote() {
         val html = film("DIGGER", "https://x/d.jpg", "12.30 INGRESSO 5€", " 14.45", "11.00 - INGRESSO 5€")
 
-        assertEquals(listOf(LocalTime(12, 30), LocalTime(14, 45), LocalTime(11, 0)), parseCristalloShowings(html, day).map { it.time })
+        assertEquals(listOf(LocalTime(12, 30), LocalTime(14, 45), LocalTime(11, 0)), parseCristalloShowings(html, venueCristallo, day).map { it.time })
     }
 
     @Test
     fun unescapesTitleEntities() {
         val html = film("SANTIAGO &#8211; UN CAMMINO", "https://x/s.jpg", "20.30") + film("L&#8217;ISOLA DEI RICORDI", "https://x/i.jpg", "18.00")
 
-        assertEquals(listOf("Santiago – Un Cammino", "L’Isola Dei Ricordi"), parseCristalloShowings(html, day).map { it.title })
+        assertEquals(listOf("Santiago – Un Cammino", "L’Isola Dei Ricordi"), parseCristalloShowings(html, venueCristallo, day).map { it.title })
     }
 
     @Test
@@ -62,11 +64,11 @@ class CristalloParserTest {
         val html = film("DIGGER", "https://x/d.jpg", "17.00")
         val json = "\"" + html.replace("\\", "\\\\").replace("\"", "\\\"").replace("/", "\\/").replace("\n", "\\r\\n") + "\""
 
-        assertEquals(listOf(LocalTime(17, 0)), parseCristalloShowings(json, day).map { it.time })
+        assertEquals(listOf(LocalTime(17, 0)), parseCristalloShowings(json, venueCristallo, day).map { it.time })
     }
 
     @Test
     fun returnsNothingForAnEmptyDay() {
-        assertEquals(emptyList(), parseCristalloShowings("\"\"", day))
+        assertEquals(emptyList(), parseCristalloShowings("\"\"", venueCristallo, day))
     }
 }

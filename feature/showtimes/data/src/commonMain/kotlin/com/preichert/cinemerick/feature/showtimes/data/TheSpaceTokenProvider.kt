@@ -21,12 +21,12 @@ class TheSpaceTokenProvider(
             if (!forceRefresh && cached != null) return@withLock Result.Success(cached)
 
             when (val response = httpClient.getResponse(CINEMA_PAGE_URL)) {
-                is Result.Error -> response
+                is Result.Failure -> response
                 is Result.Success -> {
                     val token = response.data.headers.getAll(HttpHeaders.SetCookie).orEmpty()
                         .firstNotNullOfOrNull { TOKEN_REGEX.find(it)?.groupValues?.get(1) }
                     if (token == null) {
-                        Result.Error(DataError.Network.UNAUTHORIZED)
+                        Result.Failure(DataError.Network.UNAUTHORIZED)
                     } else {
                         cachedToken = token
                         Result.Success(token)

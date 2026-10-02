@@ -44,14 +44,14 @@ suspend inline fun <reified T> safeCall(
     execute: () -> HttpResponse
 ): Result<T, DataError.Network> {
     return when (val result = safeResponse(execute)) {
-        is Result.Error -> result
+        is Result.Failure -> result
         is Result.Success -> try {
             Result.Success(result.data.body<T>())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             logFailure("Deserialization failed", e)
-            Result.Error(DataError.Network.SERIALIZATION)
+            Result.Failure(DataError.Network.SERIALIZATION)
         }
     }
 }
@@ -63,15 +63,15 @@ suspend inline fun safeResponse(
         execute()
     } catch (e: UnresolvedAddressException) {
         logFailure("No internet", e)
-        return Result.Error(DataError.Network.NO_INTERNET)
+        return Result.Failure(DataError.Network.NO_INTERNET)
     } catch (e: SerializationException) {
         logFailure("Serialization failed", e)
-        return Result.Error(DataError.Network.SERIALIZATION)
+        return Result.Failure(DataError.Network.SERIALIZATION)
     } catch (e: CancellationException) {
         throw e
     } catch (e: Throwable) {
         logFailure("Request failed", e)
-        return Result.Error(DataError.Network.UNKNOWN)
+        return Result.Failure(DataError.Network.UNKNOWN)
     }
     return statusToResult(response)
 }
@@ -83,16 +83,16 @@ fun statusToResult(response: HttpResponse): Result<HttpResponse, DataError.Netwo
     if (response.status.value !in 200..299) log.w { "HTTP ${response.status.value}" }
     return when (response.status.value) {
         in 200..299 -> Result.Success(response)
-        400 -> Result.Error(DataError.Network.BAD_REQUEST)
-        401 -> Result.Error(DataError.Network.UNAUTHORIZED)
-        403 -> Result.Error(DataError.Network.FORBIDDEN)
-        404 -> Result.Error(DataError.Network.NOT_FOUND)
-        408 -> Result.Error(DataError.Network.REQUEST_TIMEOUT)
-        409 -> Result.Error(DataError.Network.CONFLICT)
-        429 -> Result.Error(DataError.Network.TOO_MANY_REQUESTS)
-        503 -> Result.Error(DataError.Network.SERVICE_UNAVAILABLE)
-        in 500..599 -> Result.Error(DataError.Network.SERVER_ERROR)
-        else -> Result.Error(DataError.Network.UNKNOWN)
+        400 -> Result.Failure(DataError.Network.BAD_REQUEST)
+        401 -> Result.Failure(DataError.Network.UNAUTHORIZED)
+        403 -> Result.Failure(DataError.Network.FORBIDDEN)
+        404 -> Result.Failure(DataError.Network.NOT_FOUND)
+        408 -> Result.Failure(DataError.Network.REQUEST_TIMEOUT)
+        409 -> Result.Failure(DataError.Network.CONFLICT)
+        429 -> Result.Failure(DataError.Network.TOO_MANY_REQUESTS)
+        503 -> Result.Failure(DataError.Network.SERVICE_UNAVAILABLE)
+        in 500..599 -> Result.Failure(DataError.Network.SERVER_ERROR)
+        else -> Result.Failure(DataError.Network.UNKNOWN)
     }
 }
 
@@ -113,15 +113,15 @@ suspend inline fun <reified T> withRetry(
         val result = execute()
         when {
             result is Result.Success<T> -> return result
-            result is Result.Error && isTransientError(result.error) -> {
+            result is Result.Failure && isTransientError(result.error) -> {
                 lastError = result.error
                 if (attempt < maxAttempts - 1) {
                     val delayMs = 1000L * (1 shl attempt)
                     delay(delayMs)
                 }
             }
-            result is Result.Error -> return result
+            result is Result.Failure -> return result
         }
     }
-    return Result.Error(lastError ?: DataError.Network.UNKNOWN)
+    return Result.Failure(lastError ?: DataError.Network.UNKNOWN)
 }

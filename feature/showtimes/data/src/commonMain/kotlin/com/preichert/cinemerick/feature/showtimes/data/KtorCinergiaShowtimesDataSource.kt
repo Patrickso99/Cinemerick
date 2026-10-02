@@ -6,9 +6,10 @@ import io.ktor.client.statement.bodyAsText
 import com.preichert.cinemerick.core.data.getResponse
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
-import com.preichert.cinemerick.feature.showtimes.domain.Cinema
+import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -23,22 +24,27 @@ class KtorCinergiaShowtimesDataSource(
     private val httpClient: HttpClient
 ) : ShowtimesDataSource {
 
-    override val cinema = Cinema.CINERGIA
+    override val chain = Chain.CINERGIA
 
     // The site answers 429 to bursts of requests, so only a couple of days are fetched at a time.
     private val permits = Semaphore(MAX_CONCURRENT_REQUESTS)
 
-    override suspend fun getShowings(days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
+    override suspend fun getVenues(): Result<List<Venue>, DataError.Network> =
+        Result.Success(listOf(
+            Venue(Chain.CINERGIA, "conegliano", "Conegliano", "Veneto", "https://coneglianocinergia.18tickets.it")
+        ))
+
+    override suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
         coroutineScope {
-            days.map { day -> async { permits.withPermit { fetchDay(day) } } }.awaitAll().mergeResults()
+            days.map { day -> async { permits.withPermit { fetchDay(venue, day) } } }.awaitAll().mergeResults()
         }
 
-    private suspend fun fetchDay(day: LocalDate): Result<List<Showing>, DataError.Network> =
+    private suspend fun fetchDay(venue: Venue, day: LocalDate): Result<List<Showing>, DataError.Network> =
         when (val response = httpClient.getResponse("$BASE_URL/film/fetch_films.js?date=$day&cinema=&district=&technology=&month=", AJAX_HEADERS)) {
-            is Result.Error -> response
+            is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = parseCinergiaShowings(html, day)
+                val showings = parseCinergiaShowings(html, venue, day)
                 log.d { "$day: ${html.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

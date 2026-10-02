@@ -7,6 +7,6 @@ import com.preichert.cinemerick.core.domain.Result
 internal fun <T> List<Result<List<T>, DataError.Network>>.mergeResults(): Result<List<T>, DataError.Network> {
     val successes = filterIsInstance<Result.Success<List<T>>>()
     if (successes.isNotEmpty()) return Result.Success(successes.flatMap { it.data })
-    val firstError = filterIsInstance<Result.Error<DataError.Network>>().firstOrNull()
-    return firstError ?: Result.Success(emptyList())
+    val firstFailure = filterIsInstance<Result.Failure<DataError.Network>>().firstOrNull()
+    return firstFailure ?: Result.Success(emptyList())
 }

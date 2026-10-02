@@ -12,21 +12,25 @@ class ShowtimesLogicTest {
     private val friday = LocalDate(2026, 10, 2)
     private val farPast = LocalDateTime(2026, 9, 1, 0, 0)
 
-    private fun showing(title: String, day: LocalDate, time: String, cinema: Cinema) =
-        Showing(title, day, LocalTime.parse(time), cinema)
+    private val venueUci = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", region = "Veneto", webUrl = "https://ucicinemas.it")
+    private val venueTheSpace = Venue(Chain.THE_SPACE, "1009", "Silea", region = "Veneto", webUrl = "https://thespace.it")
+    private val venueNotorious = Venue(Chain.NOTORIOUS, "ferrara", "Ferrara", region = "Emilia-Romagna", webUrl = "https://notoriouscinemas.it")
+
+    private fun showing(title: String, day: LocalDate, time: String, venue: Venue) =
+        Showing(title, day, LocalTime.parse(time), venue)
 
     private fun showing(title: String, format: String?) =
-        Showing(title, thursday, LocalTime.parse("21:00"), Cinema.UCI, format)
+        Showing(title, thursday, LocalTime.parse("21:00"), venueUci, format)
 
     @Test
     fun fetchIsNeededOnlyForNewDaysOrCinemas() {
         val days = setOf(thursday, friday)
-        val cinemas = setOf(Cinema.UCI, Cinema.THE_SPACE)
+        val venues = setOf(venueUci, venueTheSpace)
 
-        assertEquals(false, needsFetch(days, cinemas, setOf(thursday), setOf(Cinema.UCI)))
-        assertEquals(false, needsFetch(days, cinemas, days, cinemas))
-        assertEquals(true, needsFetch(days, cinemas, days, cinemas + Cinema.NOTORIOUS))
-        assertEquals(true, needsFetch(days, cinemas, days + LocalDate(2026, 10, 3), cinemas))
+        assertEquals(false, needsFetch(days, venues, setOf(thursday), setOf(venueUci)))
+        assertEquals(false, needsFetch(days, venues, days, venues))
+        assertEquals(true, needsFetch(days, venues, days, venues + venueNotorious))
+        assertEquals(true, needsFetch(days, venues, days + LocalDate(2026, 10, 3), venues))
     }
 
     @Test
@@ -68,10 +72,10 @@ class ShowtimesLogicTest {
     @Test
     fun sameFilmFromBothCinemasIsGroupedWithShortestTitleAsHeader() {
         val groups = listOf(
-            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", Cinema.THE_SPACE),
-            showing("Heart of the Beast", thursday, "21:40", Cinema.UCI),
-            showing("Naza", friday, "21:40", Cinema.THE_SPACE),
-            showing("Naza C.A.", friday, "19:40", Cinema.UCI)
+            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", venueTheSpace),
+            showing("Heart of the Beast", thursday, "21:40", venueUci),
+            showing("Naza", friday, "21:40", venueTheSpace),
+            showing("Naza C.A.", friday, "19:40", venueUci)
         ).groupByFilm()
 
         // Group titles are the shortest originals
@@ -87,8 +91,8 @@ class ShowtimesLogicTest {
         )
         // Cinema and time ordering is preserved
         assertEquals(
-            listOf(Cinema.UCI, Cinema.THE_SPACE),
-            groups.first().showings.map { it.cinema }
+            listOf(venueUci, venueTheSpace),
+            groups.first().showings.map { it.venue }
         )
         assertEquals(
             listOf(LocalTime.parse("19:40"), LocalTime.parse("21:40")),
@@ -99,8 +103,8 @@ class ShowtimesLogicTest {
     @Test
     fun pollTextUsesGroupTitleForAllCinemas() {
         val text = listOf(
-            showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", Cinema.THE_SPACE),
-            showing("Heart of the Beast", thursday, "21:40", Cinema.UCI)
+            showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", venueTheSpace),
+            showing("Heart of the Beast", thursday, "21:40", venueUci)
         ).groupByFilm().toPollText()
 
         assertEquals(
@@ -140,9 +144,9 @@ class ShowtimesLogicTest {
     @Test
     fun differentFormatsOfSameFilmAreNotGroupedTogether() {
         val groups = listOf(
-            showing("Avatar 2D", thursday, "21:00", Cinema.THE_SPACE),
-            showing("Avatar 3D", thursday, "19:00", Cinema.UCI),
-            showing("Avatar XL", friday, "21:30", Cinema.THE_SPACE)
+            showing("Avatar 2D", thursday, "21:00", venueTheSpace),
+            showing("Avatar 3D", thursday, "19:00", venueUci),
+            showing("Avatar XL", friday, "21:30", venueTheSpace)
         ).groupByFilm()
 
         // Each format variant has a different filmKey, so they are separate groups
@@ -156,10 +160,10 @@ class ShowtimesLogicTest {
     @Test
     fun perDayRangeIsApplied() {
         val showings = listOf(
-            showing("Digger", thursday, "19:00", Cinema.THE_SPACE),
-            showing("Digger", thursday, "21:30", Cinema.UCI),
-            showing("Digger", friday, "21:30", Cinema.UCI),
-            showing("Digger", friday, "23:15", Cinema.UCI)
+            showing("Digger", thursday, "19:00", venueTheSpace),
+            showing("Digger", thursday, "21:30", venueUci),
+            showing("Digger", friday, "21:30", venueUci),
+            showing("Digger", friday, "23:15", venueUci)
         )
         val ranges = listOf(
             DayRange(thursday, min = LocalTime.parse("21:00"), max = LocalTime.parse("22:30")),
@@ -170,8 +174,8 @@ class ShowtimesLogicTest {
 
         assertEquals(
             listOf(
-                showing("Digger", thursday, "21:30", Cinema.UCI),
-                showing("Digger", friday, "23:15", Cinema.UCI)
+                showing("Digger", thursday, "21:30", venueUci),
+                showing("Digger", friday, "23:15", venueUci)
             ),
             result
         )
@@ -181,9 +185,9 @@ class ShowtimesLogicTest {
     fun pastShowingsOfTodayAreDropped() {
         val now = LocalDateTime(2026, 10, 1, 20, 0)
         val showings = listOf(
-            showing("Digger", thursday, "19:40", Cinema.THE_SPACE),
-            showing("Digger", thursday, "20:00", Cinema.THE_SPACE),
-            showing("Digger", thursday, "21:00", Cinema.THE_SPACE)
+            showing("Digger", thursday, "19:40", venueTheSpace),
+            showing("Digger", thursday, "20:00", venueTheSpace),
+            showing("Digger", thursday, "21:00", venueTheSpace)
         )
 
         val result = showings.filterShowings(listOf(DayRange(thursday)), emptyList(), now)
@@ -193,7 +197,7 @@ class ShowtimesLogicTest {
 
     @Test
     fun pollLineMatchesPythonFormat() {
-        val line = showing("Digger", thursday, "21:00", Cinema.THE_SPACE).toPollLine()
+        val line = showing("Digger", thursday, "21:00", venueTheSpace).toPollLine()
 
         assertEquals("Digger (Giovedì - 21:00 - Silea)", line)
     }
@@ -201,7 +205,7 @@ class ShowtimesLogicTest {
     @Test
     fun pollLineAppendsFormatWhenPresent() {
         val day = LocalDate(2026, 10, 1)
-        val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), Cinema.UCI, "XL")
+        val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), venueUci, "XL")
         assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon - XL)", xl.toPollLine())
         assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon)", xl.copy(format = null).toPollLine())
     }
@@ -209,7 +213,7 @@ class ShowtimesLogicTest {
     @Test
     fun sameTimeInDifferentFormatsIsNotMerged() {
         val day = LocalDate(2026, 10, 1)
-        val xl = Showing("Avengers", day, LocalTime.parse("20:15"), Cinema.UCI, "XL")
+        val xl = Showing("Avengers", day, LocalTime.parse("20:15"), venueUci, "XL")
         val twoD = xl.copy(format = "2D")
         assertEquals(2, listOf(xl, twoD).distinct().size)
     }
@@ -243,8 +247,8 @@ class ShowtimesLogicTest {
     @Test
     fun sameFilmWithPunctuationVariantsIsGrouped() {
         val groups = listOf(
-            showing("Coyote Vs Acme", thursday, "19:00", Cinema.THE_SPACE),
-            showing("Coyote Vs. Acme", thursday, "21:00", Cinema.UCI)
+            showing("Coyote Vs Acme", thursday, "19:00", venueTheSpace),
+            showing("Coyote Vs. Acme", thursday, "21:00", venueUci)
         ).groupByFilm()
 
         assertEquals(1, groups.size)
@@ -261,8 +265,8 @@ class ShowtimesLogicTest {
     @Test
     fun carsMovieVariantsAreGroupedTogether() {
         val groups = listOf(
-            showing("Cars - Motori Ruggenti", thursday, "17:00", Cinema.THE_SPACE),
-            showing("Cars: Motori Ruggenti - 20 Anni", thursday, "19:00", Cinema.UCI)
+            showing("Cars - Motori Ruggenti", thursday, "17:00", venueTheSpace),
+            showing("Cars: Motori Ruggenti - 20 Anni", thursday, "19:00", venueUci)
         ).groupByFilm()
 
         assertEquals(1, groups.size)
@@ -282,12 +286,52 @@ class ShowtimesLogicTest {
     @Test
     fun linkinParkVariantsAreGroupedTogether() {
         val groups = listOf(
-            showing("Linkin Park: Unshatter", thursday, "19:00", Cinema.THE_SPACE),
-            showing("LINKIN PARK UNSHATTER - LINGUA ORIGINALE", thursday, "21:00", Cinema.UCI)
+            showing("Linkin Park: Unshatter", thursday, "19:00", venueTheSpace),
+            showing("LINKIN PARK UNSHATTER - LINGUA ORIGINALE", thursday, "21:00", venueUci)
         ).groupByFilm()
 
         assertEquals(1, groups.size)
         assertEquals("Linkin Park: Unshatter", groups.first().title)
         assertEquals(2, groups.first().showings.size)
+    }
+
+    @Test
+    fun filmKeyStripsTrailingFormatSuffixInParentheses() {
+        // Format suffixes in trailing parentheses should be stripped
+        assertEquals(filmKey("Avengers: Endgame Extra"), filmKey("Avengers: Endgame Extra (Infinity Vision)"))
+        assertEquals(filmKey("Avatar"), filmKey("Avatar (IMAX)"))
+        assertEquals("avengers endgame extra", filmKey("Avengers: Endgame Extra (Infinity Vision)"))
+    }
+
+    @Test
+    fun avengersAndAvengersWithInfinityVisionAreGroupedTogether() {
+        val groups = listOf(
+            showing("Avengers: Endgame Extra", thursday, "19:00", venueTheSpace),
+            showing("Avengers: Endgame Extra (Infinity Vision)", thursday, "21:00", venueUci)
+        ).groupByFilm()
+
+        assertEquals(1, groups.size)
+        assertEquals("Avengers: Endgame Extra", groups.first().title)
+        assertEquals(2, groups.first().showings.size)
+    }
+
+    @Test
+    fun unrelatedParenthesesAreNotStripped() {
+        // Parentheses without format keywords should not be stripped
+        assertEquals(filmKey("Film (Parte 2)"), filmKey("Film (Parte 2)"))
+        assertEquals(false, filmKey("Avatar 2D") == filmKey("Avatar 3D"))
+        assertEquals(false, filmKey("Avatar XL") == filmKey("Avatar"))
+    }
+
+    @Test
+    fun avatarVariantsRemainSeparate() {
+        // Avatar in different formats should NOT be grouped together
+        val groups = listOf(
+            showing("Avatar 2D", thursday, "19:00", venueTheSpace),
+            showing("Avatar 3D", thursday, "19:00", venueUci),
+            showing("Avatar XL", thursday, "19:00", venueNotorious)
+        ).groupByFilm()
+
+        assertEquals(3, groups.size)
     }
 }

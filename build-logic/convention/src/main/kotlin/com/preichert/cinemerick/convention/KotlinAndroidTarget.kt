@@ -17,6 +17,7 @@ internal fun Project.configureAndroidTarget(packageName: String) {
             minSdk = minSdkVersion
             compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
             withHostTest { }
+            androidResources { enable = true }
         }
     }
 }
