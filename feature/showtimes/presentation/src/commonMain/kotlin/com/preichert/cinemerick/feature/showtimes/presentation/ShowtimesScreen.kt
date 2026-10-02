@@ -304,10 +304,9 @@ private fun ColumnScope.FiltersSection(
                             )
                         }
                         OutlinedButton(
-                            onClick = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) },
-                            modifier = Modifier.height(40.dp)
+                            onClick = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) }
                         ) {
-                            Text(stringResource(Res.string.add_venue))
+                            Text(stringResource(Res.string.add_venue), style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
