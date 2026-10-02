@@ -220,4 +220,35 @@ class ShowtimesLogicTest {
         assertEquals("Avengers: Endgame Extra", cleanTitle("Avengers:  Endgame Extra "))
         assertEquals("Linkin Park: Unshatter C.A.", cleanTitle("Linkin Park: Unshatter C.A."))
     }
+
+    @Test
+    fun filmKeyHandlesPunctuationAndAccentVariantsCorrectly() {
+        // Periods: "Vs." should match "Vs"
+        assertEquals(filmKey("Coyote Vs Acme"), filmKey("Coyote Vs. Acme"))
+
+        // Apostrophes and backticks: different apostrophe variants should match
+        assertEquals(filmKey("L'Isola Dei Ricordi"), filmKey("L`Isola Dei Ricordi"))
+
+        // Multiple punctuation: various punctuation should be ignored
+        assertEquals(filmKey("Toy Story"), filmKey("Toy Story."))
+
+        // Commas and other punctuation
+        assertEquals(filmKey("Hello, World!"), filmKey("Hello World"))
+
+        // Mixed: accents with punctuation
+        assertEquals(filmKey("L'Été"), filmKey("L'Ete"))
+        assertEquals(filmKey("L'Été"), filmKey("LÉte"))
+    }
+
+    @Test
+    fun sameFilmWithPunctuationVariantsIsGrouped() {
+        val groups = listOf(
+            showing("Coyote Vs Acme", thursday, "19:00", Cinema.THE_SPACE),
+            showing("Coyote Vs. Acme", thursday, "21:00", Cinema.UCI)
+        ).groupByFilm()
+
+        assertEquals(1, groups.size)
+        assertEquals("Coyote Vs Acme", groups.first().title)
+        assertEquals(2, groups.first().showings.size)
+    }
 }
