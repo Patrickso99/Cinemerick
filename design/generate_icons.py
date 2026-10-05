@@ -1,10 +1,8 @@
-"""Builds the Cinemerick app icon: the five cinema logos as round badges around a play button, on a purple gradient.
+"""Builds the Cinemerick app icon: a white cinema ticket with a play button and an Italian tricolour stub, on a purple gradient.
 
 Run from the repo root: python3 design/generate_icons.py [--install]
-Sources: design/logos/uci.jpg, the_space.jpg, notorious.jpg, cristallo.jpg (square jpgs), cinergia.png (transparent wordmark). Outputs: design/out/*.png;
---install also copies them where each platform expects them.
+Outputs: design/out/*.png; --install also copies them where each platform expects them.
 """
-import math
 import shutil
 import subprocess
 import sys
@@ -19,35 +17,10 @@ OUT.mkdir(exist_ok=True)
 
 SS = 2  # supersampling for smooth edges
 
-_cinergia = Image.open(ROOT / "logos" / "cinergia.png").convert("RGBA")
-CINERGIA_BG = (0x41, 0x4C, 0x4C)  # same as the Cinergia badge color
-
-
-def square_logo(name):
-    return Image.open(ROOT / "logos" / name).convert("RGB")
-
-
-def cinergia_logo():
-    """The transparent wordmark centred on a dark grey square."""
-    word = _cinergia.crop(_cinergia.getchannel("A").getbbox())
-    canvas = Image.new("RGB", (480, 480), CINERGIA_BG)
-    w = 400
-    word = word.resize((w, int(word.height * w / word.width)), Image.LANCZOS)
-    canvas.paste(word, ((480 - w) // 2, (480 - word.height) // 2), word)
-    return canvas
-
-
-# Clockwise from the top: logo and the zoom that fits it in its circle (the square's corners are cropped away).
-BADGES = [
-    (square_logo("uci.jpg"), 1.0),
-    (square_logo("the_space.jpg"), 0.9),
-    (cinergia_logo(), 1.0),
-    (square_logo("notorious.jpg"), 1.0),
-    (square_logo("cristallo.jpg"), 0.92),
-]
-RING_RADIUS = 0.285  # of the canvas, centre of a badge to the canvas centre
-BADGE_DIAMETER = 0.30
 GRADIENT = ((0x2A, 0x14, 0x45), (0x6A, 0x4C, 0x93))  # the app's purple, dark at the top-left
+PLAY_PURPLE = (0x4B, 0x2E, 0x83)
+TRICOLOUR = ((0x00, 0x92, 0x46), (0xFF, 0xFF, 0xFF), (0xCE, 0x2B, 0x37))
+TICKET_TILT = 12  # degrees, counter-clockwise
 
 
 def gradient_background(size):
@@ -56,46 +29,58 @@ def gradient_background(size):
     return Image.composite(Image.new("RGB", (size, size), GRADIENT[1]), Image.new("RGB", (size, size), GRADIENT[0]), mix)
 
 
-def badges_layer(size, scale=1.0):
-    """Transparent layer with the five round badges (white rim, soft shadow) and a play button in the middle, pulled towards the centre by `scale`."""
+def ticket_layer(size, scale=1.0):
+    """Transparent layer with the tilted ticket (soft shadow), pulled towards the centre by `scale`."""
     big = size * SS
-    layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    w, h = int(big * 0.68 * scale), int(big * 0.42 * scale)
+    stub = int(w * 0.24)  # the tear-off part on the right
+    radius = int(h * 0.10)
+    notch = int(h * 0.12)
+    ticket = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(ticket)
+    d.rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, fill=(255, 255, 255, 255))
+    # Half-circle notches where the stub tears off, top and bottom.
+    cut = w - stub
+    mask = Image.new("L", (w, h), 255)
+    md = ImageDraw.Draw(mask)
+    md.ellipse([cut - notch, -notch, cut + notch, notch], fill=0)
+    md.ellipse([cut - notch, h - notch, cut + notch, h + notch], fill=0)
+    ticket.putalpha(ImageChops.multiply(ticket.getchannel("A"), mask))
+    d = ImageDraw.Draw(ticket)
+    # Perforation between the two parts.
+    dash = max(2, int(h * 0.035))
+    y = notch + dash * 2
+    while y < h - notch - dash * 2:
+        d.rounded_rectangle([cut - dash // 2, y, cut + dash // 2, y + dash * 2], radius=dash // 2, fill=(0x9A, 0x8B, 0xB8, 255))
+        y += dash * 4
+    # Play button on the main part.
+    cx, cy, r = (cut) / 2, h / 2, h * 0.27
+    d.polygon([(cx - r * 0.62, cy - r), (cx - r * 0.62, cy + r), (cx + r * 1.05, cy)], fill=PLAY_PURPLE + (255,))
+    # Tricolour on the stub: three bars (the white one is edged so it stays visible on the white ticket).
+    bar_w = int(stub * 0.22)
+    bar_h = int(h * 0.62)
+    gap = int(bar_w * 0.22)
+    total = 3 * bar_w + 2 * gap
+    x0 = cut + (stub - total) // 2
+    y0 = (h - bar_h) // 2
+    for i, colour in enumerate(TRICOLOUR):
+        x = x0 + i * (bar_w + gap)
+        d.rounded_rectangle([x, y0, x + bar_w, y0 + bar_h], radius=bar_w // 3, fill=colour + (255,),
+                            outline=(0x9A, 0x8B, 0xB8, 255) if colour == (255, 255, 255) else None, width=max(2, int(h * 0.012)))
+    canvas = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    rotated = ticket.rotate(TICKET_TILT, resample=Image.BICUBIC, expand=True)
+    pos = ((big - rotated.width) // 2, (big - rotated.height) // 2)
     shadow = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    d = int(big * BADGE_DIAMETER * scale)
-    rim = max(2, int(d * 0.045))
-    for i, (logo, zoom) in enumerate(BADGES):
-        angle = -math.pi / 2 + i * 2 * math.pi / 5
-        cx = big / 2 + math.cos(angle) * big * RING_RADIUS * scale
-        cy = big / 2 + math.sin(angle) * big * RING_RADIUS * scale
-        inner = d - 2 * rim
-        face = Image.new("RGB", (inner, inner), logo.getpixel((2, 2)))
-        scaled = logo.resize((int(inner * zoom), int(inner * zoom)), Image.LANCZOS)
-        face.paste(scaled, ((inner - scaled.width) // 2, (inner - scaled.height) // 2))
-        mask = Image.new("L", (inner * 2, inner * 2), 0)
-        ImageDraw.Draw(mask).ellipse([0, 0, inner * 2 - 1, inner * 2 - 1], fill=255)
-        mask = mask.resize((inner, inner), Image.LANCZOS)
-        pos = (int(cx - d / 2), int(cy - d / 2))
-        ring = Image.new("L", (d * 2, d * 2), 0)
-        ImageDraw.Draw(ring).ellipse([0, 0, d * 2 - 1, d * 2 - 1], fill=255)
-        ring = ring.resize((d, d), Image.LANCZOS)
-        ImageDraw.Draw(shadow).ellipse([pos[0], pos[1] + d * 0.05, pos[0] + d, pos[1] + d * 1.05], fill=(0, 0, 0, 110))
-        layer.paste(Image.new("RGBA", (d, d), (255, 255, 255, 255)), pos, ring)
-        layer.paste(face, (pos[0] + rim, pos[1] + rim), mask)
-    # A white rounded play triangle in the middle.
-    r = big * 0.075 * scale
-    pts = [(big / 2 - r * 0.62, big / 2 - r), (big / 2 - r * 0.62, big / 2 + r), (big / 2 + r * 1.05, big / 2)]
-    play = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    ImageDraw.Draw(play).polygon(pts, fill=(255, 255, 255, 235))
-    play = play.filter(ImageFilter.GaussianBlur(big * 0.0008))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(big * 0.012))
-    out = Image.alpha_composite(shadow, layer)
-    out = Image.alpha_composite(out, play)
+    shadow.paste(Image.new("RGBA", rotated.size, (0, 0, 0, 120)), (pos[0], pos[1] + int(big * 0.015)), rotated.getchannel("A"))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(big * 0.014))
+    canvas.paste(rotated, pos, rotated)
+    out = Image.alpha_composite(shadow, canvas)
     return out.resize((size, size), Image.LANCZOS)
 
 
 def compose(size):
     img = gradient_background(size).convert("RGBA")
-    return Image.alpha_composite(img, badges_layer(size)).convert("RGB")  # iOS requires no transparency
+    return Image.alpha_composite(img, ticket_layer(size)).convert("RGB")  # iOS requires no transparency
 
 
 def build():
@@ -103,7 +88,7 @@ def build():
     master.save(OUT / "icon-1024.png")
     # Android adaptive layers are 108dp with a 66dp safe zone: keep the badges inside the central 66%
     gradient_background(432).save(OUT / "ic_launcher_background.png")
-    badges_layer(432, scale=0.72).save(OUT / "ic_launcher_foreground.png")
+    ticket_layer(432, scale=0.8).save(OUT / "ic_launcher_foreground.png")
     return master
 
 

@@ -7,7 +7,7 @@ import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CinergiaParserTest {
+class EighteenTicketsParserTest {
 
     private val day = LocalDate(2026, 10, 1)
     private val venueCinergia = Venue(Chain.CINERGIA, "conegliano", "Conegliano", null, null)
@@ -31,10 +31,20 @@ class CinergiaParserTest {
     """.trimIndent()
 
     @Test
+    fun readsTrailingOriginalLanguageMarker() {
+        val html = film(1, "DIGGER - V. O.", "01/10/2026", "21:00")
+
+        val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
+
+        assertEquals(listOf("Digger"), showings.map { it.title })
+        assertEquals(listOf("VO"), showings.map { it.format })
+    }
+
+    @Test
     fun parsesFilmsTimesAndPoster() {
         val html = film(1, "VERITY", "01/10/2026", "18:30", "21:00") + film(2, "(V.O.S.) DIGGER", "01/10/2026", "9:05")
 
-        val showings = parseCinergiaShowings(html, venueCinergia, day)
+        val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
 
         assertEquals(listOf("Verity", "Verity", "Digger"), showings.map { it.title })
         assertEquals(listOf(LocalTime(18, 30), LocalTime(21, 0), LocalTime(9, 5)), showings.map { it.time })
@@ -48,11 +58,11 @@ class CinergiaParserTest {
         val html = film(1, "VERITY", "01/10/2026", "18:30")
         val script = "\$(\"#movie-list\").html('" + html.replace("'", "\\'").replace("\n", "\\n").replace("</", "<\\/") + "');"
 
-        assertEquals(listOf(LocalTime(18, 30)), parseCinergiaShowings(script, venueCinergia, day).map { it.time })
+        assertEquals(listOf(LocalTime(18, 30)), parseEighteenTicketsShowings(script, venueCinergia, day).map { it.time })
     }
 
     @Test
     fun ignoresScheduleForAnotherDay() {
-        assertEquals(emptyList(), parseCinergiaShowings(film(1, "VERITY", "02/10/2026", "18:30"), venueCinergia, day))
+        assertEquals(emptyList(), parseEighteenTicketsShowings(film(1, "VERITY", "02/10/2026", "18:30"), venueCinergia, day))
     }
 }

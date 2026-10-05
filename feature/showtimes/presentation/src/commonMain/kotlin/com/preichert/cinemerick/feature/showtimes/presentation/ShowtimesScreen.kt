@@ -781,6 +781,7 @@ private fun Chain.displayName(): String = when (this) {
     Chain.CINERGIA -> "Cinergia"
     Chain.CRISTALLO -> "Cristallo"
     Chain.DON_BOSCO -> "Don Bosco"
+    Chain.CINEMAZERO -> "Cinemazero"
 }
 
 private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
@@ -790,6 +791,7 @@ private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
     Chain.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
     Chain.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
     Chain.DON_BOSCO -> CinemaBrandColors.donBosco to CinemaBrandColors.onDonBosco
+    Chain.CINEMAZERO -> CinemaBrandColors.cinemazero to CinemaBrandColors.onCinemazero
 }
 
 @Composable

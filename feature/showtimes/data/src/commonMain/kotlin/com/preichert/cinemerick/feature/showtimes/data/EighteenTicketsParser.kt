@@ -12,13 +12,14 @@ private val POSTER = Regex("<img[^>]*src='([^']+)'")
 private val SCHEDULE_DAY = Regex("(\\d{2})/(\\d{2})/(\\d{4})")
 private val TIME = Regex("data-time='[^']*'[^>]*>\\s*<li[^>]*>[\\s\\S]*?(\\d{1,2}:\\d{2})")
 private val ORIGINAL_LANGUAGE_PREFIX = Regex("^\\(\\s*V\\.?O\\.?S?\\.?\\s*\\)\\s*", RegexOption.IGNORE_CASE)
+private val ORIGINAL_LANGUAGE_SUFFIX = Regex("\\s*-\\s*V\\.?\\s*O\\.?\\s*$", RegexOption.IGNORE_CASE)
 
 // The site answers its day-switch call (`/film/fetch_films`) with a script that fills the page with an escaped HTML string.
 private fun String.unescapeJs(): String =
     replace("\\'", "'").replace("\\\"", "\"").replace("\\n", "\n").replace("<\\/", "</").replace("\\\\", "\\")
 
 // Each film is: title/poster block, then a `schedule-<id>` section holding the day and its time links.
-internal fun parseCinergiaShowings(response: String, venue: Venue, day: LocalDate): List<Showing> {
+internal fun parseEighteenTicketsShowings(response: String, venue: Venue, day: LocalDate): List<Showing> {
     val html = response.unescapeJs()
     val markers = SCHEDULE_MARKER.findAll(html).toList()
     return markers.mapIndexed { index, marker ->
@@ -32,8 +33,8 @@ internal fun parseCinergiaShowings(response: String, venue: Venue, day: LocalDat
 private fun parseFilm(info: String, schedule: String, venue: Venue, day: LocalDate): List<Showing> {
     val rawTitle = TITLE.findAll(info).lastOrNull()?.groupValues?.get(1)?.unescapeHtml() ?: return emptyList()
     if (!scheduleIsFor(schedule, day)) return emptyList()
-    val isOriginalLanguage = ORIGINAL_LANGUAGE_PREFIX.containsMatchIn(rawTitle)
-    val title = cleanTitle(rawTitle.replace(ORIGINAL_LANGUAGE_PREFIX, ""))
+    val isOriginalLanguage = ORIGINAL_LANGUAGE_PREFIX.containsMatchIn(rawTitle) || ORIGINAL_LANGUAGE_SUFFIX.containsMatchIn(rawTitle)
+    val title = cleanTitle(rawTitle.replace(ORIGINAL_LANGUAGE_PREFIX, "").replace(ORIGINAL_LANGUAGE_SUFFIX, ""))
     val poster = POSTER.findAll(info).lastOrNull()?.groupValues?.get(1)?.takeIf { it.isNotBlank() }
     return TIME.findAll(schedule).map {
         Showing(title, day, LocalTime.parse(it.groupValues[1].padStart(5, '0')), venue, "VO".takeIf { isOriginalLanguage }, poster)

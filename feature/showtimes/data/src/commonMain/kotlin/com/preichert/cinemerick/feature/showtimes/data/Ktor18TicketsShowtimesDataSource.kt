@@ -17,22 +17,20 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.LocalDate
 
-private val log = Logger.withTag("CinergiaShowtimes")
+private val log = Logger.withTag("18TicketsShowtimes")
 
-// Cinergia Conegliano runs on 18tickets: no JSON API, a day is a script response carrying server-rendered HTML.
-class KtorCinergiaShowtimesDataSource(
-    private val httpClient: HttpClient
+// Single-venue cinemas on 18tickets (Cinergia, Cinemazero): no JSON API, a day is a script response carrying server-rendered HTML.
+abstract class Ktor18TicketsShowtimesDataSource(
+    private val httpClient: HttpClient,
+    override val chain: Chain,
+    private val venue: Venue,
+    private val baseUrl: String
 ) : ShowtimesDataSource {
-
-    override val chain = Chain.CINERGIA
 
     // The site answers 429 to bursts of requests, so only a couple of days are fetched at a time.
     private val permits = Semaphore(MAX_CONCURRENT_REQUESTS)
 
-    override suspend fun getVenues(): Result<List<Venue>, DataError.Network> =
-        Result.Success(listOf(
-            Venue(Chain.CINERGIA, "conegliano", "Conegliano", "Veneto", "https://coneglianocinergia.18tickets.it")
-        ))
+    override suspend fun getVenues(): Result<List<Venue>, DataError.Network> = Result.Success(listOf(venue))
 
     override suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network> =
         coroutineScope {
@@ -40,18 +38,17 @@ class KtorCinergiaShowtimesDataSource(
         }
 
     private suspend fun fetchDay(venue: Venue, day: LocalDate): Result<List<Showing>, DataError.Network> =
-        when (val response = httpClient.getResponse("$BASE_URL/film/fetch_films.js?date=$day&cinema=&district=&technology=&month=", AJAX_HEADERS)) {
+        when (val response = httpClient.getResponse("$baseUrl/film/fetch_films.js?date=$day&cinema=&district=&technology=&month=", AJAX_HEADERS)) {
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = parseCinergiaShowings(html, venue, day)
-                log.d { "$day: ${html.length} chars, ${showings.size} showing(s)" }
+                val showings = parseEighteenTicketsShowings(html, venue, day)
+                log.d { "${chain.name} $day: ${html.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }
         }
 
     private companion object {
-        const val BASE_URL = "https://coneglianocinergia.18tickets.it"
         const val MAX_CONCURRENT_REQUESTS = 2
 
         // The `.js` suffix picks the format: an Accept header would be sent twice (the client adds its own JSON one) and make the server fail with 500.
@@ -59,3 +56,17 @@ class KtorCinergiaShowtimesDataSource(
         val AJAX_HEADERS = mapOf("X-Requested-With" to "XMLHttpRequest")
     }
 }
+
+class KtorCinergiaShowtimesDataSource(httpClient: HttpClient) : Ktor18TicketsShowtimesDataSource(
+    httpClient,
+    Chain.CINERGIA,
+    Venue(Chain.CINERGIA, "conegliano", "Conegliano", "Veneto", "https://coneglianocinergia.18tickets.it"),
+    "https://coneglianocinergia.18tickets.it"
+)
+
+class KtorCinemazeroShowtimesDataSource(httpClient: HttpClient) : Ktor18TicketsShowtimesDataSource(
+    httpClient,
+    Chain.CINEMAZERO,
+    Venue(Chain.CINEMAZERO, "pordenone", "Pordenone", "Friuli-Venezia Giulia", "https://cinemazero.it"),
+    "https://multisala.cinemazero.18tickets.it"
+)

@@ -6,5 +6,6 @@ enum class Chain {
     NOTORIOUS,
     CINERGIA,
     CRISTALLO,
-    DON_BOSCO
+    DON_BOSCO,
+    CINEMAZERO
 }
