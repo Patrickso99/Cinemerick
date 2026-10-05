@@ -8,13 +8,13 @@ data class CinemaAppLink(val label: String, val url: String)
 
 fun Venue.appLinks(platform: AppPlatform): List<CinemaAppLink> =
     when (platform) {
-        AppPlatform.ANDROID -> chain.androidStoreLinks()
-        AppPlatform.IOS -> chain.iosStoreLinks()
-        AppPlatform.DESKTOP -> listOfNotNull(
-            webUrl?.let { CinemaAppLink(name, it) }
-                ?: CinemaAppLink(name, chain.defaultWebUrl())
-        )
+        AppPlatform.ANDROID -> chain.androidStoreLinks().ifEmpty { webLinks() }
+        AppPlatform.IOS -> chain.iosStoreLinks().ifEmpty { webLinks() }
+        AppPlatform.DESKTOP -> webLinks()
     }
+
+// For cinemas without an app (or on desktop): the website.
+private fun Venue.webLinks() = listOf(CinemaAppLink(name, webUrl ?: chain.defaultWebUrl()))
 
 private fun Chain.androidStoreLinks() = when (this) {
     Chain.THE_SPACE -> listOf(CinemaAppLink("The Space Cinema", "https://play.google.com/store/apps/details?id=it.thespacecinema.android"))
@@ -25,6 +25,7 @@ private fun Chain.androidStoreLinks() = when (this) {
     Chain.NOTORIOUS -> listOf(CinemaAppLink("Notorious Cinemas", "https://play.google.com/store/apps/details?id=it.creaweb.notorious"))
     Chain.CINERGIA -> listOf(CinemaAppLink("Cinergia", "https://play.google.com/store/apps/details?id=com.eighteentickets"))
     Chain.CRISTALLO -> listOf(CinemaAppLink("Cinema Cristallo", "https://play.google.com/store/apps/details?id=com.cinemacristallo"))
+    Chain.DON_BOSCO -> emptyList()
 }
 
 private fun Chain.iosStoreLinks() = when (this) {
@@ -33,6 +34,7 @@ private fun Chain.iosStoreLinks() = when (this) {
     Chain.NOTORIOUS -> listOf(CinemaAppLink("Notorious Cinemas", "https://apps.apple.com/it/app/notorious-cinemas-webtic/id1450928428"))
     Chain.CINERGIA -> listOf(CinemaAppLink("Cinergia", "https://apps.apple.com/it/app/18tickets/id1234567890"))
     Chain.CRISTALLO -> listOf(CinemaAppLink("Cinema Cristallo", "https://apps.apple.com/it/app/cinema-cristallo/id9876543210"))
+    Chain.DON_BOSCO -> emptyList()
 }
 
 private fun Chain.defaultWebUrl() = when (this) {
@@ -41,4 +43,5 @@ private fun Chain.defaultWebUrl() = when (this) {
     Chain.NOTORIOUS -> "https://www.notoriouscinemas.it"
     Chain.CINERGIA -> "https://coneglianocinergia.18tickets.it"
     Chain.CRISTALLO -> "https://www.cinemacristallo.com"
+    Chain.DON_BOSCO -> "https://cinema.donboscosandona.it"
 }

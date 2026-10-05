@@ -5,5 +5,6 @@ enum class Chain {
     UCI,
     NOTORIOUS,
     CINERGIA,
-    CRISTALLO
+    CRISTALLO,
+    DON_BOSCO
 }

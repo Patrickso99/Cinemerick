@@ -102,4 +102,6 @@ object CinemaBrandColors {
     val onCinergia = Color(0xFFFFFFFF)
     val cristallo = Color(0xFFD22D27)
     val onCristallo = Color(0xFFFFFFFF)
+    val donBosco = Color(0xFF8B3A3B)
+    val onDonBosco = Color(0xFFFFFFFF)
 }

@@ -5,11 +5,11 @@
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-orange)
 ![Ktor](https://img.shields.io/badge/Ktor-3.6.0-purple)
 
-A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (The Space Cinema, UCI, Notorious, Cinergia, Cristallo) and generates shareable poll text for group chats.
+A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (The Space, UCI, Notorious, Cinergia, Cristallo, Don Bosco) and generates shareable poll text for group chats.
 
 ## Features
 
-- 🎬 **Multi-source aggregation**: Query 5 cinema chains (The Space, UCI, Notorious, Cinergia, Cristallo) with multiple venues per chain, discovered at runtime from each chain's API
+- 🎬 **Multi-source aggregation**: Query 6 cinema chains (The Space, UCI, Notorious, Cinergia, Cristallo, Don Bosco) with multiple venues per chain, discovered at runtime from each chain's API
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
 - 🏢 **Venue selection**: Choose which venues to query; venues are fetched at runtime from each chain's availability (no hardcoded limits)
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
@@ -56,10 +56,10 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
   - `DayRange`, `FilmTitles`, `Showing`: Domain value objects
 
 - **`:feature:showtimes:data`**: Data layer
-  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing) / `KtorCinergiaShowtimesDataSource` / `KtorCristalloShowtimesDataSource` (HTML parsing): Platform HTTP clients
-  - `NotoriousParser` / `CinergiaParser` / `CristalloParser`: HTML parsers for the cinemas without a JSON API (each with a `*ParserTest`)
+  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing) / `KtorCinergiaShowtimesDataSource` / `KtorCristalloShowtimesDataSource` (HTML parsing) / `KtorDonBoscoShowtimesDataSource` (HTML parsing): Platform HTTP clients
+  - `NotoriousParser` / `CinergiaParser` / `CristalloParser` / `DonBoscoParser`: HTML parsers for the cinemas without a JSON API (each with a `*ParserTest`)
   - `HtmlEntities` (`unescapeHtml`): Decodes named and numeric HTML entities in scraped text
-  - `TheSpaceTokenProvider`: Extracts JWT from The Space Cinema pages
+  - `TheSpaceTokenProvider`: Extracts JWT from The Space pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
   - DTOs and mappers to/from domain models
 
@@ -210,7 +210,7 @@ Cinemerick uses a **custom purple tonal palette** inspired by Material Design 3:
 
 ### Cinema Brand Colors
 
-`CinemaBrandColors` (in `Color.kt`) defines one accent color per cinema, used for its badge in the results (e.g. Cinergia `#414C4C`, Cristallo `#D22D27`). When adding a cinema, also add its logo to `design/logos/` and update `design/generate_icons.py`, which regenerates the app icons for all platforms.
+`CinemaBrandColors` (in `Color.kt`) defines one accent color per cinema, used for its badge in the results (e.g. Cinergia `#414C4C`, Cristallo `#D22D27`, Don Bosco `#8B3A3B`). When adding a cinema, also add its logo to `design/logos/` and update `design/generate_icons.py`, which regenerates the app icons for all platforms.
 
 ### Typography
 
@@ -251,7 +251,7 @@ Cinemerick/
 1. **Choose cinemas** (both selected by default)
 2. **User selects days** and time ranges in the filter panel (use "Tomorrow" quick selection or manually pick dates)
 3. **Optional: filter by film title** (comma-separated)
-4. **Tap "Generate"** to fetch showtimes from The Space Cinema, UCI, Notorious, Cinergia and Cristallo
+4. **Tap "Generate"** to fetch showtimes from The Space, UCI, Notorious, Cinergia, Cristallo and Don Bosco
 5. **Results appear** grouped by film title with poster, cinema and time (unified across cinemas even with accent variations)
 6. **Tap "Copy"** to copy the poll text to clipboard
 7. **Paste** into your group chat and start the poll 🎬

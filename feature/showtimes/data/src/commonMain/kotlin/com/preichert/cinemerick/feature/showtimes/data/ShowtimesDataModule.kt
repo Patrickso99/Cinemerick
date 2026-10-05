@@ -15,6 +15,7 @@ val showtimesDataModule = module {
     singleOf(::KtorNotoriousShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorCinergiaShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorCristalloShowtimesDataSource) bind ShowtimesDataSource::class
+    singleOf(::KtorDonBoscoShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorTheSpaceShowtimesDataSource) bind ShowtimesDataSource::class
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
 }

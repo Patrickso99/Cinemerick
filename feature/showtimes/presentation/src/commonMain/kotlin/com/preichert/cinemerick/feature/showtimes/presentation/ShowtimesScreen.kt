@@ -776,10 +776,11 @@ private fun ShowingRow(showing: ShowingUi) {
 
 private fun Chain.displayName(): String = when (this) {
     Chain.THE_SPACE -> "The Space"
-    Chain.UCI -> "UCI Cinemas"
+    Chain.UCI -> "UCI"
     Chain.NOTORIOUS -> "Notorious"
     Chain.CINERGIA -> "Cinergia"
     Chain.CRISTALLO -> "Cristallo"
+    Chain.DON_BOSCO -> "Don Bosco"
 }
 
 private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
@@ -788,6 +789,7 @@ private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
     Chain.NOTORIOUS -> CinemaBrandColors.notoriousSilver to CinemaBrandColors.onNotoriousSilver
     Chain.CINERGIA -> CinemaBrandColors.cinergia to CinemaBrandColors.onCinergia
     Chain.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
+    Chain.DON_BOSCO -> CinemaBrandColors.donBosco to CinemaBrandColors.onDonBosco
 }
 
 @Composable
