@@ -25,6 +25,7 @@ private fun Chain.androidStoreLinks() = when (this) {
     Chain.NOTORIOUS -> listOf(CinemaAppLink("Notorious Cinemas", "https://play.google.com/store/apps/details?id=it.creaweb.notorious"))
     Chain.CINERGIA -> listOf(CinemaAppLink("Cinergia", "https://play.google.com/store/apps/details?id=com.eighteentickets"))
     Chain.CRISTALLO -> listOf(CinemaAppLink("Cinema Cristallo", "https://play.google.com/store/apps/details?id=com.cinemacristallo"))
+    Chain.ARCADIA -> listOf(CinemaAppLink("Arcadia Cinema", "https://play.google.com/store/apps/details?id=it.creaweb.arcadia"))
     Chain.DON_BOSCO, Chain.CINEMAZERO -> emptyList()
 }
 
@@ -34,6 +35,7 @@ private fun Chain.iosStoreLinks() = when (this) {
     Chain.NOTORIOUS -> listOf(CinemaAppLink("Notorious Cinemas", "https://apps.apple.com/it/app/notorious-cinemas-webtic/id1450928428"))
     Chain.CINERGIA -> listOf(CinemaAppLink("Cinergia", "https://apps.apple.com/it/app/18tickets/id1234567890"))
     Chain.CRISTALLO -> listOf(CinemaAppLink("Cinema Cristallo", "https://apps.apple.com/it/app/cinema-cristallo/id9876543210"))
+    Chain.ARCADIA -> listOf(CinemaAppLink("Arcadia Cinema", "https://apps.apple.com/it/app/webtic-arcadia-cinema/id408687451"))
     Chain.DON_BOSCO, Chain.CINEMAZERO -> emptyList()
 }
 
@@ -45,4 +47,5 @@ private fun Chain.defaultWebUrl() = when (this) {
     Chain.CRISTALLO -> "https://www.cinemacristallo.com"
     Chain.DON_BOSCO -> "https://cinema.donboscosandona.it"
     Chain.CINEMAZERO -> "https://cinemazero.it"
+    Chain.ARCADIA -> "https://www.arcadiacinema.com"
 }

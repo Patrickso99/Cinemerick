@@ -7,5 +7,6 @@ enum class Chain {
     CINERGIA,
     CRISTALLO,
     DON_BOSCO,
-    CINEMAZERO
+    CINEMAZERO,
+    ARCADIA
 }

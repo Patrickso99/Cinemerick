@@ -106,4 +106,6 @@ object CinemaBrandColors {
     val onDonBosco = Color(0xFFFFFFFF)
     val cinemazero = Color(0xFF032129)
     val onCinemazero = Color(0xFFFFFFFF)
+    val arcadia = Color(0xFF6E398A)
+    val onArcadia = Color(0xFFFFFFFF)
 }

@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -105,11 +104,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_sub
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cinergia
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_cristallo
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_notorious
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_the_space
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinema_uci
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
@@ -118,7 +112,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.film_fi
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_show_all
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.formats_title
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.fetch
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.open_cinema_app
@@ -468,7 +462,7 @@ private fun ColumnScope.FiltersSection(
                 color = LocalContentColor.current
             )
         }
-        Text(stringResource(Res.string.generate), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(Res.string.fetch), style = MaterialTheme.typography.titleMedium)
     }
 
     // Clear button
@@ -782,6 +776,7 @@ private fun Chain.displayName(): String = when (this) {
     Chain.CRISTALLO -> "Cristallo"
     Chain.DON_BOSCO -> "Don Bosco"
     Chain.CINEMAZERO -> "Cinemazero"
+    Chain.ARCADIA -> "Arcadia"
 }
 
 private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
@@ -792,6 +787,7 @@ private fun Chain.badgeColors(): Pair<Color, Color> = when (this) {
     Chain.CRISTALLO -> CinemaBrandColors.cristallo to CinemaBrandColors.onCristallo
     Chain.DON_BOSCO -> CinemaBrandColors.donBosco to CinemaBrandColors.onDonBosco
     Chain.CINEMAZERO -> CinemaBrandColors.cinemazero to CinemaBrandColors.onCinemazero
+    Chain.ARCADIA -> CinemaBrandColors.arcadia to CinemaBrandColors.onArcadia
 }
 
 @Composable
