@@ -13,7 +13,18 @@ val Project.libs: LibrariesForLibs
 fun PluginManager.apply(plugin: Provider<PluginDependency>) = apply(plugin.get().pluginId)
 
 internal object ConventionPlugin {
+    // Core
     const val KMP_LIBRARY = "com.preichert.convention.kmp.library"
     const val CMP_LIBRARY = "com.preichert.convention.cmp.library"
+    const val CMP_APPLICATION = "com.preichert.convention.cmp.application"
+    const val ANDROID_APPLICATION = "com.preichert.convention.android.application"
+
+    // Feature
+    const val CMP_FEATURE = "com.preichert.convention.cmp.feature"
+
+    // Infrastructure
     const val KOIN = "com.preichert.convention.koin"
+    const val KTOR = "com.preichert.convention.ktor"
+    const val SERIALIZATION = "com.preichert.convention.serialization"
+    const val BUILDKONFIG = "com.preichert.convention.buildkonfig"
 }

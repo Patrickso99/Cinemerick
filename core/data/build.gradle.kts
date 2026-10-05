@@ -13,8 +13,5 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.settings.no.arg)
         }
-        androidMain.dependencies { implementation(libs.ktor.okhttp) }
-        getByName("desktopMain").dependencies { implementation(libs.ktor.okhttp) }
-        iosMain.dependencies { implementation(libs.ktor.darwin) }
     }
 }

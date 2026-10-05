@@ -13,6 +13,5 @@ kotlin {
         implementation(libs.kermit)
         implementation(libs.datetime)
         implementation(libs.settings.no.arg)
-        implementation(libs.kermit)
     }
 }

@@ -7,11 +7,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 
 /**
  * Compact time field on the numeric keypad. Digits are kept and a colon is inserted after the hour,
@@ -29,9 +35,27 @@ fun TimeTextField(
     imeAction: ImeAction = ImeAction.Next
 ) {
     val focusManager = LocalFocusManager.current
+    var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+
+    // Sync local state when external value changes (e.g., from ViewModel or clear button)
+    if (field.text != value) {
+        field = TextFieldValue(value, TextRange(value.length))
+    }
+
     OutlinedTextField(
-        value = value,
-        onValueChange = { onValueChange(it.toNumericTime()) },
+        value = field,
+        onValueChange = { newField ->
+            val formatted = newField.text.toNumericTime()
+            val newSelection = if (formatted != newField.text) {
+                // Text was reformatted (colon added/removed); move cursor to end
+                TextRange(formatted.length)
+            } else {
+                // Text unchanged; preserve user's cursor position
+                newField.selection
+            }
+            field = TextFieldValue(formatted, newSelection)
+            onValueChange(formatted)
+        },
         label = { Text(label) },
         placeholder = { Text(placeholder) },
         singleLine = true,
@@ -54,7 +78,7 @@ fun TimeTextField(
     )
 }
 
-private fun String.toNumericTime(): String {
+internal fun String.toNumericTime(): String {
     val digits = filter(Char::isDigit).take(4)
     return if (digits.length <= 2) digits else "${digits.take(2)}:${digits.drop(2)}"
 }

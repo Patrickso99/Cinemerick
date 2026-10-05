@@ -17,6 +17,19 @@ class KtorConventionPlugin : Plugin<Project> {
                     implementation(libs.ktor.content.negotiation)
                     implementation(libs.ktor.serialization.json)
                 }
+
+                // Platform-specific Ktor engines
+                sourceSets.matching { it.name == "androidMain" }.configureEach {
+                    dependencies { implementation(libs.ktor.okhttp) }
+                }
+
+                sourceSets.matching { it.name == "desktopMain" }.configureEach {
+                    dependencies { implementation(libs.ktor.okhttp) }
+                }
+
+                sourceSets.matching { it.name == "iosMain" }.configureEach {
+                    dependencies { implementation(libs.ktor.darwin) }
+                }
             }
         }
     }
