@@ -1,9 +1,9 @@
 # Cinemerick
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-blue?logo=kotlin)
-![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.12.1-brightgreen?logo=jetpackcompose)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-brightgreen?logo=jetpackcompose)
 ![Koin](https://img.shields.io/badge/Koin-4.2.2-orange)
-![Ktor](https://img.shields.io/badge/Ktor-3.6.0-purple)
+![Ktor](https://img.shields.io/badge/Ktor-3.5.2-purple)
 
 A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time schedules from multiple cinema chains (The Space, UCI, Notorious, Cinergia, Cristallo, Don Bosco, Cinemazero, Arcadia) and generates shareable poll text for group chats.
 
@@ -13,7 +13,7 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
 - 🏢 **Venue selection**: Choose which venues to query; venues are fetched at runtime from each chain's availability (no hardcoded limits)
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
-- 🏷️ **Version in the header**: Shown as `v1.0.8 (20261002) [abc1234]` (version name, date-based code, git short hash)
+- 🏷️ **Version in the header**: Shown as `v1.1.2 (20261006) [abc1234]` (version name, date-based code, git short hash)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🎞️ **Film filtering**: Narrow results by comma-separated film titles
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap
@@ -56,8 +56,8 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
   - `DayRange`, `FilmTitles`, `Showing`: Domain value objects
 
 - **`:feature:showtimes:data`**: Data layer
-  - `KtorTheSpaceShowtimesDataSource` / `KtorUciShowtimesDataSource` / `KtorNotoriousShowtimesDataSource` (HTML parsing) / `Ktor18TicketsShowtimesDataSource` (Cinergia, Cinemazero) / `KtorCristalloShowtimesDataSource` (HTML parsing) / `KtorDonBoscoShowtimesDataSource` / `KtorArcadiaShowtimesDataSource` (HTML parsing): Platform HTTP clients
-  - `NotoriousParser` / `EighteenTicketsParser` (Cinergia, Cinemazero) / `CristalloParser` / `DonBoscoParser` / `ArcadiaParser`: HTML parsers for the cinemas without a JSON API (each with a `*ParserTest`)
+  - `KtorTheSpaceShowtimesDataSource` (JSON API) / `KtorUciShowtimesDataSource` (JSON API) / `KtorNotoriousShowtimesDataSource` (HTML) / `Ktor18TicketsShowtimesDataSource` (Cinergia, Cinemazero) / `KtorCristalloShowtimesDataSource` (HTML) / `KtorDonBoscoShowtimesDataSource` (HTML) / `KtorArcadiaShowtimesDataSource` (HTML): Platform HTTP clients
+  - `NotoriousParser` / `EighteenTicketsParser` (Cinergia, Cinemazero) / `CristalloParser` / `DonBoscoParser` / `ArcadiaParser`: HTML parsers for cinemas without JSON APIs (each with a `*ParserTest`)
   - `HtmlEntities` (`unescapeHtml`): Decodes named and numeric HTML entities in scraped text
   - `TheSpaceTokenProvider`: Extracts JWT from The Space pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
@@ -124,7 +124,7 @@ To create a distributable DMG package for macOS:
 ./gradlew :app:packageDmg
 ```
 
-Output: `app/build/compose/binaries/main/dmg/Cinemerick-1.0.8.dmg`
+Output: `app/build/compose/binaries/main/dmg/Cinemerick-1.1.2.dmg`
 
 #### Android
 
@@ -140,9 +140,9 @@ Release APK (unsigned):
 ./gradlew :androidApp:assembleRelease
 ```
 
-Output: `androidApp/build/outputs/apk/release/cinemerick-v1.0.8-{VERSION_CODE}.apk`
+Output: `androidApp/build/outputs/apk/release/cinemerick-v1.1.2-{VERSION_CODE}.apk`
 
-> **APK Naming**: All generated APKs follow the convention `cinemerick-vX.X.X-{versionCode}[-debug].apk`, where the version code is auto-generated as `yyyyMMdd` (e.g., `20261002`). Example: `cinemerick-v1.0.8-20261002.apk`.
+> **APK Naming**: All generated APKs follow the convention `cinemerick-vX.X.X-{versionCode}[-debug].apk`, where the version code is auto-generated as `yyyyMMdd` (e.g., `20261006`). Example: `cinemerick-v1.1.2-20261006.apk`.
 
 #### iOS
 

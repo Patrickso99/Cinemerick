@@ -25,6 +25,16 @@ class CmpLibraryConventionPlugin : Plugin<Project> {
                     implementation(libs.compose.resources)
                     implementation(libs.compose.ui.tooling.preview)
                 }
+                sourceSets.named("androidMain") {
+                    dependencies {
+                        implementation(libs.compose.ui.tooling)
+                    }
+                }
+                sourceSets.named("desktopMain") {
+                    dependencies {
+                        implementation(libs.compose.ui.tooling)
+                    }
+                }
             }
         }
     }

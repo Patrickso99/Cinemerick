@@ -1,12 +1,8 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
-import com.preichert.cinemerick.core.domain.DataError
-import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 data class CacheEntry<T>(
@@ -15,8 +11,7 @@ data class CacheEntry<T>(
 )
 
 class ShowtimesCache(
-    private val ttlMillis: Long = 5.minutes.inWholeMilliseconds,
-    private val clock: Clock = Clock.System
+    private val ttlMillis: Long = 5.minutes.inWholeMilliseconds
 ) {
     private val cache = mutableMapOf<String, CacheEntry<List<Showing>>>()
 
@@ -27,7 +22,7 @@ class ShowtimesCache(
         val key = cacheKey(venue, day)
         val entry = cache[key] ?: return null
 
-        val now = clock.now().toEpochMilliseconds()
+        val now = getCurrentTimeMillis()
         val age = now - entry.timestamp
         if (age > ttlMillis) {
             cache.remove(key)
@@ -39,7 +34,7 @@ class ShowtimesCache(
 
     fun put(venue: Venue, day: LocalDate, showings: List<Showing>) {
         val key = cacheKey(venue, day)
-        cache[key] = CacheEntry(showings, clock.now().toEpochMilliseconds())
+        cache[key] = CacheEntry(showings, getCurrentTimeMillis())
     }
 
     fun clear() {
@@ -47,7 +42,7 @@ class ShowtimesCache(
     }
 
     fun clearStale() {
-        val now = clock.now().toEpochMilliseconds()
+        val now = getCurrentTimeMillis()
         cache.entries.removeAll { (_, entry) ->
             (now - entry.timestamp) > ttlMillis
         }

@@ -29,7 +29,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.DevicePreviews
+import com.preichert.cinemerick.core.designsystem.LightThemePreview
+import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.domain.monthGrid
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -146,6 +150,36 @@ private fun DayCell(
                 enabled -> colors.onSurface
                 else -> colors.onSurface.copy(alpha = 0.38f)
             }
+        )
+    }
+}
+
+// Previews - Light theme
+
+@DevicePreviews
+@Composable
+private fun MultiDateCalendarPreviewLight() {
+    LightThemePreview {
+        MultiDateCalendar(
+            selected = setOf(LocalDate(2026, 10, 1), LocalDate(2026, 10, 2), LocalDate(2026, 10, 3)),
+            minDate = LocalDate(2026, 10, 1),
+            onToggle = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+// Previews - Dark theme
+
+@DevicePreviews
+@Composable
+private fun MultiDateCalendarPreviewDark() {
+    DarkThemePreview {
+        MultiDateCalendar(
+            selected = setOf(LocalDate(2026, 10, 1), LocalDate(2026, 10, 2), LocalDate(2026, 10, 3)),
+            minDate = LocalDate(2026, 10, 1),
+            onToggle = {},
+            modifier = Modifier.padding(16.dp)
         )
     }
 }

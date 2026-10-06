@@ -16,6 +16,7 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
+            implementation(libs.compose.navigation)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.kermit)

@@ -34,6 +34,12 @@ class CmpApplicationConventionPlugin : Plugin<Project> {
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets.getByName("desktopMain").dependencies {
                     implementation(composeDesktopCurrentOs())
+                    implementation(libs.compose.ui.tooling)
+                }
+                sourceSets.named("androidMain") {
+                    dependencies {
+                        implementation(libs.compose.ui.tooling)
+                    }
                 }
             }
 

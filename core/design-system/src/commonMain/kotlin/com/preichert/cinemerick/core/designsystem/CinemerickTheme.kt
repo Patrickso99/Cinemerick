@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun CinemerickTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
+    val colorScheme = if (isDarkTheme) {
         darkColorScheme(
             primary = CinemerickColors.darkPrimary,
             onPrimary = CinemerickColors.darkOnPrimary,

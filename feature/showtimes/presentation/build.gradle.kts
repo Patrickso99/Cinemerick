@@ -1,5 +1,6 @@
 plugins {
     id("com.preichert.convention.cmp.feature")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -10,6 +11,8 @@ kotlin {
         implementation(project(":feature:showtimes:domain"))
         implementation(libs.kermit)
         implementation(libs.coil.compose)
+        implementation(libs.compose.navigation)
+        implementation(libs.serialization.json)
     }
 }
 

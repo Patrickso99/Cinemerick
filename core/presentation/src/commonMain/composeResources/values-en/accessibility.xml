@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Action descriptions -->
+    <string name="a11y_search_button">Search showtimes for selected dates and cinemas</string>
+    <string name="a11y_copy_poll">Copy poll text to clipboard</string>
+    <string name="a11y_clear_filters">Clear all filters and selections</string>
+    <string name="a11y_toggle_theme">Toggle between light and dark theme</string>
+
+    <!-- Navigation -->
+    <string name="a11y_previous_month">Previous month</string>
+    <string name="a11y_next_month">Next month</string>
+    <string name="a11y_select_date">Select date</string>
+    <string name="a11y_add_venue">Add venue for %1$s</string>
+    <string name="a11y_remove_venue">Remove %1$s</string>
+
+    <!-- Film display -->
+    <string name="a11y_film_card">Film: %1$s, %2$d showings</string>
+    <string name="a11y_showing_time">%1$s at %2$s, %3$s</string>
+    <string name="a11y_poster">Poster for %1$s</string>
+
+    <!-- Status -->
+    <string name="a11y_loading">Loading showtimes</string>
+    <string name="a11y_no_results">No showtimes found with selected filters</string>
+    <string name="a11y_error">Error loading showtimes: %1$s</string>
+</resources>
