@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="error_timeout">Cinema did not respond in time</string>
+    <string name="error_server">Cinema server error</string>
+    <string name="error_access_denied">Access to cinema data denied</string>
+    <string name="error_serialization">Cinema response not recognized</string>
+    <string name="error_unknown">Could not retrieve cinema data</string>
+</resources>
