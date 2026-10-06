@@ -16,7 +16,8 @@ import kotlinx.datetime.LocalDate
 private val log = Logger.withTag("ShowtimesRepository")
 
 class MultiCinemaShowtimesRepository(
-    private val dataSources: List<ShowtimesDataSource>
+    private val dataSources: List<ShowtimesDataSource>,
+    private val cache: ShowtimesCache = ShowtimesCache()
 ) : ShowtimesRepository {
 
     override suspend fun getVenues(): Map<Chain, Result<List<Venue>, DataError.Network>> = coroutineScope {
@@ -34,7 +35,31 @@ class MultiCinemaShowtimesRepository(
             .flatMap { (chain, venuesByChain) ->
                 val dataSource = dataSources.firstOrNull { it.chain == chain } ?: return@flatMap emptyList()
                 venuesByChain.map { venue ->
-                    async { VenueShowings(venue, dataSource.getShowings(venue, days)) }
+                    async {
+                        val cachedShowings = days.mapNotNull { day ->
+                            cache.get(venue, day)?.let { day to it }
+                        }.toMap()
+
+                        val uncachedDays = days - cachedShowings.keys
+                        val fetchedResult = if (uncachedDays.isNotEmpty()) {
+                            dataSource.getShowings(venue, uncachedDays)
+                        } else {
+                            Result.Success(emptyList())
+                        }
+
+                        when (fetchedResult) {
+                            is Result.Success -> {
+                                fetchedResult.data.groupBy { it.day }.forEach { (day, showings) ->
+                                    cache.put(venue, day, showings)
+                                }
+                            }
+                            is Result.Failure -> log.w { "Failed to fetch showings for ${venue.name}: ${fetchedResult.error}" }
+                        }
+
+                        val allShowings = (cachedShowings.values.flatten() +
+                                (fetchedResult as? Result.Success)?.data.orEmpty()).distinctBy { "${it.day}:${it.time}:${it.title}" }
+                        VenueShowings(venue, Result.Success(allShowings))
+                    }
                 }
             }
             .awaitAll()
