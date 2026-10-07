@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_title">Cinemerick</string>
     <string name="days_title">Giorni</string>
     <string name="range_from">Dalle</string>
     <string name="range_to">Alle</string>

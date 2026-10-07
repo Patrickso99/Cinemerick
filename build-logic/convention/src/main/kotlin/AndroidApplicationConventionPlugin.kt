@@ -1,5 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
-import com.preichert.cinemerick.convention.AppVersion
+import com.preichert.cinemerick.convention.AppInfo
 import com.preichert.cinemerick.convention.BASE_PACKAGE
 import com.preichert.cinemerick.convention.configureKotlinAndroid
 import com.preichert.cinemerick.convention.apply
@@ -23,8 +23,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 defaultConfig {
                     applicationId = BASE_PACKAGE
                     targetSdk = libs.versions.androidTargetSdk.get().toInt()
-                    versionCode = AppVersion.CODE
-                    versionName = AppVersion.NAME
+                    versionCode = AppInfo.VERSION_CODE
+                    versionName = AppInfo.VERSION_NAME
+                    manifestPlaceholders["appName"] = AppInfo.NAME
                 }
 
                 configureKotlinAndroid(this)

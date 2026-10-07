@@ -4,18 +4,19 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.preichert.cinemerick.core.domain.BuildKonfig
 import java.awt.Taskbar
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
 fun main() {
-    System.setProperty("apple.awt.application.name", "Cinemerick")
+    System.setProperty("apple.awt.application.name", BuildKonfig.APP_NAME)
     val icon = loadIcon()
     setDockIcon(icon)
     initKoin()
     application {
         val painter = icon?.let { BitmapPainter(it.toComposeImageBitmap()) }
-        Window(onCloseRequest = ::exitApplication, title = "Cinemerick", icon = painter) {
+        Window(onCloseRequest = ::exitApplication, title = BuildKonfig.APP_NAME, icon = painter) {
             App()
         }
     }

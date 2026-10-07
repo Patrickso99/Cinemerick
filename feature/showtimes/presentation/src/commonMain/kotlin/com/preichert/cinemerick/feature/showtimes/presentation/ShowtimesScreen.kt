@@ -29,7 +29,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_subtitle
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -108,7 +107,7 @@ fun ShowtimesScreen(
             CinemerickAdaptiveLayout(
                 header = {
                     CinemerickHeader(
-                        title = stringResource(Res.string.app_title),
+                        title = BuildKonfig.APP_NAME,
                         subtitle = stringResource(Res.string.app_subtitle),
                         version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})"
                     )

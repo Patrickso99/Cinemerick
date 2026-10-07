@@ -1,4 +1,4 @@
-import com.preichert.cinemerick.convention.AppVersion
+import com.preichert.cinemerick.convention.AppInfo
 
 plugins {
     id("com.preichert.convention.android.application")
@@ -11,5 +11,5 @@ dependencies {
 }
 
 base {
-    archivesName.set("cinemerick-v${AppVersion.NAME}-${AppVersion.CODE}")
+    archivesName.set("${AppInfo.NAME.lowercase()}-v${AppInfo.VERSION_NAME}-${AppInfo.VERSION_CODE}")
 }

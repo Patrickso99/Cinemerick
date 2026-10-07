@@ -1,6 +1,6 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
 import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
-import com.preichert.cinemerick.convention.AppVersion
+import com.preichert.cinemerick.convention.AppInfo
 import com.preichert.cinemerick.convention.BASE_PACKAGE
 import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.libs
@@ -24,8 +24,9 @@ class BuildKonfigConventionPlugin : Plugin<Project> {
                 // Public object: read by feature modules.
                 exposeObjectWithName.set("BuildKonfig")
                 defaultConfigs {
-                    buildConfigField(Type.STRING, "VERSION_NAME", AppVersion.NAME)
-                    buildConfigField(Type.INT, "VERSION_CODE", AppVersion.CODE.toString())
+                    buildConfigField(Type.STRING, "APP_NAME", AppInfo.NAME)
+                    buildConfigField(Type.STRING, "VERSION_NAME", AppInfo.VERSION_NAME)
+                    buildConfigField(Type.INT, "VERSION_CODE", AppInfo.VERSION_CODE.toString())
                     buildConfigField(Type.STRING, "GIT_HASH", gitHash)
                 }
             }

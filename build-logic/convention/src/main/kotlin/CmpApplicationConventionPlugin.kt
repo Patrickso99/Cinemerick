@@ -1,4 +1,4 @@
-import com.preichert.cinemerick.convention.AppVersion
+import com.preichert.cinemerick.convention.AppInfo
 import com.preichert.cinemerick.convention.BASE_PACKAGE
 import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.configureAndroidTarget
@@ -49,8 +49,8 @@ class CmpApplicationConventionPlugin : Plugin<Project> {
                         mainClass = "$BASE_PACKAGE.MainKt"
                         nativeDistributions {
                             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb)
-                            packageName = "Cinemerick"
-                            packageVersion = AppVersion.NAME
+                            packageName = AppInfo.NAME
+                            packageVersion = AppInfo.VERSION_NAME
                             val iconsDir = file("src/desktopMain/resources")
                             macOS { iconFile.set(iconsDir.resolve("icon.icns")) }
                             windows { iconFile.set(iconsDir.resolve("icon.ico")) }

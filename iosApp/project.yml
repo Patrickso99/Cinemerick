@@ -1,4 +1,6 @@
 name: iosApp
+configFiles:
+  base: Config.xcconfig
 options:
   bundleIdPrefix: com.preichert.cinemerick
   deploymentTarget:
@@ -20,13 +22,13 @@ targets:
         script: |
           export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
           cd "$SRCROOT/.."
-          ./gradlew :app:embedAndSignAppleFrameworkForXcode
+          ./gradlew :app:generateIosVersionConfig :app:embedAndSignAppleFrameworkForXcode
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.preichert.cinemerick.ios
-        PRODUCT_NAME: Cinemerick
+        PRODUCT_NAME: $(APP_NAME)
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Cinemerick
+        INFOPLIST_KEY_CFBundleDisplayName: $(APP_NAME)
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         ENABLE_USER_SCRIPT_SANDBOXING: NO
