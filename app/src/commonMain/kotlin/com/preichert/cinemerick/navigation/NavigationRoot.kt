@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.preichert.cinemerick.feature.showtimes.presentation.navigation.ShowtimesGraphRoutes
 import com.preichert.cinemerick.feature.showtimes.presentation.navigation.showtimesGraph
+import com.preichert.cinemerick.feature.settings.presentation.navigation.settingsGraph
 
 @Composable
 fun NavigationRoot(
@@ -16,5 +17,6 @@ fun NavigationRoot(
         startDestination = startDestination
     ) {
         showtimesGraph(navController = navController)
+        settingsGraph(navController = navController)
     }
 }

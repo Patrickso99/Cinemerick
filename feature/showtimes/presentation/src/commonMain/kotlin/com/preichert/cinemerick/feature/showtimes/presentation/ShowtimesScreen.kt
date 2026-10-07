@@ -5,19 +5,21 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
 import com.preichert.cinemerick.core.designsystem.CinemerickHeader
@@ -25,6 +27,7 @@ import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.domain.BuildKonfig
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
+import com.preichert.cinemerick.feature.settings.presentation.navigation.SettingsGraphRoutes
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -33,7 +36,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.calenda
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -58,7 +60,14 @@ fun ShowtimesScreenContent(
 
     ShowtimesScreen(
         state = state,
-        onAction = viewModel::onAction,
+        onAction = { action ->
+            when (action) {
+                ShowtimesAction.OnSettingsClick -> {
+                    navController.navigate(SettingsGraphRoutes.SettingsRoute)
+                }
+                else -> viewModel.onAction(action)
+            }
+        },
         snackbarHostState = snackbarHostState
     )
 }
@@ -109,7 +118,14 @@ fun ShowtimesScreen(
                     CinemerickHeader(
                         title = BuildKonfig.APP_NAME,
                         subtitle = stringResource(Res.string.app_subtitle),
-                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})"
+                        version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})",
+                        trailing = {
+                            IconButton(
+                                onClick = { onAction(ShowtimesAction.OnSettingsClick) }
+                            ) {
+                                Text("⚙️")
+                            }
+                        }
                     )
                 },
                 filtersContent = {

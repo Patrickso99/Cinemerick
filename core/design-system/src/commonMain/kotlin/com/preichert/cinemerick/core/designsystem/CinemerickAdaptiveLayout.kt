@@ -43,7 +43,7 @@ import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguratio
  *
  * @param header A header composable (typically with gradient background)
  * @param filtersContent The filters section (days, time range, film search)
- * @param resultsContent The results section (cinema showtimes)
+ * @param resultsContent The results section (cinema showtimes), optional for single-panel layouts
  * @param modifier Layout modifier
  */
 @Composable
@@ -51,7 +51,7 @@ fun CinemerickAdaptiveLayout(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     filtersContent: @Composable ColumnScope.() -> Unit,
-    resultsContent: @Composable ColumnScope.() -> Unit,
+    resultsContent: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val configuration = currentDeviceConfiguration()
 
@@ -75,15 +75,17 @@ fun CinemerickAdaptiveLayout(
                 ) {
                     filtersContent()
                 }
-                Spacer(modifier = Modifier.height(Spacing.lg))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .padding(Spacing.lg),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                ) {
-                    resultsContent()
+                if (resultsContent != null) {
+                    Spacer(modifier = Modifier.height(Spacing.lg))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                            .padding(Spacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                    ) {
+                        resultsContent()
+                    }
                 }
                 Spacer(modifier = Modifier.height(Spacing.xl))
                 Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
@@ -92,36 +94,58 @@ fun CinemerickAdaptiveLayout(
 
         // Two-column layout on mobile landscape: logo + filters on left, results on right
         DeviceConfiguration.MOBILE_LANDSCAPE -> {
-            Row(
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .windowInsetsPadding(WindowInsets.safeDrawing)
-                    .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
-            ) {
+            if (resultsContent != null) {
+                Row(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .padding(horizontal = Spacing.lg, vertical = Spacing.md),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.Top,
+                    ) {
+                        header()
+                        Spacer(modifier = Modifier.height(Spacing.lg))
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                        ) {
+                            filtersContent()
+                        }
+                    }
+                    Panel(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        scrollable = true,
+                    ) {
+                        resultsContent()
+                    }
+                }
+            } else {
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
+                    modifier = modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Top,
                 ) {
                     header()
                     Spacer(modifier = Modifier.height(Spacing.lg))
                     Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Spacing.lg),
                         verticalArrangement = Arrangement.spacedBy(Spacing.md),
                     ) {
                         filtersContent()
                     }
-                }
-                Panel(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    scrollable = true,
-                ) {
-                    resultsContent()
                 }
             }
         }
@@ -137,18 +161,29 @@ fun CinemerickAdaptiveLayout(
                 verticalArrangement = Arrangement.Top,
             ) {
                 header()
-                Row(
-                    modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .fillMaxWidth()
-                        .padding(Spacing.xl),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
-                ) {
-                    Panel(modifier = Modifier.weight(1f)) {
-                        filtersContent()
+                if (resultsContent != null) {
+                    Row(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                            .fillMaxWidth()
+                            .padding(Spacing.xl),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
+                    ) {
+                        Panel(modifier = Modifier.weight(1f)) {
+                            filtersContent()
+                        }
+                        Panel(modifier = Modifier.weight(1f)) {
+                            resultsContent()
+                        }
                     }
-                    Panel(modifier = Modifier.weight(1f)) {
-                        resultsContent()
+                } else {
+                    Panel(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                            .fillMaxWidth()
+                            .padding(Spacing.xl)
+                    ) {
+                        filtersContent()
                     }
                 }
                 Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
@@ -167,30 +202,45 @@ fun CinemerickAdaptiveLayout(
                 verticalArrangement = Arrangement.Top,
             ) {
                 header()
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                        .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
-                        .fillMaxWidth()
-                        .padding(Spacing.xl),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
-                ) {
+                if (resultsContent != null) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                            .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
+                            .fillMaxWidth()
+                            .padding(Spacing.xl),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
+                    ) {
+                        Panel(
+                            modifier = Modifier
+                                .weight(if (isDesktop) 0.8f else 1f)
+                                .fillMaxHeight(),
+                            scrollable = true,
+                        ) {
+                            filtersContent()
+                        }
+                        Panel(
+                            modifier = Modifier
+                                .weight(if (isDesktop) 1.2f else 1f)
+                                .fillMaxHeight(),
+                            scrollable = true,
+                        ) {
+                            resultsContent()
+                        }
+                    }
+                } else {
                     Panel(
                         modifier = Modifier
-                            .weight(if (isDesktop) 0.8f else 1f)
+                            .weight(1f)
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                            .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
+                            .fillMaxWidth()
+                            .padding(Spacing.xl)
                             .fillMaxHeight(),
                         scrollable = true,
                     ) {
                         filtersContent()
-                    }
-                    Panel(
-                        modifier = Modifier
-                            .weight(if (isDesktop) 1.2f else 1f)
-                            .fillMaxHeight(),
-                        scrollable = true,
-                    ) {
-                        resultsContent()
                     }
                 }
             }

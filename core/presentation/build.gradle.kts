@@ -9,6 +9,8 @@ kotlin {
         implementation(libs.coroutines.core)
         implementation(libs.compose.material3.adaptive)
         implementation(libs.compose.material3.adaptive.layout)
+        implementation(libs.koin.core)
+        implementation(libs.koin.compose)
     }
 }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Customize the app based on your preferences</string>
+    <string name="app_theme_title">App theme</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_auto_description">Automatically switch between light and dark mode based on your device's system settings</string>
+    <string name="theme_label">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+</resources>

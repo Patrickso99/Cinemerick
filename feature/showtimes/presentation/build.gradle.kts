@@ -9,6 +9,7 @@ kotlin {
         implementation(project(":core:presentation"))
         implementation(project(":core:design-system"))
         implementation(project(":feature:showtimes:domain"))
+        implementation(project(":feature:settings:presentation"))
         implementation(libs.kermit)
         implementation(libs.coil.compose)
         implementation(libs.compose.navigation)

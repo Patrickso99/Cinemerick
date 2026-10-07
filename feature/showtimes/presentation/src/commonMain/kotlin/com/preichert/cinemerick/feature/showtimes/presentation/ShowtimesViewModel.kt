@@ -95,6 +95,9 @@ class ShowtimesViewModel(
                 val chain = _state.value.venuePicker?.chain
                 if (chain != null) openVenuePicker(chain)
             }
+            ShowtimesAction.OnSettingsClick -> {
+                // Navigation is handled in ShowtimesScreenContent
+            }
         }
     }
 

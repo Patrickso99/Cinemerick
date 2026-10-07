@@ -24,4 +24,5 @@ sealed interface ShowtimesAction {
     data object OnCopyClick : ShowtimesAction
     data object OnClearClick : ShowtimesAction
     data object OnVenuesReload : ShowtimesAction
+    data object OnSettingsClick : ShowtimesAction
 }

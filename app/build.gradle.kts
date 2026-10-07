@@ -14,6 +14,7 @@ kotlin {
             implementation(project(":feature:showtimes:domain"))
             implementation(project(":feature:showtimes:data"))
             implementation(project(":feature:showtimes:presentation"))
+            implementation(project(":feature:settings:presentation"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -24,6 +25,8 @@ kotlin {
             implementation(libs.kermit)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.coroutines.core)
         }
         getByName("desktopMain").dependencies {
             implementation(libs.coroutines.swing)

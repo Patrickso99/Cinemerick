@@ -1,32 +1,35 @@
 package com.preichert.cinemerick.core.data
 
+import com.preichert.cinemerick.core.domain.ThemeMode
 import com.russhwolf.settings.Settings
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class SettingsThemePreferencesTest {
 
     @Test
-    fun followsSystemUntilTheUserChooses() {
+    fun followsSystemByDefault() {
         val preferences = SettingsThemePreferences(MemorySettings())
 
-        assertNull(preferences.darkTheme())
+        assertEquals(ThemeMode.SYSTEM, preferences.themeMode())
     }
 
     @Test
-    fun remembersLightAndDark() {
+    fun remembersLightAndDarkAndSystem() {
         val preferences = SettingsThemePreferences(MemorySettings())
 
-        preferences.setDarkTheme(true)
-        assertEquals(true, preferences.darkTheme())
+        preferences.setThemeMode(ThemeMode.LIGHT)
+        assertEquals(ThemeMode.LIGHT, preferences.themeMode())
 
-        preferences.setDarkTheme(false)
-        assertEquals(false, preferences.darkTheme())
+        preferences.setThemeMode(ThemeMode.DARK)
+        assertEquals(ThemeMode.DARK, preferences.themeMode())
+
+        preferences.setThemeMode(ThemeMode.SYSTEM)
+        assertEquals(ThemeMode.SYSTEM, preferences.themeMode())
     }
 }
 
-private class MemorySettings : Settings {
+class MemorySettings : Settings {
     private val values = mutableMapOf<String, Any>()
 
     override val keys: Set<String> get() = values.keys
