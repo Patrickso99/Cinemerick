@@ -136,21 +136,21 @@ internal fun ColumnScope.ResultsSection(
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceAtLeast(1)
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                state.groups.chunked(columns).forEachIndexed { rowIndex, rowGroups ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                        verticalAlignment = Alignment.Top
+            // Masonry: independent columns so cards stack without vertical gaps
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                verticalAlignment = Alignment.Top
+            ) {
+                repeat(columns) { colIndex ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
-                        rowGroups.forEachIndexed { colIndex, group ->
-                            AnimatedFilmGroupCard(
-                                group = group,
-                                large = true,
-                                index = rowIndex * columns + colIndex,
-                                modifier = Modifier.weight(1f)
-                            )
+                        state.groups.forEachIndexed { index, group ->
+                            if (index % columns == colIndex) {
+                                AnimatedFilmGroupCard(group = group, large = true, index = index)
+                            }
                         }
-                        repeat(columns - rowGroups.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
