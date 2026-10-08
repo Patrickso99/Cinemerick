@@ -1,6 +1,5 @@
 package com.preichert.cinemerick.feature.showtimes.presentation.navigation
 
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
@@ -16,13 +15,13 @@ sealed interface ShowtimesGraphRoutes {
 }
 
 fun NavGraphBuilder.showtimesGraph(
-    navController: NavController
+    onNavigateToSettings: () -> Unit
 ) {
     navigation<ShowtimesGraphRoutes.Graph>(
         startDestination = ShowtimesGraphRoutes.ShowtimesRoute
     ) {
         composable<ShowtimesGraphRoutes.ShowtimesRoute> {
-            ShowtimesScreenContent(navController = navController)
+            ShowtimesScreenContent(onNavigateToSettings = onNavigateToSettings)
         }
     }
 }

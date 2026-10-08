@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.settings.presentation.navigation
 
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -22,7 +23,14 @@ fun NavGraphBuilder.settingsGraph(
         startDestination = SettingsGraphRoutes.SettingsRoute
     ) {
         composable<SettingsGraphRoutes.SettingsRoute> {
-            SettingsScreenContent(navController = navController)
+            SettingsScreenContent(
+                onNavigateBack = {
+                    // Ignore taps during a transition: a second pop would remove the start destination on desktop
+                    if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED && navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    }
+                }
+            )
         }
     }
 }

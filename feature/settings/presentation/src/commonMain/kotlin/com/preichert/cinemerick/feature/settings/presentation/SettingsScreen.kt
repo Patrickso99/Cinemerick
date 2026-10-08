@@ -2,7 +2,6 @@ package com.preichert.cinemerick.feature.settings.presentation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,7 +35,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
 import com.preichert.cinemerick.core.designsystem.CinemerickHeader
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
@@ -61,7 +59,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsScreenContent(
-    navController: NavController,
+    onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -71,7 +69,7 @@ fun SettingsScreenContent(
         state = state,
         systemDark = systemDark,
         onAction = viewModel::onAction,
-        onNavigateBack = { navController.popBackStack() }
+        onNavigateBack = onNavigateBack
     )
 }
 

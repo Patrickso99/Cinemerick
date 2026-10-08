@@ -20,14 +20,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
 import com.preichert.cinemerick.core.designsystem.CinemerickHeader
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.domain.BuildKonfig
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
-import com.preichert.cinemerick.feature.settings.presentation.navigation.SettingsGraphRoutes
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -40,7 +38,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ShowtimesScreenContent(
-    navController: NavController,
+    onNavigateToSettings: () -> Unit,
     viewModel: ShowtimesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -62,9 +60,7 @@ fun ShowtimesScreenContent(
         state = state,
         onAction = { action ->
             when (action) {
-                ShowtimesAction.OnSettingsClick -> {
-                    navController.navigate(SettingsGraphRoutes.SettingsRoute)
-                }
+                ShowtimesAction.OnSettingsClick -> onNavigateToSettings()
                 else -> viewModel.onAction(action)
             }
         },
