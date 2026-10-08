@@ -29,12 +29,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.pressScale
 import com.preichert.cinemerick.core.designsystem.TimeTextField
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
@@ -230,7 +233,11 @@ internal fun ColumnScope.FiltersSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     items(state.days, key = { it.date.toString() }) { day ->
-                        DayChip(day = day, onClick = { onAction(ShowtimesAction.OnDayToggle(day.date)) })
+                        DayChip(
+                            day = day,
+                            onClick = { onAction(ShowtimesAction.OnDayToggle(day.date)) },
+                            modifier = Modifier.animateItem()
+                        )
                     }
                 }
             }
@@ -262,13 +269,16 @@ internal fun ColumnScope.FiltersSection(
         )
     }
 
+    val generateSource = remember { MutableInteractionSource() }
     Button(
         onClick = { onAction(ShowtimesAction.OnGenerateClick) },
         enabled = !state.isLoading,
         shape = MaterialTheme.shapes.large,
+        interactionSource = generateSource,
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp)
+            .pressScale(generateSource)
     ) {
         if (state.isLoading) {
             CircularProgressIndicator(
@@ -280,22 +290,26 @@ internal fun ColumnScope.FiltersSection(
         Text(stringResource(Res.string.fetch), style = MaterialTheme.typography.titleMedium)
     }
 
+    val clearSource = remember { MutableInteractionSource() }
     OutlinedButton(
         onClick = { onAction(ShowtimesAction.OnClearClick) },
         enabled = state.canClear,
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth()
+        interactionSource = clearSource,
+        modifier = Modifier.fillMaxWidth().pressScale(clearSource)
     ) {
         Text(stringResource(Res.string.clear))
     }
 }
 
 @Composable
-internal fun DayChip(day: DayUi, onClick: () -> Unit) {
+internal fun DayChip(day: DayUi, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
     FilterChip(
         selected = day.isSelected,
         onClick = onClick,
-        modifier = Modifier.height(56.dp),
+        interactionSource = interactionSource,
+        modifier = modifier.height(56.dp).pressScale(interactionSource),
         shape = MaterialTheme.shapes.medium,
         label = {
             Column(

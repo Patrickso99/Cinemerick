@@ -3,7 +3,9 @@ package com.preichert.cinemerick.feature.settings.presentation
 import com.preichert.cinemerick.core.data.SettingsThemePreferencesTest.MemorySettings
 import com.preichert.cinemerick.core.data.SettingsThemePreferences
 import com.preichert.cinemerick.core.domain.ThemeMode
+import com.preichert.cinemerick.core.presentation.AnimationController
 import com.preichert.cinemerick.core.presentation.ThemeController
+import com.preichert.cinemerick.core.data.SettingsAnimationPreferences
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -14,7 +16,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledTrueSwitchesToSystem() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller)
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())))
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = true, systemDark = false))
 
@@ -24,7 +26,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkTrueSwitchesToDark() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller)
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())))
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = true))
 
@@ -34,7 +36,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkFalseSwitchesToLight() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller)
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())))
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = false))
 
@@ -44,7 +46,7 @@ class SettingsViewModelTest {
     @Test
     fun onThemeModeSelectedUpdatesMode() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller)
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())))
 
         viewModel.onAction(SettingsAction.OnThemeModeSelected(ThemeMode.DARK))
 
@@ -56,9 +58,20 @@ class SettingsViewModelTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
         controller.setMode(ThemeMode.LIGHT)
 
-        val viewModel = SettingsViewModel(controller)
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())))
 
         val state = viewModel.state.first()
         assertEquals(ThemeMode.LIGHT, state.themeMode)
+    }
+
+    @Test
+    fun onAnimationsToggledUpdatesControllerAndState() = runTest {
+        val animations = AnimationController(SettingsAnimationPreferences(MemorySettings()))
+        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), animations)
+
+        viewModel.onAction(SettingsAction.OnAnimationsToggled(false))
+
+        assertEquals(false, animations.isEnabled.value)
+        assertEquals(false, viewModel.state.first().animationsEnabled)
     }
 }

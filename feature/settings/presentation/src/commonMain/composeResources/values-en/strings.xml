@@ -8,4 +8,7 @@
     <string name="theme_label">Theme</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="animations_title">Animations</string>
+    <string name="animations_smooth">Smooth animations</string>
+    <string name="animations_smooth_description">Navigation, tap, scroll and item appearance effects</string>
 </resources>

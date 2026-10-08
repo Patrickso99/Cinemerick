@@ -1,11 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,12 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.bounceClickable
+import com.preichert.cinemerick.core.designsystem.pressScale
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.preichert.cinemerick.core.designsystem.staggeredAppear
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
@@ -109,12 +106,15 @@ internal fun ColumnScope.ResultsSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.md),
             modifier = Modifier.fillMaxWidth()
         ) {
+            val copySource = remember { MutableInteractionSource() }
             FilledTonalButton(
                 onClick = { onAction(ShowtimesAction.OnCopyClick) },
                 shape = MaterialTheme.shapes.large,
+                interactionSource = copySource,
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp)
+                    .pressScale(copySource)
             ) {
                 Text(stringResource(Res.string.copy), style = MaterialTheme.typography.titleSmall)
             }
@@ -132,21 +132,22 @@ internal fun ColumnScope.ResultsSection(
     }
 
     if (configuration.isMobile) {
-        state.groups.forEach { group -> AnimatedFilmGroupCard(group, large = false) }
+        state.groups.forEachIndexed { index, group -> AnimatedFilmGroupCard(group, large = false, index = index) }
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceAtLeast(1)
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                state.groups.chunked(columns).forEach { rowGroups ->
+                state.groups.chunked(columns).forEachIndexed { rowIndex, rowGroups ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                        modifier = Modifier.height(IntrinsicSize.Max)
+                        verticalAlignment = Alignment.Top
                     ) {
-                        rowGroups.forEach { group ->
+                        rowGroups.forEachIndexed { colIndex, group ->
                             AnimatedFilmGroupCard(
                                 group = group,
                                 large = true,
-                                modifier = Modifier.weight(1f).fillMaxHeight()
+                                index = rowIndex * columns + colIndex,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                         repeat(columns - rowGroups.size) { Spacer(Modifier.weight(1f)) }
@@ -161,21 +162,20 @@ internal fun ColumnScope.ResultsSection(
 internal fun AnimatedFilmGroupCard(
     group: FilmGroupUi,
     large: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    index: Int = 0
 ) {
-    val visibleState = remember(group) { MutableTransitionState(false).apply { targetState = true } }
-    AnimatedVisibility(
-        visibleState = visibleState,
-        enter = fadeIn() + slideInVertically { it / 8 },
-        modifier = modifier
-    ) {
-        FilmGroupCard(group, large = large)
+    // Keyed on the group so a refreshed result list replays the cascade
+    key(group) {
+        Box(modifier = modifier.staggeredAppear(index)) {
+            FilmGroupCard(group, large = large)
+        }
     }
 }
 
 @Composable
 internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean) {
-    SectionCard(modifier = Modifier.fillMaxSize()) {
+    SectionCard(modifier = Modifier.fillMaxWidth()) {
         SelectionContainer {
             Column(
                 modifier = Modifier
@@ -233,7 +233,7 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96
             .aspectRatio(2f / 3f)
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { isEnlarged = true }
+            .bounceClickable { isEnlarged = true }
     )
 
     if (isEnlarged) {
@@ -247,7 +247,7 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96
                     .fillMaxWidth()
                     .aspectRatio(2f / 3f)
                     .clip(MaterialTheme.shapes.medium)
-                    .clickable { isEnlarged = false }
+                    .bounceClickable { isEnlarged = false }
             )
         }
     }
@@ -260,7 +260,7 @@ internal fun CinemaAppBadge(venue: Venue, container: Color, content: Color) {
     var isChoosing by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier.clip(MaterialTheme.shapes.small).clickable {
+        modifier = Modifier.clip(MaterialTheme.shapes.small).bounceClickable {
             if (links.size == 1) uriHandler.openUri(links.first().url) else isChoosing = true
         }
     ) {

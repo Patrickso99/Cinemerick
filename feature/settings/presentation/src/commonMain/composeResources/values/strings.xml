@@ -8,4 +8,7 @@
     <string name="theme_label">Tema</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
+    <string name="animations_title">Animazioni</string>
+    <string name="animations_smooth">Animazioni fluide</string>
+    <string name="animations_smooth_description">Effetti di transizione, tocco, scorrimento e comparsa degli elementi</string>
 </resources>

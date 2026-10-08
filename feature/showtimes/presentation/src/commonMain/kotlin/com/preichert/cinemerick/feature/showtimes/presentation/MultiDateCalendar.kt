@@ -31,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.pressScale
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
@@ -64,9 +66,12 @@ fun MultiDateCalendar(
 
     Column(modifier = modifier.fillMaxWidth().widthIn(max = MAX_CALENDAR_WIDTH), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            val prevSource = remember { MutableInteractionSource() }
             IconButton(
                 onClick = { firstOfMonth = firstOfMonth.plus(-1, DateTimeUnit.MONTH) },
-                enabled = firstOfMonth > minMonth
+                enabled = firstOfMonth > minMonth,
+                interactionSource = prevSource,
+                modifier = Modifier.pressScale(prevSource)
             ) {
                 val description = stringResource(Res.string.calendar_prev_month)
                 Text(
@@ -81,7 +86,12 @@ fun MultiDateCalendar(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
             )
-            IconButton(onClick = { firstOfMonth = firstOfMonth.plus(1, DateTimeUnit.MONTH) }) {
+            val nextSource = remember { MutableInteractionSource() }
+            IconButton(
+                onClick = { firstOfMonth = firstOfMonth.plus(1, DateTimeUnit.MONTH) },
+                interactionSource = nextSource,
+                modifier = Modifier.pressScale(nextSource)
+            ) {
                 val description = stringResource(Res.string.calendar_next_month)
                 Text(
                     text = "›",

@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.core.data
 
+import com.preichert.cinemerick.core.domain.AnimationPreferences
 import com.preichert.cinemerick.core.domain.ThemePreferences
 import com.russhwolf.settings.Settings
 import org.koin.core.module.Module
@@ -11,4 +12,5 @@ expect val platformCoreDataModule: Module
 val coreDataModule = module {
     singleOf(HttpClientFactory::create)
     single<ThemePreferences> { SettingsThemePreferences(Settings()) }
+    single<AnimationPreferences> { SettingsAnimationPreferences(Settings()) }
 }

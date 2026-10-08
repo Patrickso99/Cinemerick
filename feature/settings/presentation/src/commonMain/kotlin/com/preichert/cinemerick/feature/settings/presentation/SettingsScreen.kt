@@ -39,9 +39,16 @@ import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
 import com.preichert.cinemerick.core.designsystem.CinemerickHeader
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.pressScale
+import com.preichert.cinemerick.core.designsystem.staggeredAppear
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import com.preichert.cinemerick.core.domain.ThemeMode
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.settings.presentation.resources.Res
+import com.preichert.cinemerick.feature.settings.presentation.resources.animations_smooth
+import com.preichert.cinemerick.feature.settings.presentation.resources.animations_smooth_description
+import com.preichert.cinemerick.feature.settings.presentation.resources.animations_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.app_theme_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_subtitle
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_title
@@ -89,11 +96,15 @@ fun SettingsScreen(
                     title = stringResource(Res.string.settings_title),
                     subtitle = stringResource(Res.string.settings_subtitle),
                     trailing = {
+                        val backSource = remember { MutableInteractionSource() }
                         IconButton(
                             onClick = onNavigateBack,
-                            modifier = Modifier.semantics {
-                                contentDescription = "Back"
-                            }
+                            interactionSource = backSource,
+                            modifier = Modifier
+                                .pressScale(backSource)
+                                .semantics {
+                                    contentDescription = "Back"
+                                }
                         ) {
                             Text(
                                 "‹",
@@ -108,7 +119,13 @@ fun SettingsScreen(
                 ThemeSection(
                     selectedMode = state.themeMode,
                     systemDark = systemDark,
-                    onAction = onAction
+                    onAction = onAction,
+                    modifier = Modifier.staggeredAppear(0)
+                )
+                AnimationsSection(
+                    enabled = state.animationsEnabled,
+                    onAction = onAction,
+                    modifier = Modifier.staggeredAppear(1)
                 )
             }
         )
@@ -119,13 +136,14 @@ fun SettingsScreen(
 private fun ThemeSection(
     selectedMode: ThemeMode,
     systemDark: Boolean,
-    onAction: (SettingsAction) -> Unit
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val isAutoEnabled = selectedMode == ThemeMode.SYSTEM
     val configuration = currentDeviceConfiguration()
     val isMobile = configuration.isMobile
 
-    SectionCard(modifier = Modifier.fillMaxWidth(), {
+    SectionCard(modifier = modifier.fillMaxWidth(), {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -186,6 +204,50 @@ private fun ThemeSection(
             }
         }
     })
+}
+
+@Composable
+private fun AnimationsSection(
+    enabled: Boolean,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SectionCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            Text(
+                text = stringResource(Res.string.animations_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.animations_smooth),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(Res.string.animations_smooth_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = enabled,
+                    onCheckedChange = { onAction(SettingsAction.OnAnimationsToggled(it)) }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -474,7 +536,7 @@ private fun SectionCard(
 private fun SettingsScreenPreview() {
     CinemerickTheme {
         SettingsScreen(
-            state = SettingsState(themeMode = ThemeMode.SYSTEM),
+            state = SettingsState(themeMode = ThemeMode.SYSTEM, animationsEnabled = false),
             systemDark = false,
             onAction = {},
             onNavigateBack = {}
@@ -487,7 +549,7 @@ private fun SettingsScreenPreview() {
 private fun SettingsScreenDarkPreview() {
     CinemerickTheme(isDarkTheme = true) {
         SettingsScreen(
-            state = SettingsState(themeMode = ThemeMode.DARK),
+            state = SettingsState(themeMode = ThemeMode.DARK, animationsEnabled = true),
             systemDark = true,
             onAction = {},
             onNavigateBack = {}

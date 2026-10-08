@@ -23,6 +23,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
 import com.preichert.cinemerick.core.designsystem.CinemerickHeader
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
+import com.preichert.cinemerick.core.designsystem.pressScale
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.preichert.cinemerick.core.domain.BuildKonfig
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
@@ -116,8 +118,11 @@ fun ShowtimesScreen(
                         subtitle = stringResource(Res.string.app_subtitle),
                         version = "${BuildKonfig.VERSION_NAME} (${BuildKonfig.VERSION_CODE})",
                         trailing = {
+                            val settingsSource = remember { MutableInteractionSource() }
                             IconButton(
-                                onClick = { onAction(ShowtimesAction.OnSettingsClick) }
+                                onClick = { onAction(ShowtimesAction.OnSettingsClick) },
+                                interactionSource = settingsSource,
+                                modifier = Modifier.pressScale(settingsSource)
                             ) {
                                 Text("⚙️")
                             }

@@ -5,4 +5,5 @@ import org.koin.dsl.module
 
 val corePresentationModule = module {
     singleOf(::ThemeController)
+    singleOf(::AnimationController)
 }

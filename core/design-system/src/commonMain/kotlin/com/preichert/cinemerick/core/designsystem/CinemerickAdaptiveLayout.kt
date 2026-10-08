@@ -3,6 +3,7 @@ package com.preichert.cinemerick.core.designsystem
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -58,14 +59,15 @@ fun CinemerickAdaptiveLayout(
     when (configuration) {
         // Single column on mobile portrait: header, filters, results stacked
         DeviceConfiguration.MOBILE_PORTRAIT -> {
+            val scrollState = rememberScrollState()
             Column(
                 modifier = modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                header()
+                Box(modifier = Modifier.scrollParallax(scrollState)) { header() }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -152,15 +154,16 @@ fun CinemerickAdaptiveLayout(
 
         // Tablet portrait: centered content, side-by-side filters | results
         DeviceConfiguration.TABLET_PORTRAIT -> {
+            val scrollState = rememberScrollState()
             Column(
                 modifier = modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
             ) {
-                header()
+                Box(modifier = Modifier.scrollParallax(scrollState)) { header() }
                 if (resultsContent != null) {
                     Row(
                         modifier = Modifier

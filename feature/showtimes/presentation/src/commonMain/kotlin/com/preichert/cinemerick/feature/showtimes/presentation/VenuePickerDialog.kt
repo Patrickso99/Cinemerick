@@ -1,6 +1,5 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +36,7 @@ import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.bounceClickable
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
@@ -114,7 +114,8 @@ internal fun VenuePickerDialog(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clickable {
+                                            .animateItem()
+                                            .bounceClickable {
                                                 localSelected = if (venue in localSelected) {
                                                     localSelected - venue
                                                 } else {
