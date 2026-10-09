@@ -15,7 +15,9 @@ targets:
     type: application
     platform: iOS
     sources:
-      - iosApp
+      - path: iosApp
+        excludes:
+          - Info.plist
     preBuildScripts:
       - name: Build Kotlin framework
         basedOnDependencyAnalysis: false
@@ -28,6 +30,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.preichert.cinemerick.ios
         PRODUCT_NAME: $(APP_NAME)
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: iosApp/Info.plist
+        INFOPLIST_KEY_CADisableMinimumFrameDurationOnPhone: YES
         INFOPLIST_KEY_CFBundleDisplayName: $(APP_NAME)
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
