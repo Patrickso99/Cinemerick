@@ -32,7 +32,9 @@
     <string name="pick_days">Pick days</string>
     <string name="calendar_prev_month">Previous month</string>
     <string name="calendar_next_month">Next month</string>
-    <string name="calendar_done">Done</string>
+    <string name="calendar_title">Pick days</string>
+    <string name="calendar_ok">OK</string>
+    <string name="calendar_cancel">Cancel</string>
     <string name="formats_title">Format</string>
     <string name="formats_hint">Tap to hide a format</string>
     <string name="formats_show_all">Show all</string>

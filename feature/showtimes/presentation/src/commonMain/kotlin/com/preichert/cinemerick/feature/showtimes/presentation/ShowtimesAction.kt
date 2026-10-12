@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 
 sealed interface ShowtimesAction {
     data class OnDayToggle(val date: LocalDate) : ShowtimesAction
+    data class OnDatesConfirm(val dates: Set<LocalDate>) : ShowtimesAction
     data object OnCalendarOpen : ShowtimesAction
     data object OnCalendarDismiss : ShowtimesAction
     data object OnSelectToday : ShowtimesAction

@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,7 +30,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_subtitle
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
@@ -77,28 +74,18 @@ fun ShowtimesScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val configuration = currentDeviceConfiguration()
-    val inlineCalendar = !configuration.isMobile
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding()) }
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            state.calendar?.takeIf { !inlineCalendar }?.let { calendar ->
-                AlertDialog(
-                    onDismissRequest = { onAction(ShowtimesAction.OnCalendarDismiss) },
-                    text = {
-                        MultiDateCalendar(
-                            selected = state.days.mapTo(mutableSetOf()) { it.date },
-                            minDate = calendar.minDate,
-                            onToggle = { onAction(ShowtimesAction.OnDayToggle(it)) }
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { onAction(ShowtimesAction.OnCalendarDismiss) }) {
-                            Text(stringResource(Res.string.calendar_done))
-                        }
-                    }
+            state.calendar?.let { calendar ->
+                DatePickerDialog(
+                    initialDates = state.days.mapTo(mutableSetOf()) { it.date },
+                    minDate = calendar.minDate,
+                    onConfirm = { onAction(ShowtimesAction.OnDatesConfirm(it)) },
+                    onDismiss = { onAction(ShowtimesAction.OnCalendarDismiss) }
                 )
             }
             state.venuePicker?.let { picker ->
@@ -132,8 +119,7 @@ fun ShowtimesScreen(
                 filtersContent = {
                     FiltersSection(
                         state = state,
-                        onAction = onAction,
-                        inlineCalendar = inlineCalendar
+                        onAction = onAction
                     )
                 },
                 resultsContent = {

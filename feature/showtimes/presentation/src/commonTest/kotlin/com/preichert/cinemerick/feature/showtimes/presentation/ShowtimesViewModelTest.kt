@@ -19,6 +19,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ShowtimesViewModelTest {
 
@@ -71,6 +72,64 @@ class ShowtimesViewModelTest {
 
         assertEquals("20:00", viewModel.day(first).minTime)
         assertEquals("18:00", viewModel.day(second).minTime)
+    }
+
+    @Test
+    fun confirmKeepsTimeRangeOfRetainedDays() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
+        viewModel.onAction(ShowtimesAction.OnMinTimeChange(first, "15:00"))
+
+        controller.setMin(18 * 60)
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(second, first)))
+
+        assertEquals("15:00", viewModel.day(first).minTime)
+        assertEquals("18:00", viewModel.day(second).minTime)
+    }
+
+    @Test
+    fun confirmDropsRemovedDaysAndSortsByDate() = runTest {
+        val third = LocalDate(2026, 10, 3)
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
+        viewModel.onAction(ShowtimesAction.OnDayToggle(second))
+
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(third, second)))
+
+        assertEquals(listOf(second, third), viewModel.state.value.days.map { it.date })
+    }
+
+    @Test
+    fun confirmClosesCalendar() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnCalendarOpen)
+
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(first)))
+
+        assertNull(viewModel.state.value.calendar)
+    }
+
+    @Test
+    fun dismissLeavesDaysUnchanged() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
+        viewModel.onAction(ShowtimesAction.OnCalendarOpen)
+
+        viewModel.onAction(ShowtimesAction.OnCalendarDismiss)
+
+        assertEquals(listOf(first), viewModel.state.value.days.map { it.date })
+        assertNull(viewModel.state.value.calendar)
+    }
+
+    @Test
+    fun chipToggleStillAppliesImmediately() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
+        viewModel.onAction(ShowtimesAction.OnDayToggle(second))
+
+        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
+
+        assertEquals(listOf(second), viewModel.state.value.days.map { it.date })
     }
 
     private object FakeRepository : ShowtimesRepository {

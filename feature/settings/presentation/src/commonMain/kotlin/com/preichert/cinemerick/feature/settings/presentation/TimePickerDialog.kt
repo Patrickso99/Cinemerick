@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
+import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.presentation.minutesOf
 import com.preichert.cinemerick.core.presentation.toHour
@@ -84,41 +85,9 @@ internal fun TimePickerDialog(
     )
 }
 
-@Preview
+@DevicePreviews
 @Composable
 private fun SettingsScreenPreview() {
-    CinemerickTheme {
-        TimePickerDialog(
-            title = "Pick a time",
-            initialMinutes = 750, // 12:30
-            isValid = { true },
-            errorText = "Invalid time",
-            onConfirm = {},
-            onDismiss = {},
-            onNoLimit = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun SettingsScreenDarkPreview() {
-    CinemerickTheme(isDarkTheme = true) {
-        TimePickerDialog(
-            title = "Pick a time",
-            initialMinutes = 750, // 12:30
-            isValid = { true },
-            errorText = "Invalid time",
-            onConfirm = {},
-            onDismiss = {},
-            onNoLimit = {}
-        )
-    }
-}
-
-@Preview(widthDp = 1280, heightDp = 800)
-@Composable
-private fun SettingsScreenDesktopPreview() {
     CinemerickTheme {
         TimePickerDialog(
             title = "Pick a time",

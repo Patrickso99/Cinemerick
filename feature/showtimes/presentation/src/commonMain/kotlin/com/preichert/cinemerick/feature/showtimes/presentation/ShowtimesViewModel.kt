@@ -75,6 +75,7 @@ class ShowtimesViewModel(
     fun onAction(action: ShowtimesAction) {
         when (action) {
             is ShowtimesAction.OnDayToggle -> { toggleDay(action.date); refresh() }
+            is ShowtimesAction.OnDatesConfirm -> { confirmDates(action.dates); refresh() }
             ShowtimesAction.OnCalendarOpen -> _state.update { it.copy(calendar = CalendarUi(minDate = today())) }
             ShowtimesAction.OnCalendarDismiss -> _state.update { it.copy(calendar = null) }
             ShowtimesAction.OnSelectToday -> { selectDays(listOf(today())); refresh() }
@@ -109,6 +110,11 @@ class ShowtimesViewModel(
         _state.update { state ->
             state.copy(days = dates.map { date -> state.days.firstOrNull { it.date == date } ?: newDay(date) })
         }
+    }
+
+    private fun confirmDates(dates: Set<LocalDate>) {
+        selectDays(dates.sorted())
+        _state.update { it.copy(calendar = null) }
     }
 
     private fun toggleDay(date: LocalDate) {

@@ -46,7 +46,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.add_venue
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_done
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.clear
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.days_title
@@ -74,8 +73,7 @@ internal fun LocalDate.shortDate(): String =
 @Composable
 internal fun ColumnScope.FiltersSection(
     state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit,
-    inlineCalendar: Boolean
+    onAction: (ShowtimesAction) -> Unit
 ) {
     SectionCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -204,27 +202,11 @@ internal fun ColumnScope.FiltersSection(
                     label = { Text(stringResource(Res.string.quick_weekend)) }
                 )
             }
-            val calendar = state.calendar
-            if (inlineCalendar && calendar != null) {
-                MultiDateCalendar(
-                    selected = state.days.mapTo(mutableSetOf()) { it.date },
-                    minDate = calendar.minDate,
-                    onToggle = { onAction(ShowtimesAction.OnDayToggle(it)) },
-                    modifier = Modifier.padding(horizontal = Spacing.lg)
-                )
-                TextButton(
-                    onClick = { onAction(ShowtimesAction.OnCalendarDismiss) },
-                    modifier = Modifier.padding(horizontal = Spacing.md)
-                ) {
-                    Text(stringResource(Res.string.calendar_done))
-                }
-            } else {
-                FilledTonalButton(
-                    onClick = { onAction(ShowtimesAction.OnCalendarOpen) },
-                    modifier = Modifier.padding(horizontal = Spacing.lg)
-                ) {
-                    Text(stringResource(Res.string.pick_days))
-                }
+            FilledTonalButton(
+                onClick = { onAction(ShowtimesAction.OnCalendarOpen) },
+                modifier = Modifier.padding(horizontal = Spacing.lg)
+            ) {
+                Text(stringResource(Res.string.pick_days))
             }
             if (state.days.isNotEmpty()) {
                 LazyRow(
