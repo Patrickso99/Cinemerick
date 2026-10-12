@@ -24,6 +24,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.clickable
+import com.preichert.cinemerick.core.domain.isValidWindow
+import com.preichert.cinemerick.core.presentation.toTimeString
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -52,6 +57,12 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.animatio
 import com.preichert.cinemerick.feature.settings.presentation.resources.app_theme_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_subtitle
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_description
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_error
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_max_label
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_min_label
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_no_limit
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_auto
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_auto_description
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_dark
@@ -126,6 +137,12 @@ fun SettingsScreen(
                     enabled = state.animationsEnabled,
                     onAction = onAction,
                     modifier = Modifier.staggeredAppear(1)
+                )
+                TimeWindowSection(
+                    minMinutes = state.defaultMinMinutes,
+                    maxMinutes = state.defaultMaxMinutes,
+                    onAction = onAction,
+                    modifier = Modifier.staggeredAppear(2)
                 )
             }
         )
@@ -247,6 +264,106 @@ private fun AnimationsSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun TimeWindowSection(
+    minMinutes: Int,
+    maxMinutes: Int?,
+    onAction: (SettingsAction) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var editing by remember { mutableStateOf<TimeWindowField?>(null) }
+    val noLimit = stringResource(Res.string.time_window_no_limit)
+    val error = stringResource(Res.string.time_window_error)
+
+    SectionCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            Text(
+                text = stringResource(Res.string.time_window_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = stringResource(Res.string.time_window_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TimeWindowRow(
+                label = stringResource(Res.string.time_window_min_label),
+                value = minMinutes.toTimeString(),
+                onClick = { editing = TimeWindowField.Min }
+            )
+            HorizontalDivider(
+                thickness = DividerDefaults.Thickness,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+            TimeWindowRow(
+                label = stringResource(Res.string.time_window_max_label),
+                value = maxMinutes?.toTimeString() ?: noLimit,
+                onClick = { editing = TimeWindowField.Max }
+            )
+        }
+    }
+
+    when (editing) {
+        TimeWindowField.Min -> TimePickerDialog(
+            title = stringResource(Res.string.time_window_min_label),
+            initialMinutes = minMinutes,
+            isValid = { isValidWindow(it, maxMinutes) },
+            errorText = error,
+            onConfirm = {
+                onAction(SettingsAction.OnDefaultMinTimeChanged(it))
+                editing = null
+            },
+            onDismiss = { editing = null },
+        )
+        TimeWindowField.Max -> TimePickerDialog(
+            title = stringResource(Res.string.time_window_max_label),
+            initialMinutes = maxMinutes ?: (23 * 60 + 59),
+            isValid = { isValidWindow(minMinutes, it) },
+            errorText = error,
+            onConfirm = {
+                onAction(SettingsAction.OnDefaultMaxTimeChanged(it))
+                editing = null
+            },
+            onDismiss = { editing = null },
+            onNoLimit = {
+                onAction(SettingsAction.OnDefaultMaxTimeChanged(null))
+                editing = null
+            },
+        )
+        null -> Unit
+    }
+}
+
+private enum class TimeWindowField { Min, Max }
+
+@Composable
+private fun TimeWindowRow(label: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
@@ -549,7 +666,7 @@ private fun SettingsScreenPreview() {
 private fun SettingsScreenDarkPreview() {
     CinemerickTheme(isDarkTheme = true) {
         SettingsScreen(
-            state = SettingsState(themeMode = ThemeMode.DARK, animationsEnabled = true),
+            state = SettingsState(themeMode = ThemeMode.DARK, animationsEnabled = true, defaultMinMinutes = 18 * 60, defaultMaxMinutes = 23 * 60),
             systemDark = true,
             onAction = {},
             onNavigateBack = {}

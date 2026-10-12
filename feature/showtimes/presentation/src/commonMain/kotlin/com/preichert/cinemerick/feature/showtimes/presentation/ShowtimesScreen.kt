@@ -153,10 +153,10 @@ private fun previewState(): ShowtimesState {
     val marconVenue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
     return ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24"),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25"),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10")
+            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24", minTime = "20:00"),
+            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue),
         hasGenerated = true,

@@ -1,9 +1,11 @@
 package com.preichert.cinemerick.core.presentation
 
-import com.preichert.cinemerick.core.data.SettingsThemePreferencesTest.MemorySettings
+import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.core.data.SettingsThemePreferences
 import com.preichert.cinemerick.core.domain.ThemeMode
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -45,7 +47,7 @@ class ThemeControllerTest {
         val controller = ThemeController(preferences)
 
         val values = mutableListOf<ThemeMode>()
-        val job = kotlinx.coroutines.launch {
+        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             controller.mode.collect { values.add(it) }
         }
 

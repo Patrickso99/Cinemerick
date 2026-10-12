@@ -20,20 +20,20 @@ internal object PreviewData {
 
     fun showtimesStateWithDays() = ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10"),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10")
+            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 3), "sab 03/10", minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue)
     )
 
     fun showtimesStateWithResults() = ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24"),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25"),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10")
+            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24", minTime = "20:00"),
+            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue),
         hasGenerated = true,
@@ -74,13 +74,17 @@ internal object PreviewData {
     fun dayUiSelected() = DayUi(
         LocalDate(2026, 10, 1),
         "gio 01/10",
-        isSelected = true
+        isSelected = true,
+        minTime = "20:00",
+        maxTime = ""
     )
 
     fun dayUiNotSelected() = DayUi(
         LocalDate(2026, 10, 2),
         "ven 02/10",
-        isSelected = false
+        isSelected = false,
+        minTime = "20:00",
+        maxTime = ""
     )
 
     fun dayUiWithTimeError() = DayUi(

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import co.touchlab.kermit.Logger
 import androidx.lifecycle.viewModelScope
 import com.preichert.cinemerick.core.domain.Result
+import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.presentation.UiText
+import com.preichert.cinemerick.core.presentation.toTimeInput
 import com.preichert.cinemerick.core.presentation.toUiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DayRange
@@ -47,7 +49,8 @@ private val log = Logger.withTag("ShowtimesViewModel")
 
 class ShowtimesViewModel(
     private val showtimesRepository: ShowtimesRepository,
-    private val filterPreferences: FilterPreferences
+    private val filterPreferences: FilterPreferences,
+    private val timeWindowController: TimeWindowController
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState())
@@ -186,7 +189,16 @@ class ShowtimesViewModel(
         )
     }
 
-    private fun newDay(date: LocalDate) = DayUi(date = date, label = date.toLabel(), isSelected = true)
+    private fun newDay(date: LocalDate): DayUi {
+        val window = timeWindowController.window.value
+        return DayUi(
+            date = date,
+            label = date.toLabel(),
+            isSelected = true,
+            minTime = window.minMinutes.toTimeInput(),
+            maxTime = window.maxMinutes.toTimeInput()
+        )
+    }
 
     private fun updateDay(date: LocalDate, transform: (DayUi) -> DayUi) {
         _state.update { state ->

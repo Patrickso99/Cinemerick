@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.core.data
 
+import com.preichert.cinemerick.core.testing.MemorySettings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

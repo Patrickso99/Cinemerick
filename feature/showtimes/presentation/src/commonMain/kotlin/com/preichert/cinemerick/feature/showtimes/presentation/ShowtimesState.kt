@@ -36,15 +36,11 @@ data class DayUi(
     val date: LocalDate,
     val label: String,
     val isSelected: Boolean = false,
-    val minTime: String = DEFAULT_MIN_TIME,
-    val maxTime: String = ""
+    val minTime: String,
+    val maxTime: String
 ) {
     val isMinTimeError: Boolean get() = parseTimeInput(minTime) is ParsedTime.Invalid
     val isMaxTimeError: Boolean get() = parseTimeInput(maxTime) is ParsedTime.Invalid
-
-    companion object {
-        const val DEFAULT_MIN_TIME = "20:00"
-    }
 }
 
 data class FilmGroupUi(

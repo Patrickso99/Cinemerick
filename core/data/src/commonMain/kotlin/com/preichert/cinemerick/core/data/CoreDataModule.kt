@@ -2,6 +2,7 @@ package com.preichert.cinemerick.core.data
 
 import com.preichert.cinemerick.core.domain.AnimationPreferences
 import com.preichert.cinemerick.core.domain.ThemePreferences
+import com.preichert.cinemerick.core.domain.TimeWindowPreferences
 import com.russhwolf.settings.Settings
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -13,4 +14,5 @@ val coreDataModule = module {
     singleOf(HttpClientFactory::create)
     single<ThemePreferences> { SettingsThemePreferences(Settings()) }
     single<AnimationPreferences> { SettingsAnimationPreferences(Settings()) }
+    single<TimeWindowPreferences> { SettingsTimeWindowPreferences(Settings()) }
 }

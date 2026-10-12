@@ -11,4 +11,12 @@
     <string name="animations_title">Animations</string>
     <string name="animations_smooth">Smooth animations</string>
     <string name="animations_smooth_description">Navigation, tap, scroll and item appearance effects</string>
+    <string name="time_window_title">Default time window</string>
+    <string name="time_window_description">Applies to days you select from now on; already selected days stay unchanged</string>
+    <string name="time_window_min_label">Start from</string>
+    <string name="time_window_max_label">Start by</string>
+    <string name="time_window_no_limit">No limit</string>
+    <string name="time_window_ok">OK</string>
+    <string name="time_window_cancel">Cancel</string>
+    <string name="time_window_error">The minimum time can't be later than the maximum time</string>
 </resources>
