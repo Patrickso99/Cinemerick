@@ -16,8 +16,9 @@ private val POSTER = Regex("<img\\s+src=\"([^\"]+)\"\\s+alt=\"Poster ")
 private val TICKET = Regex("href=\"(https://ticket\\.cinebot\\.it/donbosco2/titolo/\\d+)\"")
 
 // Either a day heading ("LUNEDÌ 5 OTTOBRE", no year) or a time ("16.30"), read in page order: times belong to the heading before them.
+// A time is a span of any class: promo times carry `cinema-promo-time`, the others an empty class.
 private val DAY_OR_TIME = Regex(
-    "class=\"giorno[^\"]*\">\\s*([^<]+?)\\s*</div>|class=\"cinema-promo-time\">\\s*(\\d{1,2})[.:](\\d{2})"
+    "class=\"giorno[^\"]*\">\\s*([^<]+?)\\s*</div>|<span class=\"[^\"]*\">\\s*(\\d{1,2})[.:](\\d{2})"
 )
 private val DAY_HEADING = Regex("(\\d{1,2})\\s+([A-Za-zÀ-ÿ]+)")
 
