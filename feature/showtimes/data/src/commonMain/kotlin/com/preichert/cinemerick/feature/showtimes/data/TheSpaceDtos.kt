@@ -41,6 +41,7 @@ data class TheSpaceShowingGroupDto(
 @Serializable
 data class TheSpaceSessionDto(
     val startTime: String = "",
+    val bookingUrl: String? = null,
     val attributes: List<TheSpaceAttributeDto> = emptyList()
 )
 

@@ -15,7 +15,7 @@ fun UciProgrammingDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
             .flatMap { (format, variant) ->
                 variant.performances
                     .filter { it.day == dayText && it.actualStartAt.isNotBlank() }
-                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), venue, format, movie.poster?.takeIf { it.isNotBlank() }) }
+                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), venue, format, movie.poster?.takeIf { it.isNotBlank() }, it.cartLink.toTicketUrl(UCI_BASE_URL)) }
             }
     }
 }
@@ -29,11 +29,18 @@ fun TheSpaceFilmsDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
             .map {
                 Showing(
                     cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), venue,
-                    it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() }
+                    it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() },
+                    it.bookingUrl.toTicketUrl(THE_SPACE_BASE_URL)
                 )
             }
     }
 }
+
+private const val UCI_BASE_URL = "https://ucicinemas.it"
+private const val THE_SPACE_BASE_URL = "https://www.thespacecinema.it"
+
+// The sources hand out a path on their own site; a blank one means no purchase page.
+private fun String?.toTicketUrl(baseUrl: String): String? = this?.takeIf { it.isNotBlank() }?.let { baseUrl + it }
 
 // e.g. "XL", "2D", "2D · ENG · sub ITA"
 private fun UciVariantDto.toFormat(screen: String): String? =

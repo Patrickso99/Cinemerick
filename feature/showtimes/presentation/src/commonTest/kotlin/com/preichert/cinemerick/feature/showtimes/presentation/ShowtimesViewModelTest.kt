@@ -7,6 +7,7 @@ import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
+import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
@@ -15,7 +16,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,9 +40,9 @@ class ShowtimesViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(): ShowtimesViewModel {
+    private fun viewModel(repository: ShowtimesRepository = FakeRepository): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        return ShowtimesViewModel(FakeRepository, FakeFilterPreferences, controller)
+        return ShowtimesViewModel(repository, FakeFilterPreferences, controller)
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }
@@ -130,6 +137,27 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnDayToggle(first))
 
         assertEquals(listOf(second), viewModel.state.value.days.map { it.date })
+    }
+
+    @Test
+    fun showingUiCarriesTicketUrl() = runTest {
+        val venue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
+        val day = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(30, DateTimeUnit.DAY)
+        val showings = listOf(
+            Showing("Mammina", day, LocalTime(21, 0), venue, ticketUrl = "https://ucicinemas.it/movies/mammina/acquista/1/2/3"),
+            Showing("Mammina", day, LocalTime(21, 30), venue)
+        )
+        val viewModel = viewModel(object : ShowtimesRepository by FakeRepository {
+            override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
+                listOf(VenueShowings(venue, Result.Success(showings)))
+        })
+        viewModel.onAction(ShowtimesAction.OnDayToggle(day))
+
+        viewModel.onAction(ShowtimesAction.OnGenerateClick)
+
+        val shown = viewModel.state.value.groups.single().showings
+        assertEquals(listOf("21:00", "21:30"), shown.map { it.time })
+        assertEquals(listOf<String?>("https://ucicinemas.it/movies/mammina/acquista/1/2/3", null), shown.map { it.ticketUrl })
     }
 
     private object FakeRepository : ShowtimesRepository {

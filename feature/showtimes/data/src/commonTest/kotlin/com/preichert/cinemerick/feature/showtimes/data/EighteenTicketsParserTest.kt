@@ -25,7 +25,7 @@ class EighteenTicketsParserTest {
         <br>
         </div>
         <ul>
-        ${times.joinToString("\n") { "<a data-time='1' href='https://x/film/$id/s#theater-init'>\n<li class='btn'>\n<i class='fas fa-ticket-alt'></i>\n$it\n</li>\n</a>" }}
+        ${times.withIndex().joinToString("\n") { (index, time) -> "<a data-time='1' href='https://x/film/$id/s$index#theater-init'>\n<li class='btn'>\n<i class='fas fa-ticket-alt'></i>\n$time\n</li>\n</a>" }}
         </ul>
         </div>
     """.trimIndent()
@@ -64,5 +64,43 @@ class EighteenTicketsParserTest {
     @Test
     fun ignoresScheduleForAnotherDay() {
         assertEquals(emptyList(), parseEighteenTicketsShowings(film(1, "VERITY", "02/10/2026", "18:30"), venueCinergia, day))
+    }
+
+    @Test
+    fun eachTimeKeepsItsOwnPurchaseUrl() {
+        val html = film(1, "VERITY", "01/10/2026", "18:30", "21:00") + film(2, "DIGGER", "01/10/2026", "9:05")
+
+        val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
+
+        assertEquals(
+            listOf(
+                "https://x/film/1/s0#theater-init",
+                "https://x/film/1/s1#theater-init",
+                "https://x/film/2/s0#theater-init"
+            ),
+            showings.map { it.ticketUrl }
+        )
+    }
+
+    @Test
+    fun escapedScriptResponseKeepsPurchaseUrls() {
+        val html = film(1, "VERITY", "01/10/2026", "18:30", "21:00")
+        val script = "\$(\"#movie-list\").html('" + html.replace("'", "\\'").replace("\n", "\\n").replace("</", "<\\/") + "');"
+
+        assertEquals(
+            listOf("https://x/film/1/s0#theater-init", "https://x/film/1/s1#theater-init"),
+            parseEighteenTicketsShowings(script, venueCinergia, day).map { it.ticketUrl }
+        )
+    }
+
+    @Test
+    fun timeLinkWithoutUsableHrefGivesNoPurchaseUrl() {
+        val withoutHref = film(1, "VERITY", "01/10/2026", "18:30").replace(" href='https://x/film/1/s0#theater-init'", "")
+        val withAnchor = film(2, "DIGGER", "01/10/2026", "21:00").replace("href='https://x/film/2/s0#theater-init'", "href='#'")
+
+        val showings = parseEighteenTicketsShowings(withoutHref + withAnchor, venueCinergia, day)
+
+        assertEquals(listOf<String?>(null, null), showings.map { it.ticketUrl })
+        assertEquals(listOf(LocalTime(18, 30), LocalTime(21, 0)), showings.map { it.time })
     }
 }

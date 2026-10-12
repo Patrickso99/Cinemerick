@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import co.touchlab.kermit.Logger
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,12 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
@@ -32,14 +31,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
 import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.TicketActionColors
 import com.preichert.cinemerick.core.designsystem.bounceClickable
 import com.preichert.cinemerick.core.designsystem.pressScale
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,18 +49,17 @@ import com.preichert.cinemerick.core.designsystem.staggeredAppear
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
-import com.preichert.cinemerick.core.presentation.currentPlatform
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
-import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.cancel
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.open_cinema_app
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.options_count
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+
+private val log = Logger.withTag("ShowtimesResults")
 
 private val MIN_GRID_CARD_WIDTH = 340.dp
 
@@ -254,42 +255,8 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96
 }
 
 @Composable
-internal fun CinemaAppBadge(venue: Venue, container: Color, content: Color) {
-    val uriHandler = LocalUriHandler.current
-    val links = remember(venue) { venue.appLinks(currentPlatform) }
-    var isChoosing by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier.clip(MaterialTheme.shapes.small).bounceClickable {
-            if (links.size == 1) uriHandler.openUri(links.first().url) else isChoosing = true
-        }
-    ) {
-        Badge(text = venue.name, container = container, content = content)
-    }
-
-    if (isChoosing) {
-        AlertDialog(
-            onDismissRequest = { isChoosing = false },
-            title = { Text(stringResource(Res.string.open_cinema_app, venue.name)) },
-            text = {
-                Column {
-                    links.forEach { link ->
-                        TextButton(onClick = {
-                            isChoosing = false
-                            uriHandler.openUri(link.url)
-                        }) { Text(link.label) }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { isChoosing = false }) { Text(stringResource(Res.string.cancel)) }
-            }
-        )
-    }
-}
-
-@Composable
 internal fun ShowingRow(showing: ShowingUi) {
+    val uriHandler = LocalUriHandler.current
     FlowRow(
         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -303,7 +270,7 @@ internal fun ShowingRow(showing: ShowingUi) {
             bold = true
         )
         val (container, content) = showing.venue.chain.badgeColors()
-        CinemaAppBadge(venue = showing.venue, container = container, content = content)
+        Badge(text = showing.venue.name, container = container, content = content)
         showing.format?.let {
             Badge(
                 text = it,
@@ -311,6 +278,34 @@ internal fun ShowingRow(showing: ShowingUi) {
                 content = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
+        showing.ticketUrl?.let { url ->
+            TicketButton(onClick = {
+                log.i { "Opening purchase page for ${showing.venue.name} ${showing.date} ${showing.time}: $url" }
+                uriHandler.openUri(url)
+            })
+        }
+    }
+}
+
+@Composable
+private fun TicketButton(onClick: () -> Unit) {
+    val description = stringResource(Res.string.buy_ticket)
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = TicketActionColors.container,
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .semantics { contentDescription = description }
+            .bounceClickable(role = Role.Button, onClick = onClick)
+    ) {
+        Text(
+            text = "\uD83D\uDED2",
+            style = MaterialTheme.typography.titleMedium,
+            color = TicketActionColors.content,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)
+        )
     }
 }
 
@@ -329,7 +324,7 @@ private fun FilmGroupCardPreviewLight() {
 private fun ShowingRowPreviewLight() {
     LightThemePreview {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO"))
+            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
         }
     }
@@ -350,7 +345,7 @@ private fun FilmGroupCardPreviewDark() {
 private fun ShowingRowPreviewDark() {
     DarkThemePreview {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO"))
+            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
         }
     }

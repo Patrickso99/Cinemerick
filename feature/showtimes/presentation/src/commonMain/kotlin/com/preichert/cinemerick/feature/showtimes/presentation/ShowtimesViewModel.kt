@@ -324,7 +324,8 @@ class ShowtimesViewModel(
                             date = showing.day.toDateLabel(),
                             time = showing.time.toString(),
                             venue = showing.venue,
-                            format = showing.displayFormat
+                            format = showing.displayFormat,
+                            ticketUrl = showing.ticketUrl
                         )
                     }
                 )

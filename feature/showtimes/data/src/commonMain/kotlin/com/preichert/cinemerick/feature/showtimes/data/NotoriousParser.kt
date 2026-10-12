@@ -14,7 +14,9 @@ private val FILM_CONTAINER = Regex("<div class=\"filmContainer[^\"]*\">")
 private val TITLE = Regex("<div class=\"titolo\">([\\s\\S]*?)</div>")
 private val POSTER = Regex("<img src=\"([^\"]*img_switcher[^\"]*)\"")
 private val DAY = Regex("<div class=\"dayName\">[^<]*?(\\d{2})/(\\d{2})</div>([\\s\\S]*?)</li>")
-private val TIME = Regex("class=\"orario_\"[^>]*>\\s*(\\d{1,2}:\\d{2})\\s*<")
+private val TIME = Regex("class=\"orario_\"([^>]*)>\\s*(\\d{1,2}:\\d{2})\\s*<")
+private val CALENDAR_ID = Regex("idcalend=\"(\\d+)\"")
+private val CINEMA_ID = Regex("<span class=\"cinema\" id=\"(\\d+)\"")
 private val TAG = Regex("<[^>]*>")
 private val YEAR_TAG = Regex("\\s*\\[\\d{4}]")
 private val NEW_BADGE = Regex("^NEW!\\s*")
@@ -39,13 +41,14 @@ internal fun parseNotoriousVenues(html: String): List<Venue> =
 // The page lists a whole week: per film its poster, then one `li.hours` per day (e.g. "Giovedì 01/10", no year) with the times.
 internal fun parseNotoriousShowings(html: String, venue: Venue, days: List<LocalDate>): List<Showing> {
     val daysByMonthDay = days.associateBy { it.month.number to it.day }
+    val cinemaId = CINEMA_ID.find(html)?.groupValues?.get(1)
     val starts = FILM_CONTAINER.findAll(html).map { it.range.first }.toList()
     return starts.mapIndexed { index, start ->
-        parseFilm(html.substring(start, starts.getOrNull(index + 1) ?: html.length), venue, daysByMonthDay)
+        parseFilm(html.substring(start, starts.getOrNull(index + 1) ?: html.length), venue, daysByMonthDay, cinemaId)
     }.flatten().distinct()
 }
 
-private fun parseFilm(film: String, venue: Venue, daysByMonthDay: Map<Pair<Int, Int>, LocalDate>): List<Showing> {
+private fun parseFilm(film: String, venue: Venue, daysByMonthDay: Map<Pair<Int, Int>, LocalDate>, cinemaId: String?): List<Showing> {
     val rawTitle = TITLE.find(film)?.groupValues?.get(1)?.replace(TAG, "")?.unescapeHtml()?.trim() ?: return emptyList()
     val (name, suffix) = rawTitle.replace(NEW_BADGE, "").split("|", limit = 2).map { it.trim() }.let { it[0] to it.getOrNull(1) }
     val title = cleanTitle(name.replace(YEAR_TAG, ""))
@@ -56,9 +59,14 @@ private fun parseFilm(film: String, venue: Venue, daysByMonthDay: Map<Pair<Int, 
         val (dd, mm, content) = dayMatch.destructured
         val day = daysByMonthDay[mm.toInt() to dd.toInt()] ?: return@flatMap emptySequence()
         TIME.findAll(content).map {
-            Showing(title, day, LocalTime.parse(it.groupValues[1].padStart(5, '0')), venue, format, poster)
+            val calendarId = CALENDAR_ID.find(it.groupValues[1])?.groupValues?.get(1)
+            Showing(title, day, LocalTime.parse(it.groupValues[2].padStart(5, '0')), venue, format, poster, ticketUrl(cinemaId, calendarId))
         }
     }.toList()
 }
+
+// The site's own quick booking opens this page; it needs the numeric cinema id (not the slug) and the showing's calendar id.
+private fun ticketUrl(cinemaId: String?, calendarId: String?): String? =
+    if (cinemaId == null || calendarId == null) null else "${SITE_ROOT}generic/seatsframe.php?sc=$cinemaId&sp=$calendarId"
 
 private fun String.capitalize(): String = replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }

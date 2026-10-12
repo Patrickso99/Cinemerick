@@ -10,7 +10,8 @@ private val SCHEDULE_MARKER = Regex("id='schedule-\\d+'")
 private val TITLE = Regex("class='movie__title'[^>]*>\\s*([^<\\s][^<]*?)\\s*</a>")
 private val POSTER = Regex("<img[^>]*src='([^']+)'")
 private val SCHEDULE_DAY = Regex("(\\d{2})/(\\d{2})/(\\d{4})")
-private val TIME = Regex("data-time='[^']*'[^>]*>\\s*<li[^>]*>[\\s\\S]*?(\\d{1,2}:\\d{2})")
+private val TIME = Regex("data-time='[^']*'([^>]*)>\\s*<li[^>]*>[\\s\\S]*?(\\d{1,2}:\\d{2})")
+private val HREF = Regex("href='([^']*)'")
 private val ORIGINAL_LANGUAGE_PREFIX = Regex("^\\(\\s*V\\.?O\\.?S?\\.?\\s*\\)\\s*", RegexOption.IGNORE_CASE)
 private val ORIGINAL_LANGUAGE_SUFFIX = Regex("\\s*-\\s*V\\.?\\s*O\\.?\\s*$", RegexOption.IGNORE_CASE)
 
@@ -37,7 +38,8 @@ private fun parseFilm(info: String, schedule: String, venue: Venue, day: LocalDa
     val title = cleanTitle(rawTitle.replace(ORIGINAL_LANGUAGE_PREFIX, "").replace(ORIGINAL_LANGUAGE_SUFFIX, ""))
     val poster = POSTER.findAll(info).lastOrNull()?.groupValues?.get(1)?.takeIf { it.isNotBlank() }
     return TIME.findAll(schedule).map {
-        Showing(title, day, LocalTime.parse(it.groupValues[1].padStart(5, '0')), venue, "VO".takeIf { isOriginalLanguage }, poster)
+        val ticketUrl = HREF.find(it.groupValues[1])?.groupValues?.get(1)?.takeIf { href -> href.startsWith("http") }
+        Showing(title, day, LocalTime.parse(it.groupValues[2].padStart(5, '0')), venue, "VO".takeIf { isOriginalLanguage }, poster, ticketUrl)
     }.toList()
 }
 

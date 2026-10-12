@@ -44,7 +44,7 @@ internal object PreviewData {
                 title = "Film Name",
                 posterUrl = null,
                 showings = listOf(
-                    ShowingUi("Giovedì", "01/10", "21:00", sileaVenue, "2D · VO"),
+                    ShowingUi("Giovedì", "01/10", "21:00", sileaVenue, "2D · VO", "https://example.com/buy"),
                     ShowingUi("Giovedì", "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
                 )
             )

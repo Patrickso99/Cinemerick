@@ -9,5 +9,6 @@ data class Showing(
     val time: LocalTime,
     val venue: Venue,
     val format: String? = null,
-    val posterUrl: String? = null
+    val posterUrl: String? = null,
+    val ticketUrl: String? = null
 )

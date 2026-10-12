@@ -109,3 +109,9 @@ object CinemaBrandColors {
     val arcadia = Color(0xFF6E398A)
     val onArcadia = Color(0xFFFFFFFF)
 }
+
+// Buy-ticket action: a green no other chip in a showing row uses. Fixed in light and dark mode like the brand colors.
+object TicketActionColors {
+    val container = Color(0xFFCBCBCB)
+    val content = Color(0xFFFFFFFF)
+}

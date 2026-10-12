@@ -26,7 +26,7 @@ class ArcadiaParserTest {
                     <div class="orari_cont">
                     ${times.joinToString("\n") { (time, version) ->
                         """<div class="orario">
-                            <a href="/acquista/x/5085/4923/131194/" title="$title" class="link_acquista">
+                            <a href="/acquista/x/5085/4923/${time.replace(":", "")}/" title="$title" class="link_acquista">
                                 $time </a>
                             ${version?.let { """<div class="versione">$it</div>""" } ?: ""}
                         </div>"""
@@ -58,6 +58,37 @@ class ArcadiaParserTest {
         assertEquals(null, showings[1].format)
         assertEquals("ENERGIA INFINITY VISION", showings[2].format)
         assertEquals("https://x/dune.jpg", showings[3].posterUrl)
+    }
+
+    @Test
+    fun eachTimeKeepsItsOwnAbsolutePurchaseUrl() {
+        val html = film(
+            "AVENGERS - DOOMSDAY", "/p.jpg",
+            "Martedì 15/12" to listOf("00:01" to "INFINITY VISION", "21:30" to null),
+            "Mercoledì 16/12" to listOf("09:30" to null)
+        )
+
+        val showings = parseArcadiaShowings(html, venueMelzo, listOf(tuesday, wednesday))
+
+        assertEquals(
+            listOf(
+                "https://www.arcadiacinema.com/acquista/x/5085/4923/0001/",
+                "https://www.arcadiacinema.com/acquista/x/5085/4923/2130/",
+                "https://www.arcadiacinema.com/acquista/x/5085/4923/0930/"
+            ),
+            showings.map { it.ticketUrl }
+        )
+    }
+
+    @Test
+    fun purchaseUrlHasHtmlEntitiesUnescaped() {
+        val html = film("DUNE", "/p.jpg", "Martedì 15/12" to listOf("18:00" to null))
+            .replace("/acquista/x/5085/4923/1800/", "/acquista/x?a=1&amp;b=2")
+
+        assertEquals(
+            listOf("https://www.arcadiacinema.com/acquista/x?a=1&b=2"),
+            parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).map { it.ticketUrl }
+        )
     }
 
     @Test

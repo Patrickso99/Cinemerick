@@ -40,7 +40,8 @@ data class UciVariantDto(
 @Serializable
 data class UciPerformanceDto(
     val day: String = "",
-    @SerialName("actual_start_at") val actualStartAt: String = ""
+    @SerialName("actual_start_at") val actualStartAt: String = "",
+    @SerialName("cart_link") val cartLink: String? = null
 )
 
 @Serializable

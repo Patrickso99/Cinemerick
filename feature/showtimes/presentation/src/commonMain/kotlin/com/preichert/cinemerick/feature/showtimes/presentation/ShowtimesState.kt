@@ -54,7 +54,8 @@ data class ShowingUi(
     val date: String,
     val time: String,
     val venue: Venue,
-    val format: String? = null
+    val format: String? = null,
+    val ticketUrl: String? = null
 )
 
 data class VenueErrorUi(

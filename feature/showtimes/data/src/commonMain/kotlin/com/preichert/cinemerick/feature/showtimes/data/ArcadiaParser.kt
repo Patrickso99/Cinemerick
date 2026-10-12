@@ -15,10 +15,10 @@ private const val FILM_MARKER = "<div class=\"filmContainer\""
 private val TITLE = Regex("<h1>\\s*([^<]+?)\\s*</h1>")
 private val POSTER = Regex("<div class=\"locandina\">\\s*<img\\s+src=\"([^\"]+)\"")
 
-// Either a day heading ("Martedì 15/12", no year) or a time link with its optional format ("INFINITY VISION"), read in page order.
+// Either a day heading ("Martedì 15/12", no year) or a time link (purchase path, time) with its optional format ("INFINITY VISION"), read in page order.
 private val DAY_OR_TIME = Regex(
     "class=\"dayName\">\\s*([^<]+?)\\s*</div>" +
-        "|<a href=\"/acquista/[^\"]*\"[^>]*>\\s*(\\d{1,2}):(\\d{2})\\s*</a>(?:\\s*<div class=\"versione\">\\s*([^<]*?)\\s*</div>)?"
+        "|<a href=\"(/acquista/[^\"]*)\"[^>]*>\\s*(\\d{1,2}):(\\d{2})\\s*</a>(?:\\s*<div class=\"versione\">\\s*([^<]*?)\\s*</div>)?"
 )
 private val DAY_MONTH = Regex("(\\d{1,2})/(\\d{1,2})")
 
@@ -50,8 +50,9 @@ private fun parseFilm(film: String, venue: Venue, days: List<LocalDate>): List<S
         } else {
             val day = currentDay ?: continue
             showings += Showing(
-                title, day, LocalTime(match.groupValues[2].toInt(), match.groupValues[3].toInt()), venue,
-                format = match.groupValues[4].unescapeHtml().ifBlank { null }, posterUrl = poster
+                title, day, LocalTime(match.groupValues[3].toInt(), match.groupValues[4].toInt()), venue,
+                format = match.groupValues[5].unescapeHtml().ifBlank { null }, posterUrl = poster,
+                ticketUrl = ARCADIA_BASE_URL + match.groupValues[2].unescapeHtml()
             )
         }
     }

@@ -12,6 +12,9 @@ private const val FILM_MARKER = "<article id=\"film-"
 private val TITLE = Regex("alt=\"Poster ([^\"]+)\"")
 private val POSTER = Regex("<img\\s+src=\"([^\"]+)\"\\s+alt=\"Poster ")
 
+// The film's "Acquista i biglietti online" button; films sold only at the box office have none.
+private val TICKET = Regex("href=\"(https://ticket\\.cinebot\\.it/donbosco2/titolo/\\d+)\"")
+
 // Either a day heading ("LUNEDÌ 5 OTTOBRE", no year) or a time ("16.30"), read in page order: times belong to the heading before them.
 private val DAY_OR_TIME = Regex(
     "class=\"giorno[^\"]*\">\\s*([^<]+?)\\s*</div>|class=\"cinema-promo-time\">\\s*(\\d{1,2})[.:](\\d{2})"
@@ -32,6 +35,7 @@ private fun parseFilm(film: String, venue: Venue, days: List<LocalDate>): List<S
     val title = cleanTitle(rawTitle)
     if (title.isBlank()) return emptyList()
     val poster = POSTER.find(film)?.groupValues?.get(1)?.unescapeHtml()
+    val ticketUrl = TICKET.find(film)?.groupValues?.get(1)
 
     var currentDay: LocalDate? = null
     val showings = mutableListOf<Showing>()
@@ -42,7 +46,8 @@ private fun parseFilm(film: String, venue: Venue, days: List<LocalDate>): List<S
         } else {
             val day = currentDay ?: continue
             showings += Showing(
-                title, day, LocalTime(match.groupValues[2].toInt(), match.groupValues[3].toInt()), venue, posterUrl = poster
+                title, day, LocalTime(match.groupValues[2].toInt(), match.groupValues[3].toInt()), venue,
+                posterUrl = poster, ticketUrl = ticketUrl
             )
         }
     }

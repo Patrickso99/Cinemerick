@@ -30,6 +30,12 @@ class DonBoscoParserTest {
         </article>
     """.trimIndent()
 
+    // Adds the film's "Acquista i biglietti online" button, which sells through Cinebot.
+    private fun String.withOnlineButton(titleId: Int) = replace(
+        "</article>",
+        """<a href="https://ticket.cinebot.it/donbosco2/titolo/$titleId" target="_blank" class="cinema-btn-primary">Acquista i biglietti online</a></article>"""
+    )
+
     @Test
     fun parsesFilmsDaysTimesAndPoster() {
         val html = film(28, "Caravaggio", "https://x/car.jpeg", "LUNEDÌ 5 OTTOBRE" to listOf("16.30", "21.00"), "MARTEDÌ 6 OTTOBRE" to listOf("15.00")) +

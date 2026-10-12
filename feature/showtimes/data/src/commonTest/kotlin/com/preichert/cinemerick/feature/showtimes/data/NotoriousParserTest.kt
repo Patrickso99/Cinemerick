@@ -13,6 +13,8 @@ class NotoriousParserTest {
     private val friday = LocalDate(2026, 10, 2)
     private val venueFerrara = Venue(Chain.NOTORIOUS, "ferrara", "Ferrara", null, null)
 
+    private val cinemaSpan = "<span class=\"cinema\" id=\"5848\" style=\"display:none;\"></span>"
+
     private fun film(id: Int, title: String, vararg days: Pair<String, List<String>>) = """
         <div class="filmContainer oddFilm">
         <div class="locandina">
@@ -24,7 +26,7 @@ class NotoriousParserTest {
         <ul class="orari">
         ${days.joinToString("\n") { (day, times) ->
             "<li class=\"hours oddHour pngFixed\"><div class=\"dayName\">$day</div>" +
-                times.joinToString("") { "<span class=\"orario_\" idcalend=\"1\">$it</span>" } + "</li>"
+                times.withIndex().joinToString("") { (index, time) -> "<span class=\"orario_\" idcalend=\"${id}0$index\">$time</span>" } + "</li>"
         }}
         </ul>
         </div>
@@ -50,5 +52,29 @@ class NotoriousParserTest {
         val html = film(1, "BEAST [2026]", "Gioved&igrave; 01/10" to listOf("20:05"), "Venerd&igrave; 02/10" to listOf("20:05"))
 
         assertEquals(listOf(friday), parseNotoriousShowings(html, venueFerrara, listOf(friday)).map { it.day })
+    }
+
+    @Test
+    fun buildsPurchaseUrlFromCinemaIdAndCalendarId() {
+        val html = cinemaSpan + film(1, "DIGGER [2026]", "Gioved&igrave; 01/10" to listOf("20:05", "22:30")) +
+            film(2, "BEAST [2026]", "Gioved&igrave; 01/10" to listOf("21:00"))
+
+        val showings = parseNotoriousShowings(html, venueFerrara, listOf(thursday))
+
+        assertEquals(
+            listOf(
+                "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=100",
+                "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=101",
+                "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=200"
+            ),
+            showings.map { it.ticketUrl }
+        )
+    }
+
+    @Test
+    fun pageWithoutCinemaIdGivesNoPurchaseUrl() {
+        val html = film(1, "DIGGER [2026]", "Gioved&igrave; 01/10" to listOf("20:05"))
+
+        assertEquals(listOf<String?>(null), parseNotoriousShowings(html, venueFerrara, listOf(thursday)).map { it.ticketUrl })
     }
 }
