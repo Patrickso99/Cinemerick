@@ -11,3 +11,7 @@ dist/
 fastlane/report.xml
 fastlane/README.md
 fastlane/test_output/
+.claude/
+iosApp/.claude/
+iosApp/openspec/
+openspec/
