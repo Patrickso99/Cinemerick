@@ -101,6 +101,23 @@ class ShowtimesLogicTest {
     }
 
     @Test
+    fun pollTextSkipsSoldOutShowings() {
+        val text = listOf(
+            showing("Digger", thursday, "19:00", venueTheSpace).copy(soldOut = true),
+            showing("Digger", thursday, "21:00", venueTheSpace)
+        ).groupByFilm().toPollText()
+
+        assertEquals("Digger (Giovedì - 21:00 - Silea)", text)
+    }
+
+    @Test
+    fun pollTextIsEmptyWhenEveryShowingIsSoldOut() {
+        val text = listOf(showing("Digger", thursday, "19:00", venueTheSpace).copy(soldOut = true)).groupByFilm().toPollText()
+
+        assertEquals("", text)
+    }
+
+    @Test
     fun pollTextUsesGroupTitleForAllCinemas() {
         val text = listOf(
             showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", venueTheSpace),

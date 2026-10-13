@@ -3,9 +3,14 @@ package com.preichert.cinemerick.feature.showtimes.data
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.assertNull
+
+private val lenientJson = Json { ignoreUnknownKeys = true }
 
 class TheSpaceShowingMappersTest {
 
@@ -47,5 +52,36 @@ class TheSpaceShowingMappersTest {
         assertEquals(2, showings.size)
         assertNull(showings[0].ticketUrl)
         assertNull(showings[1].ticketUrl)
+    }
+    @Test
+    fun sessionReportedSoldOutIsSoldOut() {
+        val showings = films(TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = true)).toShowings(venue, day)
+
+        assertTrue(showings.single().soldOut)
+    }
+
+    @Test
+    fun sessionWithBookingUnavailableIsSoldOut() {
+        val showings = films(
+            TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = false, isBookingAvailable = false)
+        ).toShowings(venue, day)
+
+        assertTrue(showings.single().soldOut)
+    }
+
+    @Test
+    fun bookableSessionIsNotSoldOut() {
+        val showings = films(
+            TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = false, isBookingAvailable = true)
+        ).toShowings(venue, day)
+
+        assertFalse(showings.single().soldOut)
+    }
+
+    @Test
+    fun sessionWithoutAvailabilityFieldsIsNotSoldOut() {
+        val dto = lenientJson.decodeFromString<TheSpaceSessionDto>("""{"startTime":"2026-10-12T16:20:00"}""")
+
+        assertFalse(films(dto).toShowings(venue, day).single().soldOut)
     }
 }

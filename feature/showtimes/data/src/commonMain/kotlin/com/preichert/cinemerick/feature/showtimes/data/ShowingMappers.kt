@@ -30,7 +30,8 @@ fun TheSpaceFilmsDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
                 Showing(
                     cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), venue,
                     it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() },
-                    it.bookingUrl.toTicketUrl(THE_SPACE_BASE_URL)
+                    it.bookingUrl.toTicketUrl(THE_SPACE_BASE_URL),
+                    soldOut = it.isSoldOut || !it.isBookingAvailable
                 )
             }
     }

@@ -5,6 +5,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class UciShowingMappersTest {
@@ -47,5 +48,12 @@ class UciShowingMappersTest {
         assertEquals(2, showings.size)
         assertNull(showings[0].ticketUrl)
         assertNull(showings[1].ticketUrl)
+    }
+
+    @Test
+    fun performancesAreNeverSoldOut() {
+        val showings = programming(performance("19:30", "/a"), performance("21:45", null)).toShowings(venue, day)
+
+        assertFalse(showings.any { it.soldOut })
     }
 }

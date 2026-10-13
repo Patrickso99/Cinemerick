@@ -160,6 +160,46 @@ class ShowtimesViewModelTest {
         assertEquals(listOf<String?>("https://ucicinemas.it/movies/mammina/acquista/1/2/3", null), shown.map { it.ticketUrl })
     }
 
+    @Test
+    fun soldOutShowingsStayListedButLeaveThePoll() = runTest {
+        val venue = Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto")
+        val day = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(30, DateTimeUnit.DAY)
+        val showings = listOf(
+            Showing("Mammina", day, LocalTime(20, 30), venue, soldOut = true),
+            Showing("Mammina", day, LocalTime(21, 0), venue)
+        )
+        val viewModel = viewModel(object : ShowtimesRepository by FakeRepository {
+            override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
+                listOf(VenueShowings(venue, Result.Success(showings)))
+        })
+        viewModel.onAction(ShowtimesAction.OnDayToggle(day))
+
+        viewModel.onAction(ShowtimesAction.OnGenerateClick)
+
+        val state = viewModel.state.value
+        assertEquals(listOf(true, false), state.groups.single().showings.map { it.soldOut })
+        assertEquals(1, state.optionsCount)
+        assertEquals(1, state.pollText.lines().size)
+    }
+
+    @Test
+    fun onlySoldOutShowingsGiveEmptyPoll() = runTest {
+        val venue = Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto")
+        val day = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(30, DateTimeUnit.DAY)
+        val viewModel = viewModel(object : ShowtimesRepository by FakeRepository {
+            override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
+                listOf(VenueShowings(venue, Result.Success(listOf(Showing("Mammina", day, LocalTime(20, 30), venue, soldOut = true)))))
+        })
+        viewModel.onAction(ShowtimesAction.OnDayToggle(day))
+
+        viewModel.onAction(ShowtimesAction.OnGenerateClick)
+
+        val state = viewModel.state.value
+        assertEquals(1, state.groups.single().showings.size)
+        assertEquals(0, state.optionsCount)
+        assertEquals("", state.pollText)
+    }
+
     private object FakeRepository : ShowtimesRepository {
         override suspend fun getVenues(): Map<Chain, Result<List<Venue>, DataError.Network>> = emptyMap()
         override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>): List<VenueShowings> = emptyList()

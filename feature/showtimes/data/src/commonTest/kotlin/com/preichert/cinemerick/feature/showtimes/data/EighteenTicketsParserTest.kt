@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class EighteenTicketsParserTest {
 
@@ -51,6 +52,7 @@ class EighteenTicketsParserTest {
         assertEquals(listOf(null, null, "VO"), showings.map { it.format })
         assertEquals("https://cdn.18tickets.net/p/1.jpg", showings.first().posterUrl)
         assertEquals(setOf(venueCinergia), showings.map { it.venue }.toSet())
+        assertFalse(showings.any { it.soldOut })
     }
 
     @Test

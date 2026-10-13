@@ -4,6 +4,7 @@
     <string name="range_from">From</string>
     <string name="range_to">To</string>
     <string name="buy_ticket">Buy ticket</string>
+    <string name="sold_out">Sold out</string>
     <string name="cancel">Cancel</string>
     <string name="cinemas_title">Cinemas</string>
     <string name="cinema_the_space">The Space (Silea)</string>

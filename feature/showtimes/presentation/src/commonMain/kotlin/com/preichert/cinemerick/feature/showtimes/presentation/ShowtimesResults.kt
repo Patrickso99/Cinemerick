@@ -55,6 +55,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.sold_out
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.options_count
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -265,10 +266,17 @@ internal fun ShowingRow(showing: ShowingUi) {
     ) {
         Badge(
             text = showing.time,
-            container = MaterialTheme.colorScheme.primaryContainer,
-            content = MaterialTheme.colorScheme.onPrimaryContainer,
+            container = if (showing.soldOut) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+            content = if (showing.soldOut) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
             bold = true
         )
+        if (showing.soldOut) {
+            Badge(
+                text = stringResource(Res.string.sold_out),
+                container = MaterialTheme.colorScheme.errorContainer,
+                content = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
         val (container, content) = showing.venue.chain.badgeColors()
         Badge(text = showing.venue.name, container = container, content = content)
         showing.format?.let {
@@ -326,6 +334,7 @@ private fun ShowingRowPreviewLight() {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
+            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
         }
     }
 }
@@ -347,6 +356,7 @@ private fun ShowingRowPreviewDark() {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
             ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
+            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
         }
     }
 }

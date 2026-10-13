@@ -15,5 +15,6 @@ fun DayOfWeek.italianName(): String = when (this) {
 fun Showing.toPollLine(title: String = this.title): String =
     "$title (${day.dayOfWeek.italianName()} - $time - ${venue.name}${format?.let { " - $it" }.orEmpty()})"
 
+// Sold-out showings stay out of the poll: it exists to pick a session people can still attend.
 fun List<FilmGroup>.toPollText(): String =
-    flatMap { group -> group.showings.map { it.toPollLine(group.title) } }.joinToString("\n")
+    flatMap { group -> group.showings.filterNot { it.soldOut }.map { it.toPollLine(group.title) } }.joinToString("\n")

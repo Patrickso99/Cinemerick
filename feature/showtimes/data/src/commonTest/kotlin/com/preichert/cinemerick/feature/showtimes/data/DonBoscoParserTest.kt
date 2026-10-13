@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DonBoscoParserTest {
@@ -50,6 +51,7 @@ class DonBoscoParserTest {
         )
         assertEquals(LocalTime(15, 0), showings.single { it.title == "Caravaggio" && it.day == tuesday }.time)
         assertEquals("https://x/digger.jpg", showings.single { it.title == "Digger" }.posterUrl)
+        assertFalse(showings.any { it.soldOut })
     }
 
     @Test

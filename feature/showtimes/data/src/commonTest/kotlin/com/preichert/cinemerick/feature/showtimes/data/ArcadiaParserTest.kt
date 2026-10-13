@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ArcadiaParserTest {
@@ -58,6 +59,7 @@ class ArcadiaParserTest {
         assertEquals(null, showings[1].format)
         assertEquals("ENERGIA INFINITY VISION", showings[2].format)
         assertEquals("https://x/dune.jpg", showings[3].posterUrl)
+        assertFalse(showings.any { it.soldOut })
     }
 
     @Test

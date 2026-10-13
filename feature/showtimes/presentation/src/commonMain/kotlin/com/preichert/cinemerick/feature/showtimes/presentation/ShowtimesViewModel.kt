@@ -325,13 +325,14 @@ class ShowtimesViewModel(
                             time = showing.time.toString(),
                             venue = showing.venue,
                             format = showing.displayFormat,
-                            ticketUrl = showing.ticketUrl
+                            ticketUrl = showing.ticketUrl,
+                            soldOut = showing.soldOut
                         )
                     }
                 )
             },
             pollText = groups.toPollText(),
-            optionsCount = groups.sumOf { group -> group.showings.size },
+            optionsCount = groups.sumOf { group -> group.showings.count { !it.soldOut } },
             availableTags = (tags + hiddenTags).distinct().sorted()
         )
     }

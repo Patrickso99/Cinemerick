@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class CristalloParserTest {
 
@@ -43,6 +44,7 @@ class CristalloParserTest {
         assertEquals("https://x/digger.jpg", showings.first().posterUrl)
         assertEquals(setOf(day), showings.map { it.day }.toSet())
         assertEquals(setOf(venueCristallo), showings.map { it.venue }.toSet())
+        assertFalse(showings.any { it.soldOut })
     }
 
     @Test

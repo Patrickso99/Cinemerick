@@ -10,5 +10,6 @@ data class Showing(
     val venue: Venue,
     val format: String? = null,
     val posterUrl: String? = null,
-    val ticketUrl: String? = null
+    val ticketUrl: String? = null,
+    val soldOut: Boolean = false
 )

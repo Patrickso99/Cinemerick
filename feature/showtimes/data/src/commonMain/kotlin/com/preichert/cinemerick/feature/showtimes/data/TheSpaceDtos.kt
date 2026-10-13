@@ -42,6 +42,8 @@ data class TheSpaceShowingGroupDto(
 data class TheSpaceSessionDto(
     val startTime: String = "",
     val bookingUrl: String? = null,
+    val isSoldOut: Boolean = false,
+    val isBookingAvailable: Boolean = true,
     val attributes: List<TheSpaceAttributeDto> = emptyList()
 )
 
