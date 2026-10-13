@@ -3,7 +3,9 @@ package com.preichert.cinemerick.feature.showtimes.domain
 data class FilmGroup(
     val title: String,
     val showings: List<Showing>,
-    val posterUrl: String? = null
+    val posterUrl: String? = null,
+    val details: FilmDetails = FilmDetails(),
+    val detailsSources: List<DetailsSource> = emptyList()
 )
 
 fun List<Showing>.groupByFilm(): List<FilmGroup> {
@@ -16,10 +18,16 @@ fun List<Showing>.groupByFilm(): List<FilmGroup> {
             val sorted = showings.sortedWith(showingOrder)
             // Use shortest original title as group header, keep original titles for each showing
             val groupTitle = sorted.map { it.title }.minBy { it.length }
-            FilmGroup(title = groupTitle, showings = sorted, posterUrl = sorted.posterUrl())
+            FilmGroup(
+                title = groupTitle,
+                showings = sorted,
+                posterUrl = sorted.posterUrl(),
+                details = sorted.mergedDetails(),
+                detailsSources = sorted.detailsSources()
+            )
         }
 }
 
-// UCI posters are preferred; others are the fallback.
+// The poster of the highest-priority chain that has one.
 private fun List<Showing>.posterUrl(): String? =
-    (firstOrNull { it.venue.chain == Chain.UCI && it.posterUrl != null } ?: firstOrNull { it.posterUrl != null })?.posterUrl
+    filter { it.posterUrl != null }.minByOrNull { it.venue.chain.priorityRank }?.posterUrl

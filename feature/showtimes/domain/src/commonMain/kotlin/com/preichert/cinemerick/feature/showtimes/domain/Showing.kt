@@ -11,5 +11,7 @@ data class Showing(
     val format: String? = null,
     val posterUrl: String? = null,
     val ticketUrl: String? = null,
-    val soldOut: Boolean = false
+    val soldOut: Boolean = false,
+    val details: FilmDetails? = null,
+    val detailsUrl: String? = null
 )

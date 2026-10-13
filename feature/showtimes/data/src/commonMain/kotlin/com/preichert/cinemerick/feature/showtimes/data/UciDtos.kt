@@ -27,6 +27,10 @@ data class UciProgrammingDto(
 data class UciMovieDto(
     val title: String = "",
     val poster: String? = null,
+    val description: String? = null,
+    val genres: List<UciGenreDto> = emptyList(),
+    val rating: UciNamedDto? = null,
+    @SerialName("trailer_link") val trailerLink: String? = null,
     val screens: List<Map<String, List<UciVariantDto>>> = emptyList()
 )
 
@@ -42,6 +46,11 @@ data class UciPerformanceDto(
     val day: String = "",
     @SerialName("actual_start_at") val actualStartAt: String = "",
     @SerialName("cart_link") val cartLink: String? = null
+)
+
+@Serializable
+data class UciGenreDto(
+    val name: String = ""
 )
 
 @Serializable

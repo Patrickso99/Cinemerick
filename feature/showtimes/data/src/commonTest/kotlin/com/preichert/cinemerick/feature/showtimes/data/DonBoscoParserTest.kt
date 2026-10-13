@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -116,5 +117,12 @@ class DonBoscoParserTest {
 
         assertEquals(listOf("Carlo Acutis", "Carlo Acutis"), showings.map { it.title })
         assertEquals(listOf(LocalTime(15, 30), LocalTime(18, 0)), showings.map { it.time })
+    }
+
+    @Test
+    fun showingsNeverPointToAFilmPage() {
+        val html = film(28, "Caravaggio", "https://x/car.jpeg", "LUNEDÌ 5 OTTOBRE" to listOf("16.30"))
+
+        assertNull(parseDonBoscoShowings(html, venueDonBosco, listOf(monday)).single().detailsUrl)
     }
 }

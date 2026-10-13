@@ -45,4 +45,13 @@
     <string name="venues_load_error">Error loading venues</string>
     <string name="retry">Retry</string>
     <string name="done">Done</string>
+    <string name="film_details">Film details</string>
+    <string name="details_synopsis">Synopsis</string>
+    <string name="details_genre">Genre</string>
+    <string name="details_director">Director</string>
+    <string name="details_cast">Cast</string>
+    <string name="details_rating">Rating</string>
+    <string name="details_trailer">Watch trailer</string>
+    <string name="details_none">No details available for this film</string>
+    <string name="details_close">Close</string>
 </resources>

@@ -16,6 +16,7 @@ private val POSTER = Regex("<img src=\"([^\"]*img_switcher[^\"]*)\"")
 private val DAY = Regex("<div class=\"dayName\">[^<]*?(\\d{2})/(\\d{2})</div>([\\s\\S]*?)</li>")
 private val TIME = Regex("class=\"orario_\"([^>]*)>\\s*(\\d{1,2}:\\d{2})\\s*<")
 private val CALENDAR_ID = Regex("idcalend=\"(\\d+)\"")
+private val FILM_PAGE_ID = Regex("<div class=\"scheda\" idfilm=\"(\\d+)\"")
 private val CINEMA_ID = Regex("<span class=\"cinema\" id=\"(\\d+)\"")
 private val TAG = Regex("<[^>]*>")
 private val YEAR_TAG = Regex("\\s*\\[\\d{4}]")
@@ -55,12 +56,13 @@ private fun parseFilm(film: String, venue: Venue, daysByMonthDay: Map<Pair<Int, 
     if (title.isBlank()) return emptyList()
     val format = suffix?.takeIf { it.isNotBlank() }?.let { if (it.equals(ORIGINAL_VERSION, ignoreCase = true)) "VO" else cleanTitle(it) }
     val poster = POSTER.find(film)?.groupValues?.get(1)?.replace("&amp;", "&")?.replace("../", SITE_ROOT)
+    val detailsUrl = FILM_PAGE_ID.find(film)?.groupValues?.get(1)?.let { "${SITE_ROOT}generic/scheda.php?id=$it" }
     return DAY.findAll(film).flatMap { dayMatch ->
         val (dd, mm, content) = dayMatch.destructured
         val day = daysByMonthDay[mm.toInt() to dd.toInt()] ?: return@flatMap emptySequence()
         TIME.findAll(content).map {
             val calendarId = CALENDAR_ID.find(it.groupValues[1])?.groupValues?.get(1)
-            Showing(title, day, LocalTime.parse(it.groupValues[2].padStart(5, '0')), venue, format, poster, ticketUrl(cinemaId, calendarId))
+            Showing(title, day, LocalTime.parse(it.groupValues[2].padStart(5, '0')), venue, format, poster, ticketUrl(cinemaId, calendarId), detailsUrl = detailsUrl)
         }
     }.toList()
 }

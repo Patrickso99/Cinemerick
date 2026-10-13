@@ -7,6 +7,7 @@ import com.preichert.cinemerick.core.data.getResponse
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
@@ -53,6 +54,9 @@ class KtorCristalloShowtimesDataSource(
 
     // The site wants "05-10-2026".
     private fun LocalDate.siteFormat() = "${day.toString().padStart(2, '0')}-${month.number.toString().padStart(2, '0')}-$year"
+
+    override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
+        httpClient.fetchFilmPage(detailsUrl, ::parseCristalloFilmPage)
 
     private companion object {
         const val AJAX_URL = "https://www.cinemacristallo.com/wp-admin/admin-ajax.php"

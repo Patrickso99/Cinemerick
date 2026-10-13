@@ -52,6 +52,7 @@ import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.film_details
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
@@ -134,7 +135,9 @@ internal fun ColumnScope.ResultsSection(
     }
 
     if (configuration.isMobile) {
-        state.groups.forEachIndexed { index, group -> AnimatedFilmGroupCard(group, large = false, index = index) }
+        state.groups.forEachIndexed { index, group ->
+            AnimatedFilmGroupCard(group, large = false, index = index, onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) })
+        }
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceAtLeast(1)
@@ -150,7 +153,12 @@ internal fun ColumnScope.ResultsSection(
                     ) {
                         state.groups.forEachIndexed { index, group ->
                             if (index % columns == colIndex) {
-                                AnimatedFilmGroupCard(group = group, large = true, index = index)
+                                AnimatedFilmGroupCard(
+                                    group = group,
+                                    large = true,
+                                    index = index,
+                                    onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+                                )
                             }
                         }
                     }
@@ -165,18 +173,19 @@ internal fun AnimatedFilmGroupCard(
     group: FilmGroupUi,
     large: Boolean,
     modifier: Modifier = Modifier,
-    index: Int = 0
+    index: Int = 0,
+    onDetailsClick: () -> Unit = {}
 ) {
     // Keyed on the group so a refreshed result list replays the cascade
     key(group) {
         Box(modifier = modifier.staggeredAppear(index)) {
-            FilmGroupCard(group, large = large)
+            FilmGroupCard(group, large = large, onDetailsClick = onDetailsClick)
         }
     }
 }
 
 @Composable
-internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean) {
+internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: () -> Unit = {}) {
     SectionCard(modifier = Modifier.fillMaxWidth()) {
         SelectionContainer {
             Column(
@@ -193,13 +202,18 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean) {
                             width = if (large) 132.dp else 96.dp
                         )
                     }
-                    Text(
-                        text = group.title,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = if (large) MaterialTheme.typography.headlineSmall
-                        else MaterialTheme.typography.titleLarge,
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                         modifier = Modifier.weight(1f)
-                    )
+                    ) {
+                        Text(
+                            text = group.title,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = if (large) MaterialTheme.typography.headlineSmall
+                            else MaterialTheme.typography.titleLarge
+                        )
+                        FilmDetailsButton(onClick = onDetailsClick)
+                    }
                 }
                 Spacer(modifier = Modifier.height(Spacing.xs))
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
@@ -270,13 +284,6 @@ internal fun ShowingRow(showing: ShowingUi) {
             content = if (showing.soldOut) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
             bold = true
         )
-        if (showing.soldOut) {
-            Badge(
-                text = stringResource(Res.string.sold_out),
-                container = MaterialTheme.colorScheme.errorContainer,
-                content = MaterialTheme.colorScheme.onErrorContainer
-            )
-        }
         val (container, content) = showing.venue.chain.badgeColors()
         Badge(text = showing.venue.name, container = container, content = content)
         showing.format?.let {
@@ -292,6 +299,33 @@ internal fun ShowingRow(showing: ShowingUi) {
                 uriHandler.openUri(url)
             })
         }
+        if (showing.soldOut) {
+            Badge(
+                text = stringResource(Res.string.sold_out),
+                container = MaterialTheme.colorScheme.errorContainer,
+                content = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilmDetailsButton(onClick: () -> Unit) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .bounceClickable(role = Role.Button, onClick = onClick)
+    ) {
+        Text(
+            text = stringResource(Res.string.film_details),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            maxLines = 1,
+            softWrap = false,
+            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)
+        )
     }
 }
 

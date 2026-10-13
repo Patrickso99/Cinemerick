@@ -63,6 +63,7 @@ class ShowtimesViewModel(
     private var lastFetch: Fetch? = null
     private var generateJob: Job? = null
     private var refreshJob: Job? = null
+    private var detailsJob: Job? = null
 
     private class Fetch(
         val showings: List<Showing>,
@@ -99,6 +100,8 @@ class ShowtimesViewModel(
                 val chain = _state.value.venuePicker?.chain
                 if (chain != null) openVenuePicker(chain)
             }
+            is ShowtimesAction.OnFilmDetailsOpen -> openFilmDetails(action.title)
+            ShowtimesAction.OnFilmDetailsDismiss -> dismissFilmDetails()
             ShowtimesAction.OnSettingsClick -> {
                 // Navigation is handled in ShowtimesScreenContent
             }
@@ -318,6 +321,8 @@ class ShowtimesViewModel(
                 FilmGroupUi(
                     title = group.title,
                     posterUrl = group.posterUrl,
+                    details = group.details,
+                    detailsSources = group.detailsSources,
                     showings = group.showings.map { showing ->
                         ShowingUi(
                             day = showing.day.dayOfWeek.italianName(),
@@ -335,6 +340,26 @@ class ShowtimesViewModel(
             optionsCount = groups.sumOf { group -> group.showings.count { !it.soldOut } },
             availableTags = (tags + hiddenTags).distinct().sorted()
         )
+    }
+
+    // Shows what the showtimes already carry at once, then completes it from the film pages of the chains that have one.
+    private fun openFilmDetails(title: String) {
+        val group = _state.value.groups.firstOrNull { it.title == title } ?: return
+        detailsJob?.cancel()
+        val needsFetch = group.detailsSources.isNotEmpty() && !group.details.isComplete
+        _state.update { it.copy(filmDetails = FilmDetailsUi(title, group.details, isLoading = needsFetch)) }
+        if (!needsFetch) return
+        detailsJob = viewModelScope.launch {
+            val details = showtimesRepository.getFilmDetails(group.details, group.detailsSources)
+            _state.update { state ->
+                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details)) else state
+            }
+        }
+    }
+
+    private fun dismissFilmDetails() {
+        detailsJob?.cancel()
+        _state.update { it.copy(filmDetails = null) }
     }
 
     private fun showSnackbar(message: UiText) {

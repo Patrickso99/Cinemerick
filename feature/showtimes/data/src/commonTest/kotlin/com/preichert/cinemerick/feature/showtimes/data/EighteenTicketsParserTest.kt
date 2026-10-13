@@ -105,4 +105,28 @@ class EighteenTicketsParserTest {
         assertEquals(listOf<String?>(null, null), showings.map { it.ticketUrl })
         assertEquals(listOf(LocalTime(18, 30), LocalTime(21, 0)), showings.map { it.time })
     }
+
+    @Test
+    fun linksEachFilmToItsFilmPageWithoutTheDateQuery() {
+        val html = film(91221, "VERITY", "01/10/2026", "18:30") + film(2, "DIGGER", "01/10/2026", "21:00")
+
+        assertEquals(
+            listOf<String?>("https://x.18tickets.it/film/91221", "https://x.18tickets.it/film/2"),
+            parseEighteenTicketsShowings(html, venueCinergia, day).map { it.detailsUrl }
+        )
+    }
+
+    @Test
+    fun eachFilmKeepsItsOwnPageEvenWhenThePreviousBlockLinksToItsFilm() {
+        val html = film(1, "THE SOCIAL", "01/10/2026", "18:30") +
+            "<a href='https://x.18tickets.it/film/1?ref_date=2026-10-01'>Prenota</a>" +
+            film(2, "UNA STORIA", "01/10/2026", "21:00")
+
+        val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
+
+        assertEquals(
+            mapOf("The Social" to "https://x.18tickets.it/film/1", "Una Storia" to "https://x.18tickets.it/film/2"),
+            showings.associate { it.title to it.detailsUrl }
+        )
+    }
 }

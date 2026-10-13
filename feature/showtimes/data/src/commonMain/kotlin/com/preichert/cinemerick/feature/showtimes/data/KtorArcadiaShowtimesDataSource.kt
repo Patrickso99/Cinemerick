@@ -7,6 +7,7 @@ import com.preichert.cinemerick.core.data.getResponse
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
@@ -41,4 +42,7 @@ class KtorArcadiaShowtimesDataSource(
                 Result.Success(showings)
             }
         }
+
+    override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
+        httpClient.fetchFilmPage(detailsUrl, ::parseArcadiaFilmPage)
 }

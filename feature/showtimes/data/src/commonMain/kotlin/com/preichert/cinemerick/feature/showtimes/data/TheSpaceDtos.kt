@@ -30,7 +30,17 @@ data class TheSpaceFilmsDto(
 data class TheSpaceFilmDto(
     val filmTitle: String = "",
     val posterImageSrc: String? = null,
+    val synopsisShort: String? = null,
+    val director: String? = null,
+    val cast: String? = null,
+    val certificate: TheSpaceCertificateDto? = null,
+    val secondaryCertificates: List<TheSpaceCertificateDto> = emptyList(),
     val showingGroups: List<TheSpaceShowingGroupDto> = emptyList()
+)
+
+@Serializable
+data class TheSpaceCertificateDto(
+    val name: String? = null
 )
 
 @Serializable

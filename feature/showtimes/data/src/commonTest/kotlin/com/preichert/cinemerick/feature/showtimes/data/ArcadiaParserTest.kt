@@ -18,7 +18,9 @@ class ArcadiaParserTest {
     private fun film(title: String, poster: String, vararg days: Pair<String, List<Pair<String, String?>>>) = """
         <div class="filmContainer" data-ts_rel="1797375600">
             <div class="locandina"><img src="$poster" alt="$title | INFINITY VISION"/></div>
-            <div class="datiFilm"><div class="titolo"><h1>$title</h1></div></div>
+            <div class="datiFilm"><div class="titolo"><h1>$title</h1></div>
+                <a href="/scheda/${title.lowercase().replace(" ", "-")}/48783/3364/"><div class="btt_scheda">Scheda film</div></a>
+            </div>
             <ul class="orari">
             ${days.joinToString("\n") { (heading, times) ->
                 """<li class="hours">
@@ -116,5 +118,12 @@ class ArcadiaParserTest {
         assertEquals(listOf("melzo", "bellinzago"), venues.map { it.id })
         assertEquals(listOf("Melzo", "Bellinzago Lombardo"), venues.map { it.name })
         assertEquals("https://www.arcadiacinema.com/melzo", venues.first().webUrl)
+    }
+
+    @Test
+    fun linksEachFilmToItsAbsoluteFilmPage() {
+        val html = film("DUNE", "/p.jpg", "Martedì 15/12" to listOf("18:00" to null))
+
+        assertEquals("https://www.arcadiacinema.com/scheda/dune/48783/3364/", parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).single().detailsUrl)
     }
 }

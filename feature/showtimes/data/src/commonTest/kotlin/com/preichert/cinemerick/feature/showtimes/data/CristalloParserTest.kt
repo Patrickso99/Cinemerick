@@ -73,4 +73,11 @@ class CristalloParserTest {
     fun returnsNothingForAnEmptyDay() {
         assertEquals(emptyList(), parseCristalloShowings("\"\"", venueCristallo, day))
     }
+
+    @Test
+    fun linksEachFilmToItsFilmPage() {
+        val html = film("DIGGER", "https://x/d.jpg", "17.00", "21.15")
+
+        assertEquals(listOf<String?>("https://x/movie/a/", "https://x/movie/a/"), parseCristalloShowings(html, venueCristallo, day).map { it.detailsUrl })
+    }
 }

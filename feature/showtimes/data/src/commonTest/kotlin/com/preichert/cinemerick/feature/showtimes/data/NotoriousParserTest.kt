@@ -7,6 +7,7 @@ import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 
 class NotoriousParserTest {
 
@@ -23,6 +24,7 @@ class NotoriousParserTest {
         </div>
         <div class="datiFilm">
         <div class="titolo">$title</div>
+        <div class="scheda" idfilm="$id"><i class="fas fa-angle-right"></i>visualizza la scheda</div>
         </div>
         <ul class="orari">
         ${days.joinToString("\n") { (day, times) ->
@@ -78,5 +80,24 @@ class NotoriousParserTest {
         val html = film(1, "DIGGER [2026]", "Gioved&igrave; 01/10" to listOf("20:05"))
 
         assertEquals(listOf<String?>(null), parseNotoriousShowings(html, venueFerrara, listOf(thursday)).map { it.ticketUrl })
+    }
+
+    @Test
+    fun linksEachFilmToItsFilmPage() {
+        val html = film(48721, "DIGGER", "Gioved&igrave; 01/10" to listOf("20:05")) + film(48720, "BEAST", "Gioved&igrave; 01/10" to listOf("21:00"))
+
+        val showings = parseNotoriousShowings(html, venueFerrara, listOf(thursday))
+
+        assertEquals(
+            listOf("https://www.notoriouscinemas.it/generic/scheda.php?id=48721", "https://www.notoriouscinemas.it/generic/scheda.php?id=48720"),
+            showings.map { it.detailsUrl }
+        )
+    }
+
+    @Test
+    fun filmWithoutFilmPageLinkHasNoDetailsUrl() {
+        val html = film(1, "DIGGER", "Gioved&igrave; 01/10" to listOf("20:05")).replace(Regex("<div class=\"scheda\"[^>]*>.*?</div>"), "")
+
+        assertNull(parseNotoriousShowings(html, venueFerrara, listOf(thursday)).single().detailsUrl)
     }
 }

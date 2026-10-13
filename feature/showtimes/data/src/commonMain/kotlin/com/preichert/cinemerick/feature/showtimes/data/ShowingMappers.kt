@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.cleanTitle
@@ -9,13 +10,14 @@ import kotlinx.datetime.LocalTime
 fun UciProgrammingDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
     val dayText = day.toString()
     return data.filter { it.title.isNotBlank() }.flatMap { movie ->
+        val details = movie.toDetails()
         movie.screens
             .flatMap { variantsByFormat -> variantsByFormat.entries }
             .flatMap { (screen, variants) -> variants.map { variant -> variant.toFormat(screen) to variant } }
             .flatMap { (format, variant) ->
                 variant.performances
                     .filter { it.day == dayText && it.actualStartAt.isNotBlank() }
-                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), venue, format, movie.poster?.takeIf { it.isNotBlank() }, it.cartLink.toTicketUrl(UCI_BASE_URL)) }
+                    .map { Showing(cleanTitle(movie.title), day, LocalTime.parse(it.actualStartAt), venue, format, movie.poster?.takeIf { it.isNotBlank() }, it.cartLink.toTicketUrl(UCI_BASE_URL), details = details) }
             }
     }
 }
@@ -23,6 +25,7 @@ fun UciProgrammingDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
 fun TheSpaceFilmsDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
     val dayText = day.toString()
     return result.filter { it.filmTitle.isNotBlank() }.flatMap { film ->
+        val details = film.toDetails()
         film.showingGroups
             .flatMap { group -> group.sessions }
             .filter { it.startTime.take(10) == dayText && it.startTime.length >= 16 }
@@ -31,12 +34,37 @@ fun TheSpaceFilmsDto.toShowings(venue: Venue, day: LocalDate): List<Showing> {
                     cleanTitle(film.filmTitle), day, LocalTime.parse(it.startTime.substring(11, 16)), venue,
                     it.toFormat(), film.posterImageSrc?.takeIf { poster -> poster.isNotBlank() },
                     it.bookingUrl.toTicketUrl(THE_SPACE_BASE_URL),
-                    soldOut = it.isSoldOut || !it.isBookingAvailable
+                    soldOut = it.isSoldOut || !it.isBookingAvailable,
+                    details = details
                 )
             }
     }
 }
 
+// UCI publishes no director or cast; the trailer link is often missing.
+private fun UciMovieDto.toDetails(): FilmDetails? = FilmDetails(
+    synopsis = description.htmlToPlainText(),
+    genre = genres.map { it.name }.joinedOrNull(),
+    rating = rating?.name.orNullIfBlank(),
+    trailerUrl = trailerLink.orNullIfBlank()
+).takeUnless { it.isEmpty }
+
+// The Space's genre list is empty and its trailer list has always been empty, so neither is read.
+private fun TheSpaceFilmDto.toDetails(): FilmDetails? = FilmDetails(
+    synopsis = synopsisShort.orNullIfBlank(),
+    director = director.orNullIfBlank(),
+    cast = cast.orNullIfBlank(),
+    rating = toRating()
+).takeUnless { it.isEmpty }
+
+// e.g. "14+ · Violenza, Armi"; the chain's "t" means suitable for everyone.
+private fun TheSpaceFilmDto.toRating(): String? {
+    val age = certificate?.name.orNullIfBlank()?.let { if (it.equals("t", ignoreCase = true)) "Per tutti" else "$it+" }
+    val reasons = secondaryCertificates.mapNotNull { it.name }.joinedOrNull()
+    return listOfNotNull(age, reasons).joinedOrNull(TAG_SEPARATOR)
+}
+
+private const val TAG_SEPARATOR = " · "
 private const val UCI_BASE_URL = "https://ucicinemas.it"
 private const val THE_SPACE_BASE_URL = "https://www.thespacecinema.it"
 

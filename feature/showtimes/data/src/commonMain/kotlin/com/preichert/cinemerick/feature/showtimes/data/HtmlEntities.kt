@@ -5,7 +5,9 @@ private val NUMERIC_ENTITY = Regex("&#(\\d+);")
 private val NAMED_ENTITIES = mapOf(
     "&amp;" to "&", "&quot;" to "\"", "&apos;" to "'", "&nbsp;" to " ", "&lt;" to "<", "&gt;" to ">",
     "&agrave;" to "à", "&egrave;" to "è", "&eacute;" to "é", "&igrave;" to "ì", "&ograve;" to "ò", "&ugrave;" to "ù",
-    "&Agrave;" to "À", "&Egrave;" to "È", "&Eacute;" to "É", "&Igrave;" to "Ì", "&Ograve;" to "Ò", "&Ugrave;" to "Ù"
+    "&Agrave;" to "À", "&Egrave;" to "È", "&Eacute;" to "É", "&Igrave;" to "Ì", "&Ograve;" to "Ò", "&Ugrave;" to "Ù",
+    "&rsquo;" to "’", "&lsquo;" to "‘", "&rdquo;" to "”", "&ldquo;" to "“", "&laquo;" to "«", "&raquo;" to "»",
+    "&hellip;" to "…", "&ndash;" to "–", "&mdash;" to "—"
 )
 
 internal fun String.unescapeHtml(): String =

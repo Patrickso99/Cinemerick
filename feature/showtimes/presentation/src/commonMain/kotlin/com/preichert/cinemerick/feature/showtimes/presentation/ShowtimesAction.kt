@@ -25,5 +25,7 @@ sealed interface ShowtimesAction {
     data object OnCopyClick : ShowtimesAction
     data object OnClearClick : ShowtimesAction
     data object OnVenuesReload : ShowtimesAction
+    data class OnFilmDetailsOpen(val title: String) : ShowtimesAction
+    data object OnFilmDetailsDismiss : ShowtimesAction
     data object OnSettingsClick : ShowtimesAction
 }

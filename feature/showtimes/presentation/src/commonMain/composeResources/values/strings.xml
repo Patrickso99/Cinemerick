@@ -45,4 +45,13 @@
     <string name="venues_load_error">Errore nel caricamento delle sedi</string>
     <string name="retry">Riprova</string>
     <string name="done">Fatto</string>
+    <string name="film_details">Scheda film</string>
+    <string name="details_synopsis">Trama</string>
+    <string name="details_genre">Genere</string>
+    <string name="details_director">Regia</string>
+    <string name="details_cast">Cast</string>
+    <string name="details_rating">Classificazione</string>
+    <string name="details_trailer">Guarda il trailer</string>
+    <string name="details_none">Nessun dettaglio disponibile per questo film</string>
+    <string name="details_close">Chiudi</string>
 </resources>

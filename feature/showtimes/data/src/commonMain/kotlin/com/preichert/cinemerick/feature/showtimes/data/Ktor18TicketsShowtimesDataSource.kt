@@ -7,6 +7,7 @@ import com.preichert.cinemerick.core.data.getResponse
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
@@ -47,6 +48,9 @@ abstract class Ktor18TicketsShowtimesDataSource(
                 Result.Success(showings)
             }
         }
+
+    override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
+        httpClient.fetchFilmPage(detailsUrl, ::parseEighteenTicketsFilmPage)
 
     private companion object {
         const val MAX_CONCURRENT_REQUESTS = 2

@@ -3,6 +3,8 @@ package com.preichert.cinemerick.feature.showtimes.presentation
 import androidx.compose.runtime.Stable
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
@@ -24,7 +26,8 @@ data class ShowtimesState(
     val availableTags: List<String> = emptyList(),
     val elapsedTimeMillis: Long? = null,
     val venueCatalog: Map<Chain, VenueCatalogUi> = emptyMap(),
-    val venuePicker: VenuePickerUi? = null
+    val venuePicker: VenuePickerUi? = null,
+    val filmDetails: FilmDetailsUi? = null
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }
@@ -46,7 +49,16 @@ data class DayUi(
 data class FilmGroupUi(
     val title: String,
     val showings: List<ShowingUi>,
-    val posterUrl: String? = null
+    val posterUrl: String? = null,
+    val details: FilmDetails = FilmDetails(),
+    val detailsSources: List<DetailsSource> = emptyList()
+)
+
+/** Film details overlay: present while it is open. [isLoading] while film pages are still being read. */
+data class FilmDetailsUi(
+    val title: String,
+    val details: FilmDetails,
+    val isLoading: Boolean = false
 )
 
 data class ShowingUi(

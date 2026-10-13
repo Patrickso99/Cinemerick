@@ -11,6 +11,7 @@ private const val FILM_MARKER = "<div class=\"amy-movie-item\">"
 private const val SHOWTIMES_MARKER = "amy-movie-item-showtimes"
 
 private val TITLE = Regex("class=\"amy-movie-field-title\">\\s*<a[^>]*>([\\s\\S]*?)</a>")
+private val FILM_PAGE = Regex("class=\"amy-movie-field-title\">\\s*<a[^>]*href=\"([^\"]+)\"")
 private val POSTER = Regex("<img[^>]*src=\"([^\"]+)\"")
 
 // Times read "19.30", sometimes with a leading space or a note ("12.30 INGRESSO 5€"): only the start of the span matters.
@@ -27,9 +28,10 @@ private fun parseFilm(film: String, venue: Venue, day: LocalDate): List<Showing>
     val title = cleanTitle(rawTitle)
     if (title.isBlank()) return emptyList()
     val poster = POSTER.find(film)?.groupValues?.get(1)?.unescapeHtml()
+    val detailsUrl = FILM_PAGE.find(film)?.groupValues?.get(1)?.unescapeHtml()
     val showtimes = film.substringAfter(SHOWTIMES_MARKER, missingDelimiterValue = "")
     return TIME.findAll(showtimes).map {
         val (hour, minute) = it.destructured
-        Showing(title, day, LocalTime(hour.toInt(), minute.toInt()), venue, posterUrl = poster)
+        Showing(title, day, LocalTime(hour.toInt(), minute.toInt()), venue, posterUrl = poster, detailsUrl = detailsUrl)
     }.toList()
 }

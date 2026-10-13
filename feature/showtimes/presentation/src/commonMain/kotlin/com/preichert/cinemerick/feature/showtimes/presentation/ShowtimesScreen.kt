@@ -98,6 +98,12 @@ fun ShowtimesScreen(
                     onReload = { onAction(ShowtimesAction.OnVenuesReload) }
                 )
             }
+            state.filmDetails?.let { film ->
+                FilmDetailsOverlay(
+                    film = film,
+                    onDismiss = { onAction(ShowtimesAction.OnFilmDetailsDismiss) }
+                )
+            }
             CinemerickAdaptiveLayout(
                 header = {
                     CinemerickHeader(
