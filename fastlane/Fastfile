@@ -56,7 +56,7 @@ platform :android do
     build_apk("debug")
   end
 
-  desc "Release APK (unsigned)"
+  desc "Release APK (signed with ANDROID_KEYSTORE_* if set, otherwise debug key)"
   lane :apk_release do
     build_apk("release")
   end
