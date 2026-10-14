@@ -19,7 +19,7 @@
     <string name="time_window_ok">OK</string>
     <string name="time_window_cancel">Annulla</string>
     <string name="time_window_error">L'orario minimo non può essere successivo a quello massimo</string>
-    <string name="tmdb_credit_title">Fonte dei dettagli dei film</string>
+    <string name="tmdb_credit_title">Crediti</string>
     <string name="tmdb_credit_description">Trama, cast, trailer, durata e voto sono forniti da TMDB.</string>
     <string name="tmdb_credit_open">Apri themoviedb.org</string>
 </resources>
