@@ -80,18 +80,18 @@ class ShowtimesLogicTest {
 
         // Group titles are the shortest originals
         assertEquals(listOf("Heart of the Beast", "Naza"), groups.map { it.title })
-        // Original titles are preserved in showings (not transformed)
+        // Original titles are preserved in showings (not transformed); at the same time they are ordered by venue name
         assertEquals(
-            listOf("Heart of the Beast", "HEART OF THE BEAST - NEL PROFONDO SELVAGGIO"),
+            listOf("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", "Heart of the Beast"),
             groups.first().showings.map { it.title }
         )
         assertEquals(
             listOf("Naza C.A.", "Naza"),
             groups.last().showings.map { it.title }
         )
-        // Cinema and time ordering is preserved
+        // Cinema and time ordering is preserved: same time, so by venue name ("Silea" before "UCI Luxe Marcon")
         assertEquals(
-            listOf(venueUci, venueTheSpace),
+            listOf(venueTheSpace, venueUci),
             groups.first().showings.map { it.venue }
         )
         assertEquals(
@@ -125,7 +125,7 @@ class ShowtimesLogicTest {
         ).groupByFilm().toPollText()
 
         assertEquals(
-            "Heart of the Beast (Giovedì - 21:40 - Marcon)\nHeart of the Beast (Giovedì - 21:40 - Silea)",
+            "Heart of the Beast (Giovedì - 21:40 - Silea)\nHeart of the Beast (Giovedì - 21:40 - UCI Luxe Marcon)",
             text
         )
     }
@@ -223,8 +223,8 @@ class ShowtimesLogicTest {
     fun pollLineAppendsFormatWhenPresent() {
         val day = LocalDate(2026, 10, 1)
         val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), venueUci, "XL")
-        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon - XL)", xl.toPollLine())
-        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - Marcon)", xl.copy(format = null).toPollLine())
+        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon - XL)", xl.toPollLine())
+        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon)", xl.copy(format = null).toPollLine())
     }
 
     @Test
