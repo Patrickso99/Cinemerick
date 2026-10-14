@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
+import com.preichert.cinemerick.feature.showtimes.domain.FilmLookup
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
@@ -20,4 +22,6 @@ val showtimesDataModule = module {
     singleOf(::KtorArcadiaShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorTheSpaceShowtimesDataSource) bind ShowtimesDataSource::class
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
+    single<FilmLookup> { KtorTmdbFilmLookup(get()) }
+    single<FilmDetailsRepository> { TmdbFirstFilmDetailsRepository(get(), get()) }
 }
