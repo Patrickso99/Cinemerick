@@ -8,6 +8,7 @@ import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
@@ -45,9 +46,12 @@ class ShowtimesViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun viewModel(repository: ShowtimesRepository = FakeRepository): ShowtimesViewModel {
+    private fun viewModel(
+        repository: ShowtimesRepository = FakeRepository,
+        filmDetails: FilmDetailsRepository = FakeFilmDetailsRepository
+    ): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        return ShowtimesViewModel(repository, FakeFilterPreferences, controller)
+        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller)
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }
@@ -213,14 +217,18 @@ class ShowtimesViewModelTest {
     private fun viewModelShowing(
         showings: List<Showing>,
         venues: Set<Venue>,
-        onFilmDetails: suspend (FilmDetails, List<DetailsSource>) -> FilmDetails = { known, _ -> known }
+        onFilmDetails: suspend (String, FilmDetails, List<DetailsSource>) -> FilmDetails = { _, known, _ -> known }
     ): ShowtimesViewModel {
-        val viewModel = viewModel(object : ShowtimesRepository by FakeRepository {
-            override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
-                showings.groupBy { it.venue }.map { (venue, list) -> VenueShowings(venue, Result.Success(list)) }
-
-            override suspend fun getFilmDetails(known: FilmDetails, sources: List<DetailsSource>) = onFilmDetails(known, sources)
-        })
+        val viewModel = viewModel(
+            object : ShowtimesRepository by FakeRepository {
+                override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
+                    showings.groupBy { it.venue }.map { (venue, list) -> VenueShowings(venue, Result.Success(list)) }
+            },
+            object : FilmDetailsRepository {
+                override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>) =
+                    onFilmDetails(title, known, sources)
+            }
+        )
         venues.forEach { viewModel.onAction(ShowtimesAction.OnVenueToggle(it)) }
         viewModel.onAction(ShowtimesAction.OnDayToggle(soon))
         viewModel.onAction(ShowtimesAction.OnGenerateClick)
@@ -228,33 +236,38 @@ class ShowtimesViewModelTest {
     }
 
     @Test
-    fun openingDetailsWithInlineDataShowsThemWithoutLoading() = runTest {
+    fun openingDetailsShowsOnlyALoadingStateUntilTheLookupFinishes() = runTest {
+        val gate = CompletableDeferred<FilmDetails>()
         val inline = FilmDetails(synopsis = "UCI plot", genre = "Horror")
         val viewModel = viewModelShowing(
             listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue, details = inline)), emptySet()
-        )
+        ) { _, _, _ -> gate.await() }
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
+        // The cinemas' text is not shown while the film database may still replace it.
+        assertEquals(FilmDetailsUi("Mammina", FilmDetails(), isLoading = true), viewModel.state.value.filmDetails)
 
-        assertEquals(FilmDetailsUi("Mammina", inline, isLoading = false), viewModel.state.value.filmDetails)
+        val resolved = FilmDetails(synopsis = "TMDB plot", runtimeMinutes = 95)
+        gate.complete(resolved)
+        assertEquals(FilmDetailsUi("Mammina", resolved, isLoading = false), viewModel.state.value.filmDetails)
     }
 
     @Test
-    fun openingDetailsOfAScrapedChainLoadsThenCompletesThem() = runTest {
-        val gate = CompletableDeferred<FilmDetails>()
+    fun theRepositoryIsAskedWithTheTitleAndWhatTheCinemasCarry() = runTest {
+        val inline = FilmDetails(synopsis = "UCI plot")
+        var asked: Triple<String, FilmDetails, List<DetailsSource>>? = null
         val viewModel = viewModelShowing(
-            listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue, detailsUrl = "https://n/1")),
+            listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue, details = inline, detailsUrl = "https://n/1")),
             setOf(notoriousVenue)
-        ) { _, sources ->
-            assertEquals(listOf(DetailsSource(Chain.NOTORIOUS, "https://n/1")), sources)
-            gate.await()
+        ) { title, known, sources ->
+            asked = Triple(title, known, sources)
+            known
         }
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
-        assertTrue(viewModel.state.value.filmDetails!!.isLoading)
 
-        gate.complete(FilmDetails(synopsis = "Notorious plot"))
-        assertEquals(FilmDetailsUi("Mammina", FilmDetails(synopsis = "Notorious plot"), isLoading = false), viewModel.state.value.filmDetails)
+        assertEquals(Triple("Mammina", inline, listOf(DetailsSource(Chain.NOTORIOUS, "https://n/1"))), asked)
+        assertEquals(FilmDetailsUi("Mammina", inline, isLoading = false), viewModel.state.value.filmDetails)
     }
 
     @Test
@@ -263,7 +276,7 @@ class ShowtimesViewModelTest {
         val viewModel = viewModelShowing(
             listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue, detailsUrl = "https://n/1")),
             setOf(notoriousVenue)
-        ) { _, _ -> gate.await() }
+        ) { _, _, _ -> gate.await() }
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsDismiss)
@@ -273,17 +286,35 @@ class ShowtimesViewModelTest {
     }
 
     @Test
-    fun aFailedFetchKeepsTheKnownDetailsAndStopsLoading() = runTest {
+    fun reopeningCancelsTheEarlierLookup() = runTest {
+        val gates = mutableListOf<CompletableDeferred<FilmDetails>>()
         val viewModel = viewModelShowing(
-            listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue, details = FilmDetails(genre = "Drama"), detailsUrl = "https://n/1")),
+            listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue)),
             setOf(notoriousVenue)
-        ) { known, _ -> known }
+        ) { _, _, _ -> CompletableDeferred<FilmDetails>().also { gates += it }.await() }
+
+        viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
+        viewModel.onAction(ShowtimesAction.OnFilmDetailsDismiss)
+        viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
+        gates.first().complete(FilmDetails(synopsis = "stale"))
+        assertTrue(viewModel.state.value.filmDetails!!.isLoading)
+
+        gates.last().complete(FilmDetails(synopsis = "fresh"))
+        assertEquals(FilmDetailsUi("Mammina", FilmDetails(synopsis = "fresh"), isLoading = false), viewModel.state.value.filmDetails)
+    }
+
+    @Test
+    fun aLookupWithNothingToShowStopsLoadingOnTheEmptyOverlay() = runTest {
+        val viewModel = viewModelShowing(
+            listOf(Showing("Mammina", soon, LocalTime(21, 0), notoriousVenue)),
+            setOf(notoriousVenue)
+        ) { _, _, _ -> FilmDetails() }
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
 
         val shown = viewModel.state.value.filmDetails!!
         assertFalse(shown.isLoading)
-        assertEquals(FilmDetails(genre = "Drama"), shown.details)
+        assertTrue(shown.details.isEmpty)
     }
 
     @Test
@@ -308,6 +339,10 @@ class ShowtimesViewModelTest {
         override suspend fun getVenues(): Map<Chain, Result<List<Venue>, DataError.Network>> = emptyMap()
         override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>): List<VenueShowings> = emptyList()
         override suspend fun getFilmDetails(known: FilmDetails, sources: List<DetailsSource>): FilmDetails = known
+    }
+
+    private object FakeFilmDetailsRepository : FilmDetailsRepository {
+        override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails = known
     }
 
     private object FakeFilterPreferences : FilterPreferences {

@@ -10,6 +10,8 @@ import com.preichert.cinemerick.core.presentation.toTimeInput
 import com.preichert.cinemerick.core.presentation.toUiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DayRange
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
@@ -49,6 +51,7 @@ private val log = Logger.withTag("ShowtimesViewModel")
 
 class ShowtimesViewModel(
     private val showtimesRepository: ShowtimesRepository,
+    private val filmDetailsRepository: FilmDetailsRepository,
     private val filterPreferences: FilterPreferences,
     private val timeWindowController: TimeWindowController
 ) : ViewModel() {
@@ -342,15 +345,14 @@ class ShowtimesViewModel(
         )
     }
 
-    // Shows what the showtimes already carry at once, then completes it from the film pages of the chains that have one.
+    // Opens in a loading state, without the cinemas' text that the film database's would replace, then shows what the
+    // repository resolves: the database's details, or what the cinemas publish when it does not know the film.
     private fun openFilmDetails(title: String) {
         val group = _state.value.groups.firstOrNull { it.title == title } ?: return
         detailsJob?.cancel()
-        val needsFetch = group.detailsSources.isNotEmpty() && !group.details.isComplete
-        _state.update { it.copy(filmDetails = FilmDetailsUi(title, group.details, isLoading = needsFetch)) }
-        if (!needsFetch) return
+        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true)) }
         detailsJob = viewModelScope.launch {
-            val details = showtimesRepository.getFilmDetails(group.details, group.detailsSources)
+            val details = filmDetailsRepository.getFilmDetails(title, group.details, group.detailsSources)
             _state.update { state ->
                 if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details)) else state
             }

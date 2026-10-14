@@ -53,5 +53,8 @@
     <string name="details_rating">Rating</string>
     <string name="details_trailer">Watch trailer</string>
     <string name="details_none">No details available for this film</string>
+    <string name="details_original_title">Original title</string>
+    <string name="details_score">TMDB score</string>
+    <string name="details_score_value">%1$s/10 · %2$s votes</string>
     <string name="details_close">Close</string>
 </resources>

@@ -30,13 +30,17 @@ import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmScore
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_cast
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_close
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_director
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_genre
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_none
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_original_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_rating
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_score
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_score_value
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_synopsis
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_trailer
 import org.jetbrains.compose.resources.stringResource
@@ -75,11 +79,25 @@ internal fun FilmDetailsOverlay(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
+                details.metaLine()?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 details.synopsis?.let { DetailField(stringResource(Res.string.details_synopsis), it) }
                 details.genre?.let { DetailField(stringResource(Res.string.details_genre), it) }
                 details.director?.let { DetailField(stringResource(Res.string.details_director), it) }
                 details.cast?.let { DetailField(stringResource(Res.string.details_cast), it) }
                 details.rating?.let { DetailField(stringResource(Res.string.details_rating), it) }
+                details.originalTitleFor(film.title)?.let { DetailField(stringResource(Res.string.details_original_title), it) }
+                details.score?.let { score ->
+                    DetailField(
+                        stringResource(Res.string.details_score),
+                        stringResource(Res.string.details_score_value, formatScore(score.value), score.votes.toString())
+                    )
+                }
                 if (film.isLoading) {
                     Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
@@ -141,7 +159,11 @@ private val previewFilm = FilmDetailsUi(
         director = "Rob Savage",
         cast = "Alejandro Nieves, Jessica Chastain",
         rating = "14+ · Violenza, Armi",
-        trailerUrl = "https://www.youtube.com/watch?v=abc"
+        trailerUrl = "https://www.youtube.com/watch?v=abc",
+        runtimeMinutes = 101,
+        year = 2026,
+        originalTitle = "Mother",
+        score = FilmScore(6.8, 412)
     )
 )
 

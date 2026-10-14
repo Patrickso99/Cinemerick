@@ -53,5 +53,8 @@
     <string name="details_rating">Classificazione</string>
     <string name="details_trailer">Guarda il trailer</string>
     <string name="details_none">Nessun dettaglio disponibile per questo film</string>
+    <string name="details_original_title">Titolo originale</string>
+    <string name="details_score">Voto TMDB</string>
+    <string name="details_score_value">%1$s/10 · %2$s voti</string>
     <string name="details_close">Chiudi</string>
 </resources>

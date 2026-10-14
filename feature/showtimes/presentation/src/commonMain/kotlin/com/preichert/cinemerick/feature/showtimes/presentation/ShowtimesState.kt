@@ -54,7 +54,7 @@ data class FilmGroupUi(
     val detailsSources: List<DetailsSource> = emptyList()
 )
 
-/** Film details overlay: present while it is open. [isLoading] while film pages are still being read. */
+/** Film details overlay: present while it is open. [isLoading] while the film is still being looked up. */
 data class FilmDetailsUi(
     val title: String,
     val details: FilmDetails,
