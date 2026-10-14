@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_subtitle">Personalizza l'app in base alle tue preferenze</string>
+    <string name="app_theme_title">Tema app</string>
+    <string name="theme_auto">Automatico</string>
+    <string name="theme_auto_description">Passa automaticamente tra chiaro e scuro in base alle impostazioni del dispositivo</string>
+    <string name="theme_label">Tema</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="animations_title">Animazioni</string>
+    <string name="animations_smooth">Animazioni fluide</string>
+    <string name="animations_smooth_description">Effetti di transizione, tocco, scorrimento e comparsa degli elementi</string>
+    <string name="time_window_title">Fascia oraria predefinita</string>
+    <string name="time_window_description">Si applica ai giorni selezionati da ora in poi; i giorni già selezionati non cambiano</string>
+    <string name="time_window_min_label">Inizio dalle</string>
+    <string name="time_window_max_label">Inizio entro le</string>
+    <string name="time_window_no_limit">Nessun limite</string>
+    <string name="time_window_ok">OK</string>
+    <string name="time_window_cancel">Annulla</string>
+    <string name="time_window_error">L'orario minimo non può essere successivo a quello massimo</string>
+</resources>

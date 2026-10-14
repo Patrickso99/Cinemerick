@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="error_no_internet">Nessuna connessione a internet</string>
-    <string name="error_timeout">Il cinema non ha risposto in tempo</string>
-    <string name="error_server">Errore del server del cinema</string>
-    <string name="error_access_denied">Accesso ai dati del cinema negato</string>
-    <string name="error_serialization">Risposta del cinema non riconosciuta</string>
-    <string name="error_unknown">Non è stato possibile reperire i dati dal cinema</string>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="error_timeout">Cinema did not respond in time</string>
+    <string name="error_server">Cinema server error</string>
+    <string name="error_access_denied">Access to cinema data denied</string>
+    <string name="error_serialization">Cinema response not recognized</string>
+    <string name="error_unknown">Could not retrieve cinema data</string>
 </resources>

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_title">Impostazioni</string>
-    <string name="settings_subtitle">Personalizza l'app in base alle tue preferenze</string>
-    <string name="app_theme_title">Tema app</string>
-    <string name="theme_auto">Automatico</string>
-    <string name="theme_auto_description">Passa automaticamente tra chiaro e scuro in base alle impostazioni del dispositivo</string>
-    <string name="theme_label">Tema</string>
-    <string name="theme_light">Chiaro</string>
-    <string name="theme_dark">Scuro</string>
-    <string name="animations_title">Animazioni</string>
-    <string name="animations_smooth">Animazioni fluide</string>
-    <string name="animations_smooth_description">Effetti di transizione, tocco, scorrimento e comparsa degli elementi</string>
-    <string name="time_window_title">Fascia oraria predefinita</string>
-    <string name="time_window_description">Si applica ai giorni selezionati da ora in poi; i giorni già selezionati non cambiano</string>
-    <string name="time_window_min_label">Inizio dalle</string>
-    <string name="time_window_max_label">Inizio entro le</string>
-    <string name="time_window_no_limit">Nessun limite</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Customize the app based on your preferences</string>
+    <string name="app_theme_title">App theme</string>
+    <string name="theme_auto">Auto</string>
+    <string name="theme_auto_description">Automatically switch between light and dark mode based on your device's system settings</string>
+    <string name="theme_label">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="animations_title">Animations</string>
+    <string name="animations_smooth">Smooth animations</string>
+    <string name="animations_smooth_description">Navigation, tap, scroll and item appearance effects</string>
+    <string name="time_window_title">Default time window</string>
+    <string name="time_window_description">Applies to days you select from now on; already selected days stay unchanged</string>
+    <string name="time_window_min_label">Start from</string>
+    <string name="time_window_max_label">Start by</string>
+    <string name="time_window_no_limit">No limit</string>
     <string name="time_window_ok">OK</string>
-    <string name="time_window_cancel">Annulla</string>
-    <string name="time_window_error">L'orario minimo non può essere successivo a quello massimo</string>
+    <string name="time_window_cancel">Cancel</string>
+    <string name="time_window_error">The minimum time can't be later than the maximum time</string>
 </resources>
