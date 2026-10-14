@@ -29,6 +29,8 @@ jobs:
 
       - name: Build with Fastlane
         shell: bash
+        env:
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
         run: bundle exec fastlane android apk_release
 
       - uses: actions/upload-artifact@v4
