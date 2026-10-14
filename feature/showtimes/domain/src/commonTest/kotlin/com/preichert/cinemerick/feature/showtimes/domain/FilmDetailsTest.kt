@@ -98,6 +98,29 @@ class FilmDetailsTest {
     }
 
     @Test
+    fun tmdbOnlyFieldsMakeDetailsNonEmptyButDoNotCountForCompleteness() {
+        assertTrue(!FilmDetails(runtimeMinutes = 121).isEmpty)
+        assertTrue(!FilmDetails(year = 1977).isEmpty)
+        assertTrue(!FilmDetails(originalTitle = "Star Wars").isEmpty)
+        assertTrue(!FilmDetails(score = FilmScore(8.2, 100)).isEmpty)
+
+        val chainFieldsOnly = FilmDetails(
+            synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t"
+        )
+        assertTrue(chainFieldsOnly.isComplete)
+        assertTrue(!FilmDetails(runtimeMinutes = 121, year = 1977, originalTitle = "o", score = FilmScore(8.2, 1)).isComplete)
+    }
+
+    @Test
+    fun withFallbackCarriesTmdbOnlyFields() {
+        val merged = FilmDetails(runtimeMinutes = 100).withFallback(
+            FilmDetails(runtimeMinutes = 200, year = 1977, originalTitle = "Star Wars", score = FilmScore(8.2, 10))
+        )
+
+        assertEquals(FilmDetails(runtimeMinutes = 100, year = 1977, originalTitle = "Star Wars", score = FilmScore(8.2, 10)), merged)
+    }
+
+    @Test
     fun withFallbackKeepsOwnFieldsAndFillsGaps() {
         val merged = FilmDetails(synopsis = "own").withFallback(FilmDetails(synopsis = "other", genre = "Drama"))
 

@@ -274,6 +274,45 @@ class ShowtimesLogicTest {
     }
 
     @Test
+    fun searchTitleDropsOnlyFormatAndLanguageSuffixes() {
+        assertEquals("Dune", searchTitle("Dune (3D)"))
+        assertEquals("Avatar", searchTitle("Avatar (IMAX)"))
+        assertEquals("Café", searchTitle("Café - Lingua originale"))
+        assertEquals("Linkin Park Unshatter", searchTitle("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+        assertEquals("Naza", searchTitle("Naza C.A."))
+        assertEquals("Cars", searchTitle("Cars - 20 Anni"))
+    }
+
+    @Test
+    fun searchTitleKeepsAccentsPunctuationAndRealSubtitles() {
+        assertEquals("Coyote Vs. Acme", searchTitle("Coyote Vs. Acme"))
+        assertEquals("L'Été", searchTitle("L'Été"))
+        assertEquals("Avengers: Endgame", searchTitle("Avengers: Endgame"))
+        assertEquals("Cars - Motori Ruggenti", searchTitle("Cars - Motori Ruggenti"))
+        assertEquals("Film (Parte 2)", searchTitle("Film (Parte 2)"))
+    }
+
+    @Test
+    fun titleKeyIgnoresCaseAccentsAndPunctuationButCutsNothing() {
+        assertEquals("cafe", titleKey("Café"))
+        assertEquals("coyote vs acme", titleKey("Coyote Vs. Acme"))
+        assertEquals("lete", titleKey("L'Été"))
+        assertEquals("dune part two", titleKey("Dune: Part Two"))
+        assertEquals("star wars episode iii revenge of the sith", titleKey("Star Wars: Episode III - Revenge of the Sith"))
+        assertEquals("千と千尋の神隠し", titleKey("千と千尋の神隠し"))
+        assertEquals("", titleKey(" !!! "))
+        // `filmKey` cuts the subtitle: this is why matching must not use it.
+        assertEquals("star wars", filmKey("Star Wars: Episode III - Revenge of the Sith"))
+    }
+
+    @Test
+    fun searchTitleLeavesFilmKeyResultsUnchanged() {
+        assertEquals("avatar", filmKey("Avatar (IMAX)"))
+        assertEquals("linkin park unshatter", filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+        assertEquals(filmKey("Cars - Motori Ruggenti"), filmKey("Cars: Motori Ruggenti - 20 Anni"))
+    }
+
+    @Test
     fun filmKeyHandlesColonAndDashSubtitleSeparators() {
         // Colon and dash separators should produce the same key
         assertEquals(filmKey("Cars - Motori Ruggenti"), filmKey("Cars: Motori Ruggenti - 20 Anni"))

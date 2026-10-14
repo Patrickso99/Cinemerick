@@ -4,6 +4,7 @@ private val whitespace = Regex("\\s+")
 private val specialChars = Regex("[^a-z0-9 ]")
 private val languageSuffixPattern = Regex(""" - (Lingua originale|Original Language|VO|Dubbed|20 Anni|Extended|Director'?s).*$""", RegexOption.IGNORE_CASE)
 private val formatSuffixPattern = Regex("""\s*\((infinity vision|epic|imax|dolby atmos|4dx|screenx|vo|v\.o\.|3d|2d|live action[^)]*)\)\s*$""", RegexOption.IGNORE_CASE)
+private val audioDescriptionPattern = Regex(""" c\.a\.""", RegexOption.IGNORE_CASE)
 private val diacriticsMap = mapOf(
     'à' to 'a', 'á' to 'a', 'â' to 'a', 'ã' to 'a', 'ä' to 'a', 'å' to 'a',
     'è' to 'e', 'é' to 'e', 'ê' to 'e', 'ë' to 'e',
@@ -24,6 +25,25 @@ fun cleanTitle(raw: String): String {
     val isAllCaps = title.any { it.isLetter() } && title == title.uppercase()
     return if (isAllCaps) title.toTitleCase() else title
 }
+
+// The title to look a film up by in an external database: only the format and language suffixes `filmKey` also ignores
+// are removed, accents and punctuation stay ("Dune (3D)" -> "Dune", "Café - Lingua originale" -> "Café").
+fun searchTitle(raw: String): String =
+    cleanTitle(raw)
+        .replace(audioDescriptionPattern, "")
+        .replace(formatSuffixPattern, "")
+        .replace(languageSuffixPattern, "")
+        .trim()
+
+// For checking that two titles are the same title, nothing looser: case, accents, punctuation and spacing are ignored
+// but nothing is cut ("Dune: Part Two" is not "Dune", unlike with `filmKey`, which drops subtitles).
+fun titleKey(title: String): String =
+    title.map { diacriticsMap[it] ?: it }
+        .joinToString("")
+        .lowercase()
+        .filter { it.isLetterOrDigit() || it == ' ' }
+        .replace(whitespace, " ")
+        .trim()
 
 // Two cinemas name the same film differently ("Naza" / "Naza C.A.", "X - Sottotitolo"): compare on this key.
 // Also handles diacritics: "La città dei vivi" == "La citta dei vivi" == "La Citta' Dei Vivi"

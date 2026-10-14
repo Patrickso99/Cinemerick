@@ -1,17 +1,29 @@
 package com.preichert.cinemerick.feature.showtimes.domain
 
-/** What a chain publishes about a film. Every field is optional: chains disagree on what they offer. */
+/** User score of a film on TMDB: [value] out of 10, averaged over [votes] votes. */
+data class FilmScore(val value: Double, val votes: Int)
+
+/**
+ * What is known about a film. Every field is optional: chains disagree on what they offer, and TMDB may not know a film.
+ * [runtimeMinutes], [year], [originalTitle] and [score] only ever come from TMDB.
+ */
 data class FilmDetails(
     val synopsis: String? = null,
     val genre: String? = null,
     val director: String? = null,
     val cast: String? = null,
     val rating: String? = null,
-    val trailerUrl: String? = null
+    val trailerUrl: String? = null,
+    val runtimeMinutes: Int? = null,
+    val year: Int? = null,
+    val originalTitle: String? = null,
+    val score: FilmScore? = null
 ) {
     val isEmpty: Boolean
-        get() = synopsis == null && genre == null && director == null && cast == null && rating == null && trailerUrl == null
+        get() = synopsis == null && genre == null && director == null && cast == null && rating == null && trailerUrl == null &&
+            runtimeMinutes == null && year == null && originalTitle == null && score == null
 
+    /** Every field the chains publish is present; the TMDB-only fields are deliberately not part of this. */
     val isComplete: Boolean
         get() = synopsis != null && genre != null && director != null && cast != null && rating != null && trailerUrl != null
 
@@ -22,7 +34,11 @@ data class FilmDetails(
         director = director ?: fallback.director,
         cast = cast ?: fallback.cast,
         rating = rating ?: fallback.rating,
-        trailerUrl = trailerUrl ?: fallback.trailerUrl
+        trailerUrl = trailerUrl ?: fallback.trailerUrl,
+        runtimeMinutes = runtimeMinutes ?: fallback.runtimeMinutes,
+        year = year ?: fallback.year,
+        originalTitle = originalTitle ?: fallback.originalTitle,
+        score = score ?: fallback.score
     )
 }
 
