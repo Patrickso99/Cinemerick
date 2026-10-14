@@ -127,4 +127,60 @@ class FilmDetailsTest {
         assertEquals(FilmDetails(synopsis = "own", genre = "Drama"), merged)
         assertNull(merged.trailerUrl)
     }
+
+    @Test
+    fun enrichmentFieldsMakeDetailsNonEmptyButDoNotCountForCompleteness() {
+        val person = FilmPerson(1, "Mark Hamill", "Luke Skywalker", "https://img/p.jpg")
+        assertTrue(!FilmDetails(tagline = "A long time ago").isEmpty)
+        assertTrue(!FilmDetails(backdropUrl = "https://img/b.jpg").isEmpty)
+        assertTrue(!FilmDetails(saga = "Star Wars Collection").isEmpty)
+        assertTrue(!FilmDetails(originalLanguage = "en").isEmpty)
+        assertTrue(!FilmDetails(countries = "United States").isEmpty)
+        assertTrue(!FilmDetails(castMembers = listOf(person)).isEmpty)
+        assertTrue(!FilmDetails(directors = listOf(person)).isEmpty)
+
+        val chainFieldsOnly = FilmDetails(synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t")
+        assertTrue(chainFieldsOnly.copy(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete)
+        assertTrue(!FilmDetails(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete)
+    }
+
+    @Test
+    fun withFallbackKeepsEnrichmentFields() {
+        val person = FilmPerson(1, "Mark Hamill")
+        val other = FilmPerson(2, "Carrie Fisher")
+        val merged = FilmDetails(tagline = "own", castMembers = listOf(person)).withFallback(
+            FilmDetails(tagline = "other", saga = "Saga", castMembers = listOf(other), directors = listOf(other))
+        )
+
+        assertEquals(
+            FilmDetails(tagline = "own", saga = "Saga", castMembers = listOf(person), directors = listOf(other)),
+            merged
+        )
+    }
+
+    @Test
+    fun factsAndGalleryMakeDetailsNonEmptyButDoNotCountForCompleteness() {
+        assertTrue(!FilmDetails(productionCompanies = "Legendary").isEmpty)
+        assertTrue(!FilmDetails(budget = 1L).isEmpty)
+        assertTrue(!FilmDetails(revenue = 1L).isEmpty)
+        assertTrue(!FilmDetails(releaseDate = LocalDate(2024, 2, 28)).isEmpty)
+        assertTrue(!FilmDetails(gallery = listOf(FilmImage("t", "f"))).isEmpty)
+
+        val chainFieldsOnly = FilmDetails(synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t")
+        assertTrue(chainFieldsOnly.copy(budget = 1L, gallery = listOf(FilmImage("t", "f"))).isComplete)
+        assertTrue(!FilmDetails(budget = 1L, revenue = 1L, productionCompanies = "x").isComplete)
+    }
+
+    @Test
+    fun withFallbackKeepsFactsAndGallery() {
+        val own = FilmImage("own-t", "own-f")
+        val merged = FilmDetails(budget = 10L, gallery = listOf(own)).withFallback(
+            FilmDetails(budget = 99L, revenue = 20L, productionCompanies = "A", releaseDate = LocalDate(2024, 1, 1), gallery = listOf(FilmImage("x", "y")))
+        )
+
+        assertEquals(
+            FilmDetails(budget = 10L, revenue = 20L, productionCompanies = "A", releaseDate = LocalDate(2024, 1, 1), gallery = listOf(own)),
+            merged
+        )
+    }
 }

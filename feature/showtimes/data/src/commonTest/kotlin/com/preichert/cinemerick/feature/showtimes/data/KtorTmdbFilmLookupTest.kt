@@ -64,8 +64,9 @@ class KtorTmdbFilmLookupTest {
         val detail = requests[1].url
         assertEquals("/3/movie/11", detail.encodedPath)
         assertEquals("it-IT", detail.parameters["language"])
-        assertEquals("credits,videos,release_dates", detail.parameters["append_to_response"])
+        assertEquals("credits,videos,release_dates,images", detail.parameters["append_to_response"])
         assertEquals("it", detail.parameters["include_video_language"])
+        assertEquals("it,null", detail.parameters["include_image_language"])
     }
 
     @Test

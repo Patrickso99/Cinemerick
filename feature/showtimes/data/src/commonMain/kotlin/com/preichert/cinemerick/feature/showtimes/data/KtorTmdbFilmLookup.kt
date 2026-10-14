@@ -24,10 +24,12 @@ private const val TMDB_API = "https://api.themoviedb.org/3"
 private const val LANGUAGE = "it-IT"
 private const val VIDEO_LANGUAGE = "it"
 private const val REGION = "IT"
+// Images without text, and those with Italian text.
+private const val IMAGE_LANGUAGES = "it,null"
 
 /**
- * Looks a film up on TMDB: a search by title, then the detail of the film it trusts (with credits, trailers and the
- * Italian certification in the same response). An empty [token] turns the lookup off without sending anything.
+ * Looks a film up on TMDB: a search by title, then the detail of the film it trusts (with credits, trailers, images and the
+ * Italian release dates in the same response). An empty [token] turns the lookup off without sending anything.
  */
 class KtorTmdbFilmLookup(
     private val httpClient: HttpClient,
@@ -63,7 +65,8 @@ class KtorTmdbFilmLookup(
 
     private fun movieUrl(id: Int): String = URLBuilder("$TMDB_API/movie/$id").apply {
         parameters.append("language", LANGUAGE)
-        parameters.append("append_to_response", "credits,videos,release_dates")
+        parameters.append("append_to_response", "credits,videos,release_dates,images")
         parameters.append("include_video_language", VIDEO_LANGUAGE)
+        parameters.append("include_image_language", IMAGE_LANGUAGES)
     }.buildString()
 }

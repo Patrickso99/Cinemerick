@@ -52,7 +52,21 @@ internal const val MOVIE_JSON = """
   "adult": false,
   "genres": [{"id": 12, "name": "Avventura"}, {"id": 28, "name": "Azione"}],
   "id": 11,
-  "imdb_id": "tt0076759",
+  "tagline": "Tanto tempo fa",
+  "backdrop_path": "/backdrop.jpg",
+  "belongs_to_collection": {"id": 10, "name": "Saga di Guerre stellari"},
+  "original_language": "en",
+  "production_companies": [{"id": 1, "name": "Lucasfilm Ltd."}, {"id": 25, "name": "Twentieth Century Fox"}],
+  "budget": 11000000,
+  "revenue": 775398007,
+  "images": {
+    "backdrops": [
+      {"file_path": "/backdrop.jpg", "vote_average": 7.0, "iso_639_1": null},
+      {"file_path": "/b2.jpg", "vote_average": 6.1, "iso_639_1": "it"},
+      {"file_path": "/b3.jpg", "vote_average": 3.0}
+    ]
+  },
+  "production_countries": [{"iso_3166_1": "US", "name": "United States of America"}],
   "original_title": "Star Wars",
   "overview": "La principessa Leia viene catturata.",
   "release_date": "1977-05-25",
@@ -62,11 +76,11 @@ internal const val MOVIE_JSON = """
   "vote_count": 22999,
   "credits": {
     "cast": [
-      {"name": "Mark Hamill", "character": "Luke Skywalker", "order": 0},
-      {"name": "Harrison Ford", "character": "Han Solo", "order": 1}
+      {"id": 2, "name": "Mark Hamill", "character": "Luke Skywalker", "profile_path": "/mark.jpg", "order": 0},
+      {"id": 3, "name": "Harrison Ford", "character": "Han Solo", "order": 1}
     ],
     "crew": [
-      {"name": "George Lucas", "job": "Director", "department": "Directing"},
+      {"id": 1, "name": "George Lucas", "job": "Director", "department": "Directing", "profile_path": "/george.jpg"},
       {"name": "Gary Kurtz", "job": "Producer", "department": "Production"}
     ]
   },
@@ -79,7 +93,7 @@ internal const val MOVIE_JSON = """
   "release_dates": {
     "results": [
       {"iso_3166_1": "US", "release_dates": [{"certification": "PG", "type": 3}]},
-      {"iso_3166_1": "IT", "release_dates": [{"certification": "", "type": 3}, {"certification": "T", "type": 3}]}
+      {"iso_3166_1": "IT", "release_dates": [{"certification": "", "type": 3, "release_date": "1978-01-01T00:00:00.000Z", "descriptors": []}, {"certification": "T", "type": 3, "release_date": "1977-10-20T00:00:00.000Z", "descriptors": []}]}
     ]
   }
 }
@@ -115,10 +129,24 @@ class TmdbDtosTest {
         assertEquals(8.207, movie.voteAverage)
         assertEquals(22999, movie.voteCount)
         assertEquals(listOf("Avventura", "Azione"), movie.genres.map { it.name })
+        assertEquals("Tanto tempo fa", movie.tagline)
+        assertEquals("/backdrop.jpg", movie.backdropPath)
+        assertEquals("Saga di Guerre stellari", movie.collection?.name)
+        assertEquals("en", movie.originalLanguage)
+        assertEquals(listOf("United States of America"), movie.productionCountries.map { it.name })
+        assertEquals(listOf("Lucasfilm Ltd.", "Twentieth Century Fox"), movie.productionCompanies.map { it.name })
+        assertEquals(11_000_000L, movie.budget)
+        assertEquals(775_398_007L, movie.revenue)
+        assertEquals(listOf("/backdrop.jpg", "/b2.jpg", "/b3.jpg"), assertNotNull(movie.images).backdrops.map { it.filePath })
+        assertEquals(listOf(7.0, 6.1, 3.0), movie.images.backdrops.map { it.voteAverage })
 
         val credits = assertNotNull(movie.credits)
         assertEquals(listOf("Mark Hamill", "Harrison Ford"), credits.cast.map { it.name })
         assertEquals(listOf("Director" to "George Lucas", "Producer" to "Gary Kurtz"), credits.crew.map { it.job to it.name })
+        assertEquals(listOf(2, 3), credits.cast.map { it.id })
+        assertEquals(listOf("Luke Skywalker", "Han Solo"), credits.cast.map { it.character })
+        assertEquals(listOf("/mark.jpg", null), credits.cast.map { it.profilePath })
+        assertEquals("/george.jpg", credits.crew.first().profilePath)
 
         val videos = assertNotNull(movie.videos).results
         assertEquals(TmdbVideoDto(key = "abc123", site = "YouTube", type = "Trailer", official = true, language = "it"), videos.first())
@@ -126,6 +154,8 @@ class TmdbDtosTest {
 
         val italy = assertNotNull(movie.releaseDates).results.first { it.country == "IT" }
         assertEquals(listOf("", "T"), italy.releaseDates.map { it.certification })
+        assertEquals(listOf(3, 3), italy.releaseDates.map { it.type })
+        assertEquals("1977-10-20T00:00:00.000Z", italy.releaseDates.last().releaseDate)
     }
 
     @Test
@@ -137,6 +167,27 @@ class TmdbDtosTest {
         assertNull(movie.releaseDates)
         assertNull(movie.runtime)
         assertNull(movie.overview)
+        assertNull(movie.tagline)
+        assertNull(movie.backdropPath)
+        assertNull(movie.collection)
+        assertNull(movie.originalLanguage)
+        assertNull(movie.images)
+        assertEquals(0L, movie.budget)
+        assertEquals(0L, movie.revenue)
+        assertEquals(emptyList(), movie.productionCompanies)
+        assertEquals(emptyList(), movie.productionCountries)
         assertEquals(0, movie.voteCount)
+    }
+
+    @Test
+    fun descriptorsOfAnyShapeDoNotBreakTheMovie() {
+        val movie = tmdbJson.decodeFromString<TmdbMovieDto>(
+            """{"id": 5, "release_dates": {"results": [{"iso_3166_1": "IT", "release_dates": [
+                {"certification": "14+", "type": 3, "release_date": "2024-01-01T00:00:00.000Z", "descriptors": ["Violence", {"id": 3, "name": "Weapons"}, 7]}
+            ]}]}}"""
+        )
+
+        val date = movie.releaseDates!!.results.single().releaseDates.single()
+        assertEquals(3, date.descriptors.size)
     }
 }
