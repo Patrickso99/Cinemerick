@@ -13,6 +13,7 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 📅 **Flexible date/time filtering**: Select days and time ranges per day
 - 🏢 **Venue selection**: Choose which venues to query; venues are fetched at runtime from each chain's availability (no hardcoded limits)
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
+- 📖 **Film details**: Tap a film for synopsis, genres, director, cast, trailer, runtime, year, original title and the TMDB score. Details come from [TMDB](https://www.themoviedb.org) in Italian whatever the language of the app (a synopsis or trailer TMDB only has in another language is not shown); films TMDB does not recognise (concerts, live events, rassegne) fall back to what the cinemas publish, and a TMDB result is never mixed with cinema data
 - 🏷️ **Version in the header**: Shown as `v1.1.2 (20261006) [abc1234]` (version name, date-based code, git short hash)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🎞️ **Film filtering**: Narrow results by comma-separated film titles
@@ -58,6 +59,8 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 - **`:feature:showtimes:data`**: Data layer
   - `KtorTheSpaceShowtimesDataSource` (JSON API) / `KtorUciShowtimesDataSource` (JSON API) / `KtorNotoriousShowtimesDataSource` (HTML) / `Ktor18TicketsShowtimesDataSource` (Cinergia, Cinemazero) / `KtorCristalloShowtimesDataSource` (HTML) / `KtorDonBoscoShowtimesDataSource` (HTML) / `KtorArcadiaShowtimesDataSource` (HTML): Platform HTTP clients
   - `NotoriousParser` / `EighteenTicketsParser` (Cinergia, Cinemazero) / `CristalloParser` / `DonBoscoParser` / `ArcadiaParser`: HTML parsers for cinemas without JSON APIs (each with a `*ParserTest`)
+  - `KtorTmdbFilmLookup` (+ `TmdbMatching`, `TmdbMapper`, `TmdbDtos`): Searches TMDB by title and fetches the film's details; a match is accepted only when the normalized title is the same and the release date is plausible
+  - `TmdbFirstFilmDetailsRepository`: Asks TMDB first and falls back to the cinemas' film pages when TMDB has no match or cannot be reached; remembers outcomes (including "no match") for the session
   - `HtmlEntities` (`unescapeHtml`): Decodes named and numeric HTML entities in scraped text
   - `TheSpaceTokenProvider`: Extracts JWT from The Space pages
   - `ResultMerging`: Merges and deduplicates results from multiple cinemas
@@ -76,7 +79,7 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 - `cinemerick.kmp.compose`: Compose Multiplatform setup
 - `cinemerick.kmp.feature`: Feature module structure
 - `cinemerick.koin`: Koin DI setup
-- `cinemerick.buildkonfig`: Generates `BuildKonfig` (`VERSION_NAME`, `VERSION_CODE`, `GIT_HASH`) in `:core:domain`; the version is defined once in `AppVersion.kt` and shared with the Android and desktop packaging
+- `cinemerick.buildkonfig`: Generates `BuildKonfig` (`VERSION_NAME`, `VERSION_CODE`, `GIT_HASH`, `TMDB_TOKEN`) in `:core:domain`; the version is defined once in `AppVersion.kt` and shared with the Android and desktop packaging
 - `cinemerick.ktor`: Ktor client configuration
 - `cinemerick.kotlinx-serialization`: Serialization plugin
 
@@ -107,6 +110,15 @@ Convention plugins in `:build-logic:convention` handle Gradle configuration:
 - Gradle 8.1+
 - Android SDK 37 (compile), API 26 (min)
 - Xcode 14+ (for iOS)
+
+### TMDB access token (optional)
+
+Film details (synopsis, cast, director, trailer, runtime, score) come from [TMDB](https://www.themoviedb.org); films TMDB does not know fall back to what the cinemas publish. To enable the lookup you need a free TMDB account and its **API Read Access Token** (account settings → API; the short "API Key" is not used):
+
+- locally, add `tmdb.token=<token>` to `local.properties` (git-ignored);
+- in CI, provide it as the `TMDB_TOKEN` secret / environment variable.
+
+Without a token the app builds and runs exactly as before, using only the cinemas' data.
 
 ### Build & Run
 
@@ -279,6 +291,10 @@ This is a personal project, but contributions and suggestions are welcome. Pleas
 - All comments and commit messages are in **English**
 - Code follows the existing modular structure
 - Tests pass: `./gradlew :feature:showtimes:domain:allTests :feature:showtimes:data:allTests`
+
+## Credits
+
+Film details are provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. The credit (logo, notice and a localized description) is shown in the app's settings screen.
 
 ## License
 
