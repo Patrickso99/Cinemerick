@@ -8,6 +8,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 @Stable
@@ -37,7 +38,6 @@ data class CalendarUi(val minDate: LocalDate)
 
 data class DayUi(
     val date: LocalDate,
-    val label: String,
     val isSelected: Boolean = false,
     val minTime: String,
     val maxTime: String
@@ -62,7 +62,7 @@ data class FilmDetailsUi(
 )
 
 data class ShowingUi(
-    val day: String,
+    val day: DayOfWeek,
     val date: String,
     val time: String,
     val venue: Venue,

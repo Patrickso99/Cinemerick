@@ -21,7 +21,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.availableTags
 import com.preichert.cinemerick.feature.showtimes.domain.displayFormat
 import com.preichert.cinemerick.feature.showtimes.domain.filterShowings
 import com.preichert.cinemerick.feature.showtimes.domain.groupByFilm
-import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.domain.needsFetch
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
 import com.preichert.cinemerick.feature.showtimes.domain.toPollText
@@ -205,7 +204,6 @@ class ShowtimesViewModel(
         val window = timeWindowController.window.value
         return DayUi(
             date = date,
-            label = date.toLabel(),
             isSelected = true,
             minTime = window.minMinutes.toTimeInput(),
             maxTime = window.maxMinutes.toTimeInput()
@@ -328,7 +326,7 @@ class ShowtimesViewModel(
                     detailsSources = group.detailsSources,
                     showings = group.showings.map { showing ->
                         ShowingUi(
-                            day = showing.day.dayOfWeek.italianName(),
+                            day = showing.day.dayOfWeek,
                             date = showing.day.toDateLabel(),
                             time = showing.time.toString(),
                             venue = showing.venue,
@@ -374,9 +372,4 @@ class ShowtimesViewModel(
 
     private fun LocalDate.toDateLabel(): String =
         "${day.toString().padStart(2, '0')}/${month.number.toString().padStart(2, '0')}"
-
-    private fun LocalDate.toLabel(): String {
-        val weekday = dayOfWeek.italianName().take(3).lowercase()
-        return "$weekday ${day.toString().padStart(2, '0')}/${month.number.toString().padStart(2, '0')}"
-    }
 }

@@ -31,6 +31,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_subtitle
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -145,10 +146,10 @@ private fun previewState(): ShowtimesState {
     val marconVenue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
     return ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24", minTime = "20:00"),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
+            DayUi(LocalDate(2026, 10, 1), isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), isSelected = true, maxTime = "24", minTime = "20:00"),
+            DayUi(LocalDate(2026, 10, 3), isSelected = true, minTime = "25", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue),
         hasGenerated = true,
@@ -158,8 +159,8 @@ private fun previewState(): ShowtimesState {
             FilmGroupUi(
                 title = "Film Name",
                 showings = listOf(
-                    ShowingUi("Giovedì", "01/10", "21:00", sileaVenue, "2D · VO"),
-                    ShowingUi("Giovedì", "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
+                    ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", sileaVenue, "2D · VO"),
+                    ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
                 )
             )
         )

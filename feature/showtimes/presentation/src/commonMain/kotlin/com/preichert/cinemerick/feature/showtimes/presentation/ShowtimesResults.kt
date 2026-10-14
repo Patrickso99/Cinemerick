@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
+import kotlinx.datetime.DayOfWeek
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.TicketActionColors
 import com.preichert.cinemerick.core.designsystem.bounceClickable
@@ -218,7 +219,7 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: (
                 Spacer(modifier = Modifier.height(Spacing.xs))
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
                     group.showings.groupBy { it.date }.forEach { (date, showingsForDate) ->
-                        val dayName = showingsForDate.firstOrNull()?.day ?: ""
+                        val dayName = showingsForDate.firstOrNull()?.day?.fullName() ?: ""
                         Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                             Badge(
                                 text = "$dayName $date",
@@ -366,9 +367,9 @@ private fun FilmGroupCardPreviewLight() {
 private fun ShowingRowPreviewLight() {
     LightThemePreview {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
         }
     }
 }
@@ -388,9 +389,9 @@ private fun FilmGroupCardPreviewDark() {
 private fun ShowingRowPreviewDark() {
     DarkThemePreview {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "21:30", PreviewData.marconVenue, null))
-            ShowingRow(showing = ShowingUi("Giovedì", "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
         }
     }
 }

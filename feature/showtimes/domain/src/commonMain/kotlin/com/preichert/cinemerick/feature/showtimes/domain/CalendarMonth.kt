@@ -31,18 +31,3 @@ fun upcomingWeekend(today: LocalDate): List<LocalDate> {
     val saturday = today.plus(daysToSaturday, DateTimeUnit.DAY)
     return listOf(saturday, saturday.plus(1, DateTimeUnit.DAY))
 }
-
-fun Month.italianName(): String = when (this) {
-    Month.JANUARY -> "Gennaio"
-    Month.FEBRUARY -> "Febbraio"
-    Month.MARCH -> "Marzo"
-    Month.APRIL -> "Aprile"
-    Month.MAY -> "Maggio"
-    Month.JUNE -> "Giugno"
-    Month.JULY -> "Luglio"
-    Month.AUGUST -> "Agosto"
-    Month.SEPTEMBER -> "Settembre"
-    Month.OCTOBER -> "Ottobre"
-    Month.NOVEMBER -> "Novembre"
-    Month.DECEMBER -> "Dicembre"
-}

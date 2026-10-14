@@ -43,7 +43,6 @@ import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
-import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.add_venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
@@ -299,7 +298,7 @@ internal fun DayChip(day: DayUi, onClick: () -> Unit, modifier: Modifier = Modif
                 modifier = Modifier.padding(vertical = Spacing.xs)
             ) {
                 Text(
-                    text = day.date.dayOfWeek.italianName().take(3).uppercase(),
+                    text = day.date.chipDayName(),
                     style = MaterialTheme.typography.labelSmall
                 )
                 Text(
@@ -328,7 +327,7 @@ internal fun DayRangeRow(
         ) {
             Text("🕘")
             Text(
-                text = day.label,
+                text = day.date.dayLabel(),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary
             )

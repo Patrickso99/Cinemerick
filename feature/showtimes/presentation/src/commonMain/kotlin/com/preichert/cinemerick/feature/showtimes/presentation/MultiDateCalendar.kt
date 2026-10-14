@@ -36,7 +36,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.preichert.cinemerick.core.designsystem.DevicePreviews
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
-import com.preichert.cinemerick.feature.showtimes.domain.italianName
 import com.preichert.cinemerick.feature.showtimes.domain.monthGrid
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.calendar_next_month
@@ -81,7 +80,7 @@ fun MultiDateCalendar(
                 )
             }
             Text(
-                text = "${firstOfMonth.month.italianName()} ${firstOfMonth.year}",
+                text = "${firstOfMonth.month.displayName()} ${firstOfMonth.year}",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
@@ -103,7 +102,7 @@ fun MultiDateCalendar(
         Row(modifier = Modifier.fillMaxWidth()) {
             DayOfWeek.entries.forEach { dow ->
                 Text(
-                    text = dow.italianName().take(1),
+                    text = dow.initial(),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

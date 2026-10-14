@@ -3,6 +3,7 @@ package com.preichert.cinemerick.feature.showtimes.presentation
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 internal object PreviewData {
@@ -20,20 +21,20 @@ internal object PreviewData {
 
     fun showtimesStateWithDays() = ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, minTime = "20:00", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10", minTime = "20:00", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
+            DayUi(LocalDate(2026, 10, 1), isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 3), minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue)
     )
 
     fun showtimesStateWithResults() = ShowtimesState(
         days = listOf(
-            DayUi(LocalDate(2026, 10, 1), "gio 01/10", isSelected = true, minTime = "20:00", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 2), "ven 02/10", isSelected = true, maxTime = "24", minTime = "20:00"),
-            DayUi(LocalDate(2026, 10, 3), "sab 03/10", isSelected = true, minTime = "25", maxTime = ""),
-            DayUi(LocalDate(2026, 10, 4), "dom 04/10", minTime = "20:00", maxTime = "")
+            DayUi(LocalDate(2026, 10, 1), isSelected = true, minTime = "20:00", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 2), isSelected = true, maxTime = "24", minTime = "20:00"),
+            DayUi(LocalDate(2026, 10, 3), isSelected = true, minTime = "25", maxTime = ""),
+            DayUi(LocalDate(2026, 10, 4), minTime = "20:00", maxTime = "")
         ),
         selectedVenues = setOf(sileaVenue, marconVenue),
         hasGenerated = true,
@@ -44,8 +45,8 @@ internal object PreviewData {
                 title = "Film Name",
                 posterUrl = null,
                 showings = listOf(
-                    ShowingUi("Giovedì", "01/10", "21:00", sileaVenue, "2D · VO", "https://example.com/buy"),
-                    ShowingUi("Giovedì", "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
+                    ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", sileaVenue, "2D · VO", "https://example.com/buy"),
+                    ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", marconVenue, "2D · ENG · sub ITA")
                 )
             )
         )
@@ -73,7 +74,6 @@ internal object PreviewData {
 
     fun dayUiSelected() = DayUi(
         LocalDate(2026, 10, 1),
-        "gio 01/10",
         isSelected = true,
         minTime = "20:00",
         maxTime = ""
@@ -81,7 +81,6 @@ internal object PreviewData {
 
     fun dayUiNotSelected() = DayUi(
         LocalDate(2026, 10, 2),
-        "ven 02/10",
         isSelected = false,
         minTime = "20:00",
         maxTime = ""
@@ -89,7 +88,6 @@ internal object PreviewData {
 
     fun dayUiWithTimeError() = DayUi(
         LocalDate(2026, 10, 3),
-        "sab 03/10",
         isSelected = true,
         minTime = "25",
         maxTime = "24"
@@ -99,8 +97,8 @@ internal object PreviewData {
         title = "Dune: Part Two",
         posterUrl = "https://example.com/poster.jpg",
         showings = listOf(
-            ShowingUi("Giovedì", "01/10", "19:00", sileaVenue, "3D · VO"),
-            ShowingUi("Giovedì", "01/10", "21:30", sileaVenue, "2D · VO")
+            ShowingUi(DayOfWeek.THURSDAY, "01/10", "19:00", sileaVenue, "3D · VO"),
+            ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", sileaVenue, "2D · VO")
         )
     )
 
@@ -108,7 +106,7 @@ internal object PreviewData {
         title = "Inception",
         posterUrl = null,
         showings = listOf(
-            ShowingUi("Venerdì", "02/10", "20:00", marconVenue, "2D · ITA")
+            ShowingUi(DayOfWeek.FRIDAY, "02/10", "20:00", marconVenue, "2D · ITA")
         )
     )
 
