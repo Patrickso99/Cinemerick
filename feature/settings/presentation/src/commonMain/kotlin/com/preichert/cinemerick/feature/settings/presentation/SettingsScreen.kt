@@ -2,6 +2,8 @@ package com.preichert.cinemerick.feature.settings.presentation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -25,16 +28,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.clickable
-import com.preichert.cinemerick.core.domain.isValidWindow
-import com.preichert.cinemerick.core.presentation.toTimeString
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,9 +49,9 @@ import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.pressScale
 import com.preichert.cinemerick.core.designsystem.staggeredAppear
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.remember
 import com.preichert.cinemerick.core.domain.ThemeMode
+import com.preichert.cinemerick.core.domain.isValidWindow
+import com.preichert.cinemerick.core.presentation.toTimeString
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.settings.presentation.resources.Res
 import com.preichert.cinemerick.feature.settings.presentation.resources.animations_smooth
@@ -57,12 +60,6 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.animatio
 import com.preichert.cinemerick.feature.settings.presentation.resources.app_theme_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_subtitle
 import com.preichert.cinemerick.feature.settings.presentation.resources.settings_title
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_description
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_error
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_max_label
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_min_label
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_no_limit
-import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_auto
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_auto_description
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_dark
@@ -71,6 +68,16 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.theme_pr
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_preview_light
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_preview_wide_dark
 import com.preichert.cinemerick.feature.settings.presentation.resources.theme_preview_wide_light
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_description
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_error
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_max_label
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_min_label
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_no_limit
+import com.preichert.cinemerick.feature.settings.presentation.resources.time_window_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_credit_description
+import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_credit_open
+import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_credit_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_logo
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -144,6 +151,7 @@ fun SettingsScreen(
                     onAction = onAction,
                     modifier = Modifier.staggeredAppear(2)
                 )
+                TmdbCreditSection(modifier = Modifier.staggeredAppear(3))
             }
         )
     }
@@ -344,6 +352,47 @@ private fun TimeWindowSection(
 }
 
 private enum class TimeWindowField { Min, Max }
+
+private const val TMDB_URL = "https://www.themoviedb.org"
+
+// The credit TMDB requires for its data: a localized description, its logo (smaller than the app's own header), the
+// notice in TMDB's own wording, and a link to the site.
+@Composable
+private fun TmdbCreditSection(modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val openLabel = stringResource(Res.string.tmdb_credit_open)
+
+    SectionCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClickLabel = openLabel, role = Role.Button) { uriHandler.openUri(TMDB_URL) }
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+        ) {
+            Text(
+                text = stringResource(Res.string.tmdb_credit_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = stringResource(Res.string.tmdb_credit_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Image(
+                painter = painterResource(Res.drawable.tmdb_logo),
+                contentDescription = "TMDB",
+                modifier = Modifier
+                    .width(TMDB_LOGO_WIDTH)
+                    .aspectRatio(1094f / 142f),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
+}
+
+private val TMDB_LOGO_WIDTH = 96.dp
 
 @Composable
 private fun TimeWindowRow(label: String, value: String, onClick: () -> Unit) {

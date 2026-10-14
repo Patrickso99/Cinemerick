@@ -19,4 +19,7 @@
     <string name="time_window_ok">OK</string>
     <string name="time_window_cancel">Cancel</string>
     <string name="time_window_error">The minimum time can't be later than the maximum time</string>
+    <string name="tmdb_credit_title">Film details source</string>
+    <string name="tmdb_credit_description">Synopsis, cast, trailer, runtime and score are provided by TMDB.</string>
+    <string name="tmdb_credit_open">Open themoviedb.org</string>
 </resources>
