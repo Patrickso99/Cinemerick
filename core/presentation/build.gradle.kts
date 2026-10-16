@@ -8,6 +8,9 @@ kotlin {
         implementation(project(":core:data"))
         implementation(libs.coroutines.test)
     }
+    sourceSets.androidMain.dependencies {
+        implementation(libs.androidx.appcompat)
+    }
     sourceSets.commonMain.dependencies {
         implementation(project(":core:domain"))
         implementation(libs.androidx.lifecycle.runtime.compose)

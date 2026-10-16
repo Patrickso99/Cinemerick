@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":app"))
     implementation(libs.koin.android)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
 }
 
 base {
