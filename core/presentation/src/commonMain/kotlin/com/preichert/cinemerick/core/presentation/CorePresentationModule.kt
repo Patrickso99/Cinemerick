@@ -7,4 +7,5 @@ val corePresentationModule = module {
     singleOf(::ThemeController)
     singleOf(::AnimationController)
     singleOf(::TimeWindowController)
+    singleOf(::LanguageController)
 }
