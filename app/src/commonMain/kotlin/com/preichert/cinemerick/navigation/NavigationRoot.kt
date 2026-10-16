@@ -5,6 +5,8 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
@@ -23,23 +25,24 @@ fun NavigationRoot(
     startDestination: Any
 ) {
     val animationsEnabled = LocalAnimationsEnabled.current
-    val slide = tween<androidx.compose.ui.unit.IntOffset>(Motion.Medium, easing = Motion.Easing)
-    val fade = tween<Float>(Motion.Medium, easing = Motion.Easing)
+    val slide = tween<androidx.compose.ui.unit.IntOffset>(Motion.Sheet, easing = Motion.Emphasized)
+    val fade = tween<Float>(Motion.Sheet, easing = Motion.Decelerate)
+    val scale = tween<Float>(Motion.Sheet, easing = Motion.Emphasized)
 
     NavHost(
         navController = navController,
         startDestination = startDestination,
         enterTransition = {
-            if (animationsEnabled) slideInHorizontally(slide) { it / 4 } + fadeIn(fade) else EnterTransition.None
+            if (animationsEnabled) slideInHorizontally(slide) { it / 4 } + fadeIn(fade) + scaleIn(scale, initialScale = 0.96f) else EnterTransition.None
         },
         exitTransition = {
-            if (animationsEnabled) slideOutHorizontally(slide) { -it / 6 } + fadeOut(fade) else ExitTransition.None
+            if (animationsEnabled) slideOutHorizontally(slide) { -it / 6 } + fadeOut(fade) + scaleOut(scale, targetScale = 0.96f) else ExitTransition.None
         },
         popEnterTransition = {
-            if (animationsEnabled) slideInHorizontally(slide) { -it / 6 } + fadeIn(fade) else EnterTransition.None
+            if (animationsEnabled) slideInHorizontally(slide) { -it / 6 } + fadeIn(fade) + scaleIn(scale, initialScale = 0.96f) else EnterTransition.None
         },
         popExitTransition = {
-            if (animationsEnabled) slideOutHorizontally(slide) { it / 4 } + fadeOut(fade) else ExitTransition.None
+            if (animationsEnabled) slideOutHorizontally(slide) { it / 4 } + fadeOut(fade) + scaleOut(scale, targetScale = 0.96f) else ExitTransition.None
         }
     ) {
         showtimesGraph(

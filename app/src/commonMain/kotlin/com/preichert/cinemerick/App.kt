@@ -11,6 +11,8 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.domain.ThemeMode
 import com.preichert.cinemerick.core.presentation.AnimationController
+import com.preichert.cinemerick.core.presentation.LanguageController
+import androidx.compose.runtime.key
 import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.designsystem.LocalAnimationsEnabled
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,6 +32,9 @@ fun App() {
     val animationController: AnimationController = koinInject()
     val animationsEnabled by animationController.isEnabled.collectAsStateWithLifecycle()
 
+    val languageController: LanguageController = koinInject()
+    val language by languageController.language.collectAsStateWithLifecycle()
+
     val isDarkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
@@ -40,10 +45,13 @@ fun App() {
 
     CinemerickTheme(isDarkTheme = isDarkTheme) {
         CompositionLocalProvider(LocalAnimationsEnabled provides animationsEnabled) {
-            NavigationRoot(
-                navController = navController,
-                startDestination = ShowtimesGraphRoutes.Graph
-            )
+            // Keyed on the language: the whole UI is composed again when the user changes it, so every string follows.
+            key(language) {
+                NavigationRoot(
+                    navController = navController,
+                    startDestination = ShowtimesGraphRoutes.Graph
+                )
+            }
         }
     }
 }
