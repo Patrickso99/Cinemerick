@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone screens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.t-dark{--stage:#07060B;--bg:#0D0B14;--s1:#15121F;--s2:#1D1930;--s3:#262140;--line:#2E2946;--on:#ECE9F7;--on2:#A9A3C2;--pri:#A78BFA;--onpri:#1A0F3D;--pc:#3A2C7A;--onpc:#E7DEFF;--sh:0 10px 28px rgba(0,0,0,.5);--edge:rgba(255,255,255,.28);--scrim:rgba(6,4,12,.66)}
+.t-light{--stage:#E9E4F6;--bg:#FAF8FF;--s1:#FFFFFF;--s2:#F3F0FC;--s3:#EAE5F8;--line:#E2DCF3;--on:#1B1730;--on2:#5E5878;--pri:#5B3FD6;--onpri:#FFFFFF;--pc:#E7E0FF;--onpc:#2A1670;--sh:0 10px 28px rgba(60,36,140,.18);--edge:rgba(0,0,0,0);--scrim:rgba(20,12,50,.42)}
+.root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--stage);color:var(--on);width:1820px;box-sizing:border-box;padding:56px;display:grid;grid-template-columns:repeat(4,390px);column-gap:48px;row-gap:48px}
+.lbl{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;gap:10px;align-items:baseline}
+.lbl span{font-size:12px;font-weight:600;color:var(--on2)}
+.ph{position:relative;width:390px;height:844px;border-radius:40px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px var(--line);color:var(--on)}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tb{display:flex;align-items:center;justify-content:space-between;padding:28px 16px 6px 20px}
+.tb.c{padding-bottom:8px;border-bottom:1px solid var(--line)}
+.h1{font-size:32px;line-height:40px;font-weight:800;letter-spacing:-.6px}
+.h2{font-size:24px;line-height:30px;font-weight:800;letter-spacing:-.3px}
+.cap{font-size:13px;line-height:18px;color:var(--on2);font-weight:500}
+.ib{width:48px;height:48px;border-radius:24px;border:0;background:var(--s2);color:var(--on);display:flex;align-items:center;justify-content:center;padding:0;flex:none}
+.lab{font-size:11px;line-height:16px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--on2);padding:0 20px;margin:20px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.lab b{color:var(--pri);font-weight:800;text-transform:none;letter-spacing:0;font-size:13px}
+.card{background:var(--s1);border-radius:20px;margin:0 16px 8px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 6px 8px 12px;min-height:64px;box-sizing:border-box}
+.bdg{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none;box-shadow:inset 0 0 0 1px var(--edge)}
+.nm{font-size:15px;line-height:20px;font-weight:700}
+.chip{height:40px;box-sizing:border-box;padding:0 14px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;background:var(--s3);color:var(--on);border:0;font-family:inherit}
+.chip.on{background:var(--pc);color:var(--onpc)}
+.chip .ic{width:18px;height:18px}
+.cnt{min-width:28px;height:28px;border-radius:14px;padding:0 8px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:var(--pc);color:var(--onpc);font-size:12px;font-weight:800}
+.add{width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--on2);flex:none}
+.bar{position:absolute;left:12px;right:12px;bottom:16px;height:72px;border-radius:28px;background:var(--s3);box-shadow:var(--sh);display:flex;align-items:center;gap:8px;padding:10px}
+.btn{height:52px;border-radius:26px;border:0;font-family:inherit;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 22px;box-sizing:border-box}
+.btn.p{background:var(--pri);color:var(--onpri)}
+.btn.t{background:transparent;color:var(--on)}
+.btn.tn{background:var(--s3);color:var(--on)}
+.btn.s{height:44px;padding:0 16px;font-size:13px}
+.day{width:64px;height:84px;border-radius:16px;background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:none;box-sizing:border-box}
+.day small{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--on2)}
+.day b{font-size:22px;line-height:28px;font-weight:800}
+.day.on{background:var(--pc);color:var(--onpc)}
+.day.on small{color:var(--onpc)}
+.dot{width:5px;height:5px;border-radius:3px;background:var(--pri)}
+.tm{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.sl{position:relative;height:28px;margin:6px 12px 0}
+.sl .tr{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:3px;background:var(--s3)}
+.sl .ac{position:absolute;top:11px;height:6px;border-radius:3px;background:var(--pri)}
+.sl .th{position:absolute;top:2px;width:24px;height:24px;margin-left:-12px;border-radius:12px;background:var(--pri);box-shadow:0 0 0 4px var(--s1)}
+.inp{display:flex;align-items:center;gap:10px;margin:0 16px;height:52px;border-radius:16px;background:var(--s2);padding:0 16px;box-sizing:border-box;color:var(--on2)}
+.inp input{flex:1;min-width:0;height:100%;background:transparent;border:0;outline:0;color:var(--on);font-family:inherit;font-size:14px;font-weight:600}
+.inp input::placeholder{color:var(--on2)}
+.poster{border-radius:16px;position:relative;overflow:hidden;flex:none;color:#fff}
+.poster i{position:absolute;left:10px;right:10px;bottom:10px;font-style:normal;font-size:11px;line-height:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.film{background:var(--s1);border-radius:24px;margin:0 16px 12px;padding:14px}
+.vc{height:28px;border-radius:8px;padding:0 10px;display:inline-flex;align-items:center;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--edge);flex:none;box-sizing:border-box}
+.fmt{height:24px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;font-size:11px;font-weight:800;letter-spacing:.4px;background:var(--s3);color:var(--on2);flex:none;box-sizing:border-box}
+.sh{display:flex;align-items:center;gap:10px;min-height:52px;border-top:1px solid var(--line)}
+.dh{font-size:13px;font-weight:800;margin:14px 0 2px;display:flex;justify-content:space-between}
+.dh span{color:var(--on2);font-weight:600}
+.fab{position:absolute;right:16px;bottom:24px;height:56px;border-radius:28px;padding:0 22px 0 18px;background:var(--pri);color:var(--onpri);border:0;font-family:inherit;font-size:15px;font-weight:800;display:flex;align-items:center;gap:10px;box-shadow:var(--sh)}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--s1);border-radius:28px 28px 0 0;box-shadow:var(--sh)}
+.hdl{width:36px;height:4px;border-radius:2px;background:var(--on2);opacity:.5;margin:10px auto 0}
+.chk{width:24px;height:24px;border-radius:12px;box-shadow:inset 0 0 0 2px var(--on2);display:flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box}
+.chk.on{background:var(--pri);color:var(--onpri);box-shadow:none}
+.chk .ic{width:16px;height:16px;stroke-width:2.6}
+.vrow{display:flex;align-items:center;gap:14px;min-height:60px;padding:6px 14px;border-radius:16px;margin:0 12px 4px;box-sizing:border-box}
+.vrow.on{background:var(--pc)}
+.cells{display:grid;grid-template-columns:repeat(7,1fr);padding:0 20px}
+.wd{height:32px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--on2)}
+.cell{height:48px;display:flex;align-items:center;justify-content:center;border-radius:24px;font-size:15px;font-weight:600}
+.cell.past{color:var(--on2);opacity:.45}
+.cell.today{box-shadow:inset 0 0 0 2px var(--pri)}
+.cell.sel{background:var(--pri);color:var(--onpri);font-weight:800}
+.seg{display:flex;background:var(--s2);border-radius:24px;padding:4px;height:48px;box-sizing:border-box;gap:4px}
+.seg button{flex:1;border:0;border-radius:20px;background:transparent;color:var(--on2);font-family:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;padding:0}
+.seg button.on{background:var(--pc);color:var(--onpc)}
+.swt{width:52px;height:32px;border-radius:16px;border:0;background:var(--s3);position:relative;flex:none;padding:0}
+.swt i{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:var(--on2)}
+.swt.on{background:var(--pri)}
+.swt.on i{left:24px;background:var(--onpri)}
+.pv{flex:1;height:64px;border-radius:14px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.pv.on{box-shadow:0 0 0 2px var(--pri)}
+.pv u{position:absolute;left:8px;right:8px;height:12px;border-radius:6px;text-decoration:none}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 9a2 2 0 0 0 0 6v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2a2 2 0 0 1 0-6V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1z"/><path d="M14 7v10" stroke-dasharray="2 2.4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.9l-5.3 2.7 1-5.8-4.2-4.1 5.9-.9z" fill="currentColor"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<div class="root {{theme}}">
+
+  <!-- 1 HOME · CINEMAS -->
+  <div>
+    <div class="lbl">01 Home <span>chain summary cards, expandable</span></div>
+    <div class="ph">
+      <div class="tb">
+        <div><div class="h1">Cinemerick</div><div class="cap">Find showtimes. Share the poll.</div></div>
+        <button class="ib" aria-label="Settings"><svg class="ic"><use href="#i-sliders"/></svg></button>
+      </div>
+      <div class="lab"><span>Cinemas</span><b>4 venues</b></div>
+      <div class="card">
+        <div class="row">
+          <div class="bdg" style="background:#E8650A;color:#FFFFFF">TS</div>
+          <div style="flex:1"><div class="nm">The Space</div><div class="cap">2 of 5 venues</div></div>
+          <span class="cnt">2</span>
+          <div class="add"><svg class="ic"><use href="#i-up"/></svg></div>
+        </div>
+        <div style="padding:0 14px 14px 64px;display:flex;flex-wrap:wrap;gap:8px">
+          <span class="chip on"><svg class="ic"><use href="#i-check"/></svg>Silea</span>
+          <span class="chip on"><svg class="ic"><use href="#i-check"/></svg>Villorba</span>
+          <span class="chip"><svg class="ic"><use href="#i-plus"/></svg>Add venue</span>
+        </div>
+      </div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#1F3F7A;color:#FFFFFF">UCI</div><div style="flex:1"><div class="nm">UCI</div><div class="cap">Marcon</div></div><span class="cnt">1</span><div class="add"><svg class="ic"><use href="#i-right"/></svg></div></div></div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#A4A5A6;color:#1A1A1A">NO</div><div style="flex:1"><div class="nm">Notorious</div><div class="cap">No venue selected</div></div><div class="add"><svg class="ic"><use href="#i-plus"/></svg></div></div></div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#414C4C;color:#FFFFFF">CI</div><div style="flex:1"><div class="nm">Cinergia</div><div class="cap">No venue selected</div></div><div class="add"><svg class="ic"><use href="#i-plus"/></svg></div></div></div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#D22D27;color:#FFFFFF">CR</div><div style="flex:1"><div class="nm">Cristallo</div><div class="cap">Oderzo</div></div><span class="cnt">1</span><div class="add"><svg class="ic"><use href="#i-right"/></svg></div></div></div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#8B3A3B;color:#FFFFFF">DB</div><div style="flex:1"><div class="nm">Don Bosco</div><div class="cap">No venue selected</div></div><div class="add"><svg class="ic"><use href="#i-plus"/></svg></div></div></div>
+      <div class="card"><div class="row"><div class="bdg" style="background:#022129;color:#FFFFFF">CZ</div><div style="flex:1"><div class="nm">Cinemazero</div><div class="cap">No venue selected</div></div><div class="add"><svg class="ic"><use href="#i-plus"/></svg></div></div></div>
+      <div class="bar">
+        <button class="btn t">Clear</button>
+        <button class="btn p" style="flex:1"><svg class="ic"><use href="#i-search"/></svg>Search showtimes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 HOME · FILTERS -->
+  <div>
+    <div class="lbl">02 Home, scrolled <span>collapsed bar, days, window, formats</span></div>
+    <div class="ph">
+      <div class="tb c" style="padding-top:28px">
+        <div style="font-size:20px;font-weight:800;letter-spacing:-.2px;padding-left:0">Cinemerick</div>
+        <button class="ib" aria-label="Settings"><svg class="ic"><use href="#i-sliders"/></svg></button>
+      </div>
+      <div class="lab"><span>Days</span><span style="display:flex;align-items:center;gap:6px;color:var(--pri);font-size:13px;font-weight:800;text-transform:none;letter-spacing:0;min-height:48px"><svg class="ic" style="width:18px;height:18px"><use href="#i-cal"/></svg>Calendar</span></div>
+      <div style="display:flex;gap:8px;padding:0 16px;overflow:hidden">
+        <div class="day"><small>Fri</small><b>16</b><span class="dot"></span></div>
+        <div class="day on"><small>Sat</small><b>17</b></div>
+        <div class="day on"><small>Sun</small><b>18</b></div>
+        <div class="day"><small>Mon</small><b>19</b></div>
+        <div class="day"><small>Tue</small><b>20</b></div>
+        <div class="day"><small>Wed</small><b>21</b></div>
+      </div>
+      <div class="lab"><span>Time window</span><span>per day</span></div>
+      <div class="card" style="padding:14px 12px 12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px"><span class="nm">Sat 17</span><span class="tm">18:00 – 23:00</span></div>
+        <div class="sl"><div class="tr"></div><div class="ac" style="left:62.5%;right:6.25%"></div><div class="th" style="left:62.5%"></div><div class="th" style="left:93.75%"></div></div>
+        <div style="height:14px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px"><span class="nm">Sun 18</span><span class="tm">14:00 – 22:30</span></div>
+        <div class="sl"><div class="tr"></div><div class="ac" style="left:37.5%;right:9.4%"></div><div class="th" style="left:37.5%"></div><div class="th" style="left:90.6%"></div></div>
+      </div>
+      <div class="lab"><span>Formats</span><span>2 selected</span></div>
+      <div style="display:flex;gap:8px;padding:0 16px;flex-wrap:wrap">
+        <span class="chip on"><svg class="ic"><use href="#i-check"/></svg>2D</span>
+        <span class="chip">3D</span>
+        <span class="chip on"><svg class="ic"><use href="#i-check"/></svg>XL</span>
+        <span class="chip">EPIC</span>
+      </div>
+      <div class="lab"><span>Film filter</span><span>optional</span></div>
+      <label class="inp"><svg class="ic"><use href="#i-search"/></svg><input placeholder="Film titles, comma separated" aria-label="Film filter"></label>
+      <div class="bar">
+        <button class="btn t">Clear</button>
+        <button class="btn p" style="flex:1"><svg class="ic"><use href="#i-search"/></svg>Search showtimes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 RESULTS -->
+  <div>
+    <div class="lbl">03 Results <span>poster first, scannable rows</span></div>
+    <div class="ph">
+      <div class="tb" style="padding-left:8px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="ib" aria-label="Back" style="background:transparent"><svg class="ic"><use href="#i-back"/></svg></button>
+          <div><div class="h2">Results</div><div class="cap">14 showings · Sat 17 – Sun 18 Oct</div></div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="film">
+        <div style="display:flex;gap:14px">
+          <div class="poster" style="width:104px;height:156px;background:linear-gradient(160deg,#ff8a3d 0%,#b4341f 45%,#1a1033 100%)"><i>Blade Runner 2049</i></div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="font-size:20px;line-height:26px;font-weight:800;letter-spacing:-.2px">Blade Runner 2049</div>
+              <div class="cap" style="margin-top:4px">2017 · 2h 44m</div>
+              <div style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:var(--pri);font-size:13px;font-weight:800"><svg class="ic" style="width:16px;height:16px"><use href="#i-star"/></svg>7.6 <span class="cap" style="font-weight:600">TMDB</span></div>
+            </div>
+            <button class="btn tn s" style="align-self:flex-start">Open details<svg class="ic" style="width:18px;height:18px"><use href="#i-right"/></svg></button>
+          </div>
+        </div>
+        <div class="dh"><b>Sat 17/10</b><span>2 showings</span></div>
+        <div class="sh"><span class="tm" style="width:48px;font-size:16px">18:30</span><span class="vc" style="background:#E8650A;color:#FFFFFF">The Space · Silea</span><span class="fmt">2D</span><span style="flex:1"></span><button class="ib" aria-label="Tickets, 18:30" style="width:44px;height:44px;background:var(--s2)"><svg class="ic" style="width:20px;height:20px"><use href="#i-ticket"/></svg></button></div>
+        <div class="sh"><span class="tm" style="width:48px;font-size:16px">21:15</span><span class="vc" style="background:#1F3F7A;color:#FFFFFF">UCI · Marcon</span><span class="fmt">XL</span><span style="flex:1"></span><button class="ib" aria-label="Tickets, 21:15" style="width:44px;height:44px;background:var(--s2)"><svg class="ic" style="width:20px;height:20px"><use href="#i-ticket"/></svg></button></div>
+        <div class="dh"><b>Sun 18/10</b><span>1 showing</span></div>
+        <div class="sh"><span class="tm" style="width:48px;font-size:16px">20:00</span><span class="vc" style="background:#D22D27;color:#FFFFFF">Cristallo · Oderzo</span><span class="fmt">2D</span><span style="flex:1"></span><button class="ib" aria-label="Tickets, 20:00" style="width:44px;height:44px;background:var(--s2)"><svg class="ic" style="width:20px;height:20px"><use href="#i-ticket"/></svg></button></div>
+      </div>
+      <div class="film">
+        <div style="display:flex;gap:14px">
+          <div class="poster" style="width:104px;height:156px;background:linear-gradient(160deg,#9aa7b8 0%,#3b4a5e 50%,#0e1117 100%)"><i>Nosferatu</i></div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between">
+            <div>
+              <div style="font-size:20px;line-height:26px;font-weight:800;letter-spacing:-.2px">Nosferatu</div>
+              <div class="cap" style="margin-top:4px">2024 · 2h 12m</div>
+            </div>
+            <button class="btn tn s" style="align-self:flex-start">Open details<svg class="ic" style="width:18px;height:18px"><use href="#i-right"/></svg></button>
+          </div>
+        </div>
+        <div class="dh"><b>Sat 17/10</b><span>1 showing</span></div>
+        <div class="sh"><span class="tm" style="width:48px;font-size:16px">22:10</span><span class="vc" style="background:#6E398A;color:#FFFFFF">Arcadia</span><span class="fmt">2D</span></div>
+      </div>
+      <button class="fab"><svg class="ic"><use href="#i-copy"/></svg>Copy poll</button>
+    </div>
+  </div>
+
+  <!-- 4 FILM DETAILS -->
+  <div>
+    <div class="lbl">04 Film details <span>immersive sheet</span></div>
+    <div class="ph">
+      <div style="padding:60px 20px"><div class="h1" style="opacity:.5">Cinemerick</div></div>
+      <div class="scrim"></div>
+      <div class="sheet" style="top:40px;overflow:hidden">
+        <div style="position:relative;height:340px">
+          <div style="position:absolute;left:0;right:0;top:0;height:236px;background:linear-gradient(135deg,#2b1b5a 0%,#b4341f 70%,#ff8a3d 130%)"></div>
+          <div style="position:absolute;left:0;right:0;top:0;height:236px;background:linear-gradient(to bottom,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 35%,var(--s1) 100%)"></div>
+          <div class="hdl" style="position:absolute;left:0;right:0;top:0;margin:10px auto;background:#fff;opacity:.7"></div>
+          <button class="ib" aria-label="Close" style="position:absolute;right:12px;top:14px;background:rgba(10,8,18,.55);color:#fff"><svg class="ic"><use href="#i-x"/></svg></button>
+          <div class="poster" style="position:absolute;left:20px;top:150px;width:112px;height:168px;box-shadow:var(--sh);background:linear-gradient(160deg,#ff8a3d 0%,#b4341f 45%,#1a1033 100%)"><i>Blade Runner 2049</i></div>
+          <div style="position:absolute;left:148px;right:20px;top:240px">
+            <div style="font-size:22px;line-height:28px;font-weight:800;letter-spacing:-.3px">Blade Runner 2049</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;font-weight:700;color:var(--on2)"><span>2017</span><span>·</span><span>2h 44m</span><span>·</span><span style="display:inline-flex;align-items:center;gap:3px;color:var(--pri)"><svg class="ic" style="width:15px;height:15px"><use href="#i-star"/></svg>7.6</span></div>
+          </div>
+        </div>
+        <div style="padding:0 20px">
+          <button class="btn p" style="width:100%"><svg class="ic"><use href="#i-play"/></svg>Watch trailer</button>
+          <div style="display:flex;gap:8px;margin-top:16px"><span class="fmt" style="height:28px;padding:0 12px;font-size:12px">Sci-Fi</span><span class="fmt" style="height:28px;padding:0 12px;font-size:12px">Drama</span><span class="fmt" style="height:28px;padding:0 12px;font-size:12px">Thriller</span></div>
+          <div style="margin-top:16px;font-size:14px;line-height:22px;font-weight:500;color:var(--on);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">Thirty years after the original, a new blade runner uncovers a long-buried secret that could plunge what is left of society into chaos. His search leads him to a former blade runner who has been missing for decades.</div>
+          <div style="color:var(--pri);font-size:14px;font-weight:800;min-height:48px;display:flex;align-items:center">Read more</div>
+        </div>
+        <div class="lab" style="margin-top:4px"><span>Cast</span></div>
+        <div style="display:flex;gap:14px;padding:0 20px;overflow:hidden">
+          <div style="width:72px;flex:none;text-align:center"><div style="width:64px;height:64px;border-radius:32px;margin:0 auto;background:linear-gradient(135deg,#7c5cff,#2b1b5a)"></div><div style="font-size:12px;font-weight:700;margin-top:6px;line-height:15px">Ryan Gosling</div><div class="cap" style="font-size:11px;line-height:14px">K</div></div>
+          <div style="width:72px;flex:none;text-align:center"><div style="width:64px;height:64px;border-radius:32px;margin:0 auto;background:linear-gradient(135deg,#ff8a3d,#6b2417)"></div><div style="font-size:12px;font-weight:700;margin-top:6px;line-height:15px">Harrison Ford</div><div class="cap" style="font-size:11px;line-height:14px">Deckard</div></div>
+          <div style="width:72px;flex:none;text-align:center"><div style="width:64px;height:64px;border-radius:32px;margin:0 auto;background:linear-gradient(135deg,#2dd4bf,#134e4a)"></div><div style="font-size:12px;font-weight:700;margin-top:6px;line-height:15px">Ana de Armas</div><div class="cap" style="font-size:11px;line-height:14px">Joi</div></div>
+          <div style="width:72px;flex:none;text-align:center"><div style="width:64px;height:64px;border-radius:32px;margin:0 auto;background:linear-gradient(135deg,#f472b6,#831843)"></div><div style="font-size:12px;font-weight:700;margin-top:6px;line-height:15px">Sylvia Hoeks</div><div class="cap" style="font-size:11px;line-height:14px">Luv</div></div>
+          <div style="width:72px;flex:none"><div style="width:64px;height:64px;border-radius:32px;margin:0 auto;background:var(--s3)"></div></div>
+        </div>
+        <div class="lab"><span>Gallery</span></div>
+        <div style="display:flex;gap:10px;padding:0 20px;overflow:hidden">
+          <div style="width:172px;height:98px;border-radius:14px;flex:none;background:linear-gradient(135deg,#ff8a3d,#2b1b5a)"></div>
+          <div style="width:172px;height:98px;border-radius:14px;flex:none;background:linear-gradient(135deg,#7c5cff,#0e1117)"></div>
+          <div style="width:172px;height:98px;border-radius:14px;flex:none;background:linear-gradient(135deg,#2dd4bf,#0e1117)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 VENUE PICKER -->
+  <div>
+    <div class="lbl">05 Venue picker <span>bottom sheet, multi-select</span></div>
+    <div class="ph">
+      <div style="padding:60px 20px"><div class="h1" style="opacity:.5">Cinemerick</div></div>
+      <div class="scrim"></div>
+      <div class="sheet" style="top:150px">
+        <div class="hdl"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 12px 10px 20px">
+          <div class="bdg" style="background:#E8650A;color:#FFFFFF">TS</div>
+          <div style="flex:1"><div style="font-size:20px;line-height:26px;font-weight:800">The Space</div><div class="cap">Choose venues</div></div>
+          <button class="ib" aria-label="Close" style="background:transparent"><svg class="ic"><use href="#i-x"/></svg></button>
+        </div>
+        <label class="inp" style="margin-bottom:8px"><svg class="ic"><use href="#i-search"/></svg><input placeholder="Search venue or city" aria-label="Search venue"></label>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 20px;min-height:48px"><span class="cap" style="font-weight:700">2 selected</span><span style="color:var(--pri);font-size:13px;font-weight:800">Select all</span></div>
+        <div class="vrow on"><div class="chk on"><svg class="ic"><use href="#i-check"/></svg></div><div style="flex:1"><div class="nm">Silea</div><div class="cap">Treviso</div></div></div>
+        <div class="vrow on"><div class="chk on"><svg class="ic"><use href="#i-check"/></svg></div><div style="flex:1"><div class="nm">Villorba</div><div class="cap">Treviso</div></div></div>
+        <div class="vrow"><div class="chk"></div><div style="flex:1"><div class="nm">Cittadella</div><div class="cap">Padova</div></div></div>
+        <div class="vrow"><div class="chk"></div><div style="flex:1"><div class="nm">Padova</div><div class="cap">Padova</div></div></div>
+        <div class="vrow"><div class="chk"></div><div style="flex:1"><div class="nm">Verona</div><div class="cap">Verona</div></div></div>
+        <div style="position:absolute;left:16px;right:16px;bottom:24px"><button class="btn p" style="width:100%">Done · 2 selected</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 DATE PICKER -->
+  <div>
+    <div class="lbl">06 Date picker <span>multi-day calendar sheet</span></div>
+    <div class="ph">
+      <div style="padding:60px 20px"><div class="h1" style="opacity:.5">Cinemerick</div></div>
+      <div class="scrim"></div>
+      <div class="sheet" style="top:120px">
+        <div class="hdl"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 12px 4px 20px">
+          <div style="flex:1"><div style="font-size:20px;line-height:26px;font-weight:800">Select days</div><div class="cap">Tap to add or remove</div></div>
+          <button class="ib" aria-label="Close" style="background:transparent"><svg class="ic"><use href="#i-x"/></svg></button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px 4px 20px">
+          <div style="font-size:18px;font-weight:800">October 2026</div>
+          <div style="display:flex"><button class="ib" aria-label="Previous month" style="background:transparent"><svg class="ic"><use href="#i-back"/></svg></button><button class="ib" aria-label="Next month" style="background:transparent"><svg class="ic"><use href="#i-right"/></svg></button></div>
+        </div>
+        <div class="cells">
+          <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7"><div class="wd">{{w}}</div></sc-for>
+          <sc-for list="{{cal}}" as="c" hint-placeholder-count="35"><div class="cell {{c.cls}}">{{c.label}}</div></sc-for>
+        </div>
+        <div style="display:flex;gap:8px;padding:14px 20px 0">
+          <span class="chip on">Sat 17<svg class="ic"><use href="#i-x"/></svg></span>
+          <span class="chip on">Sun 18<svg class="ic"><use href="#i-x"/></svg></span>
+          <span class="chip on">Sat 24<svg class="ic"><use href="#i-x"/></svg></span>
+        </div>
+        <div style="position:absolute;left:16px;right:16px;bottom:24px;display:flex;gap:8px"><button class="btn t">Clear</button><button class="btn p" style="flex:1">Done · 3 days</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 SETTINGS -->
+  <div>
+    <div class="lbl">07 Settings <span>grouped rows, segmented controls</span></div>
+    <div class="ph">
+      <div class="tb" style="padding-left:8px">
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="ib" aria-label="Back" style="background:transparent"><svg class="ic"><use href="#i-back"/></svg></button>
+          <div class="h2">Settings</div>
+        </div>
+      </div>
+      <div class="lab"><span>Appearance</span></div>
+      <div class="card" style="padding:12px">
+        <div class="seg">
+          <button class="on"><svg class="ic" style="width:18px;height:18px"><use href="#i-auto"/></svg>Auto</button>
+          <button><svg class="ic" style="width:18px;height:18px"><use href="#i-sun"/></svg>Light</button>
+          <button><svg class="ic" style="width:18px;height:18px"><use href="#i-moon"/></svg>Dark</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <div class="pv on" style="background:linear-gradient(115deg,#FAF8FF 50%,#0D0B14 50%)"><u style="top:10px;background:#A78BFA;width:40%;right:auto"></u><u style="top:30px;background:rgba(128,120,170,.5)"></u></div>
+          <div class="pv" style="background:#FAF8FF"><u style="top:10px;background:#5B3FD6;width:40%;right:auto"></u><u style="top:30px;background:#EAE5F8"></u></div>
+          <div class="pv" style="background:#0D0B14"><u style="top:10px;background:#A78BFA;width:40%;right:auto"></u><u style="top:30px;background:#262140"></u></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:64px;margin-top:8px;padding:0 4px">
+          <div style="flex:1"><div class="nm">Smooth animations</div><div class="cap">Poster transitions and list motion</div></div>
+          <button class="swt on" role="switch" aria-checked="true" aria-label="Smooth animations"><i></i></button>
+        </div>
+      </div>
+      <div class="lab"><span>Defaults</span></div>
+      <div class="card" style="padding:14px 12px 12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px"><span class="nm">Default time window</span><span class="tm">18:00 – 23:00</span></div>
+        <div class="sl"><div class="tr"></div><div class="ac" style="left:62.5%;right:6.25%"></div><div class="th" style="left:62.5%"></div><div class="th" style="left:93.75%"></div></div>
+      </div>
+      <div class="lab"><span>Language</span></div>
+      <div class="card" style="padding:12px">
+        <div class="seg"><button class="on"><svg class="ic" style="width:18px;height:18px"><use href="#i-check"/></svg>English</button><button>Italiano</button></div>
+      </div>
+      <div class="lab"><span>About</span></div>
+      <div class="card"><div class="row" style="min-height:60px"><div style="flex:1"><div class="nm">Cinemerick</div><div class="cap">Showtimes from 8 chains · film data from TMDB</div></div><span class="tm" style="color:var(--on2);padding-right:8px">v[x.y.z]</span></div></div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["dark","light"],"default":"dark"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const m = this.props.mode ?? 'dark';
+    const sel = [17, 18, 24];
+    const cal = [];
+    for (let i = 0; i < 3; i++) cal.push({ label: '', cls: 'blank' });
+    for (let d = 1; d <= 31; d++) {
+      cal.push({ label: String(d), cls: d < 16 ? 'past' : d === 16 ? 'today' : sel.includes(d) ? 'sel' : '' });
+    }
+    return {
+      theme: m === 'dark' ? 't-dark' : 't-light',
+      weekdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+      cal
+    };
+  }
+}
+</script>
+</body>
+</html>

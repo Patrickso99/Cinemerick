@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rationale and priorities</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.t-dark{--stage:#07060B;--bg:#0D0B14;--s1:#15121F;--s2:#1D1930;--line:#2E2946;--on:#ECE9F7;--on2:#A9A3C2;--pri:#A78BFA;--pc:#3A2C7A;--onpc:#E7DEFF}
+.t-light{--stage:#E9E4F6;--bg:#FAF8FF;--s1:#FFFFFF;--s2:#F3F0FC;--line:#E2DCF3;--on:#1B1730;--on2:#5E5878;--pri:#5B3FD6;--pc:#E7E0FF;--onpc:#2A1670}
+.root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--stage);color:var(--on);width:1100px;box-sizing:border-box;padding:56px;display:flex;flex-direction:column;gap:32px}
+h2{margin:0 0 14px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--on2)}
+.dec{display:flex;flex-direction:column;gap:10px}
+.d{background:var(--s1);border-radius:20px;padding:16px 20px;display:flex;gap:16px}
+.d .n{width:32px;height:32px;border-radius:16px;background:var(--pc);color:var(--onpc);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.d b{display:block;font-size:15px;line-height:20px;font-weight:800;margin-bottom:2px}
+.d span{font-size:13.5px;line-height:20px;color:var(--on2);font-weight:500}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
+.col{background:var(--s1);border-radius:20px;padding:20px}
+.col h3{margin:0 0 4px;font-size:17px;font-weight:800}
+.col p{margin:0 0 12px;font-size:12.5px;color:var(--on2);font-weight:600}
+.col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;font-size:13.5px;line-height:19px;font-weight:500}
+.col li{padding-left:14px;position:relative}
+.col li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:3px;background:var(--pri)}
+.open{background:var(--s2);border-radius:20px;padding:20px;font-size:13.5px;line-height:21px;font-weight:500}
+.open li{margin-bottom:6px}
+</style>
+</helmet>
+<div class="root {{theme}}">
+  <div>
+    <div style="font-size:40px;line-height:46px;font-weight:800;letter-spacing:-.02em">Rationale and priorities</div>
+    <div style="font-size:15px;color:var(--on2);font-weight:500;margin-top:6px">Why the redesign looks the way it does, and what it costs to build.</div>
+  </div>
+
+  <div>
+    <h2>Key decisions</h2>
+    <div class="dec">
+      <div class="d"><div class="n">1</div><div><b>Gradient header becomes a collapsing large top bar</b><span>The old header spent about 20% of the screen on decoration. The title now shrinks on scroll and the version string moves to Settings, so lists start higher and the brand stays visible.</span></div></div>
+      <div class="d"><div class="n">2</div><div><b>One accent, eight chain colors with a single job</b><span>Violet is the only interface accent. Chain colors appear only on chain badges and chips, so color means “which cinema” and nothing else. The old brown and orange buttons are gone.</span></div></div>
+      <div class="d"><div class="n">3</div><div><b>Chains become summary cards</b><span>Each card shows how many venues are selected and expands in place. You can see the whole selection without opening anything, instead of eight identical “Add venue” pills.</span></div></div>
+      <div class="d"><div class="n">4</div><div><b>Sticky action bar, one primary action per screen</b><span>Search and Clear stay reachable at any scroll depth. Copy poll is a floating action on Results, because it is the reason people open that screen.</span></div></div>
+      <div class="d"><div class="n">5</div><div><b>Poster first, showtimes in aligned columns</b><span>A 104×156dp poster leads each card. Rows follow a fixed order (time, chain, format, ticket), the date appears once as a heading, and the ticket is a clear icon button with a real hit area.</span></div></div>
+      <div class="d"><div class="n">6</div><div><b>Tonal depth instead of outlines</b><span>Four surface steps separate layers. Shadows are used only on floating elements, and there is no blur, which keeps Android scrolling cheap.</span></div></div>
+      <div class="d"><div class="n">7</div><div><b>State never depends on color alone</b><span>Selected chips carry a check, selected days a fill and a weight change, today a ring. Text pairs are 4.5:1 or better; the exceptions are listed below.</span></div></div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Build priority</h2>
+    <div class="cols">
+      <div class="col">
+        <h3>Cheap</h3>
+        <p>Pure theming and layout, no new architecture</p>
+        <ul>
+          <li>CinemerickTheme object, colors, shapes, spacing, Plus Jakarta Sans scale</li>
+          <li>Unified buttons, chips, format tags, day tiles</li>
+          <li>Showtime row restyle and the per-day heading</li>
+          <li>Film card layout with the larger poster</li>
+          <li>Sticky bottom bar and the Copy poll FAB</li>
+          <li>Settings: segmented controls, switch, RangeSlider</li>
+          <li>chainEdge stroke in dark theme</li>
+          <li>Outline icon set replacing the emoji glyphs</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Medium</h3>
+        <p>New structure, still standard Compose</p>
+        <ul>
+          <li>Collapsing large top bar with scroll behavior</li>
+          <li>Expandable chain cards (AnimatedVisibility, state hoisted per chain)</li>
+          <li>Film sheet: backdrop scrim, LazyRow carousels, Read more</li>
+          <li>Venue picker as a searchable multi-select sheet</li>
+          <li>Adaptive layouts from window size class: two-pane tablet, inline calendar on desktop</li>
+          <li>Navigation rail on desktop</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Ambitious</h3>
+        <p>Motion and platform polish</p>
+        <ul>
+          <li>Shared-element poster transition into the details sheet; test on iOS before committing</li>
+          <li>Staggered list entrance with the animations toggle wired through</li>
+          <li>Hover, focus rings and keyboard navigation on desktop</li>
+          <li>Image placeholders and crossfade for posters and backdrops</li>
+          <li>Three-column poster grid above 1600dp</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Open points</h2>
+    <div class="open">
+      <ul style="margin:0;padding-left:18px">
+        <li><b>The Space orange with white text is 3.33:1.</b> The brand pair is kept as requested. It passes for bold labels at 14sp and above, not for small regular text. If you want strict AA, switch only that chip’s text to the dark 1A1A1A (about 5.2:1) and leave the fill alone.</li>
+        <li><b>Cinemazero, Cinergia and UCI nearly disappear on the dark ground</b> (1.1, 2.1 and 1.8:1 against the card). The chainEdge stroke fixes the shape; it is the only addition to the brand colors.</li>
+        <li><b>Sample content.</b> Film titles, venue names, ratings and the version are placeholders; posters and photos are gradients.</li>
+        <li><b>Italian strings</b> are not drawn yet. Rows and chips are built to wrap rather than clip, so a pass with real labels should be quick.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["dark","light"],"default":"dark"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { theme: (this.props.mode ?? 'dark') === 'dark' ? 't-dark' : 't-light' };
+  }
+}
+</script>
+</body>
+</html>

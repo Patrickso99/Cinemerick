@@ -1,0 +1,31 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-16T12:00:00Z" },
+  "title": "Cinemerick Redesign",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1600, "h": 1700, "title": "Foundations · design tokens" },
+    "Components.dc.html": { "x": 1680, "y": 0, "w": 1700, "h": 1700, "title": "Component specs" },
+    "Rationale.dc.html": { "x": 3460, "y": 0, "w": 1100, "h": 1700, "title": "Rationale & priorities" },
+    "Phone-Dark.dc.html": { "x": 0, "y": 2100, "w": 1820, "h": 1960, "title": "Phone · dark" },
+    "Phone-Light.dc.html": { "x": 1900, "y": 2100, "w": 1820, "h": 1960, "title": "Phone · light" },
+    "Large-Dark.dc.html": { "x": 0, "y": 4400, "w": 2560, "h": 900, "title": "Tablet + desktop · dark" },
+    "Large-Light.dc.html": { "x": 0, "y": 5420, "w": 2560, "h": 900, "title": "Tablet + desktop · light" }
+  },
+  "order": [
+    "Main.dc.html",
+    "Components.dc.html",
+    "Rationale.dc.html",
+    "Phone-Dark.dc.html",
+    "Phone-Light.dc.html",
+    "Large-Dark.dc.html",
+    "Large-Light.dc.html"
+  ],
+  "notes": {
+    "n1": { "x": 0, "y": -300, "text": "Foundations, components, rationale", "kind": "title1", "maxW": 4560 },
+    "n2": { "x": 0, "y": 1800, "text": "Phone: Home, Results, Film details, Venue, Date, Settings", "kind": "title1", "maxW": 3720 },
+    "n3": { "x": 0, "y": 4150, "text": "Tablet two-pane and desktop panel layouts", "kind": "title1", "maxW": 2560 }
+  },
+  "designSystems": []
+}

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Foundations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.t-dark{--bg:#0D0B14;--s1:#15121F;--s2:#1D1930;--s3:#262140;--line:#2E2946;--on:#ECE9F7;--on2:#A9A3C2;--pri:#A78BFA;--onpri:#1A0F3D;--pc:#3A2C7A;--onpc:#E7DEFF;--sh:0 10px 28px rgba(0,0,0,.5)}
+.t-light{--bg:#FAF8FF;--s1:#FFFFFF;--s2:#F3F0FC;--s3:#EAE5F8;--line:#E2DCF3;--on:#1B1730;--on2:#5E5878;--pri:#5B3FD6;--onpri:#FFFFFF;--pc:#E7E0FF;--onpc:#2A1670;--sh:0 10px 28px rgba(60,36,140,.16)}
+.root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--on);width:1600px;box-sizing:border-box;padding:56px;display:flex;flex-direction:column;gap:40px}
+.col{display:flex;flex-direction:column;gap:36px;flex:1;min-width:0}
+.h2{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--on2);margin:0 0 14px}
+.panel{background:var(--s1);border-radius:20px;padding:20px}
+.sw{width:56px;height:32px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(128,128,150,.28)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--on2)}
+pre{margin:0;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:19px;color:var(--on);white-space:pre-wrap}
+</style>
+</helmet>
+<div class="root {{theme}}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div>
+      <div style="font-size:44px;font-weight:800;letter-spacing:-0.02em;line-height:1.05">Cinemerick design tokens</div>
+      <div style="font-size:16px;color:var(--on2);margin-top:8px;font-weight:500">Near-black violet ground, one violet accent, eight fixed chain colors. Names map to MaterialTheme and a CinemerickTheme object.</div>
+    </div>
+    <div class="mono" style="text-align:right">Plus Jakarta Sans · 4dp grid · min target 48dp</div>
+  </div>
+
+  <div style="display:flex;gap:40px">
+    <div class="col">
+      <div>
+        <div class="h2">Color roles</div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:2px;padding:12px 20px">
+          <div style="display:flex;align-items:center;gap:16px;padding:6px 0" class="mono"><div style="width:230px">Role (Kotlin)</div><div style="width:150px">Dark</div><div style="width:150px">Light</div><div>Used for</div></div>
+          <sc-for list="{{colors}}" as="c" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:16px;padding:6px 0;border-top:1px solid var(--line)">
+              <div style="width:230px;font-size:14px;font-weight:700">{{c.name}}</div>
+              <div style="width:150px;display:flex;align-items:center;gap:10px"><div class="sw" style="background:{{c.dark}}"></div><span class="mono">{{c.dark}}</span></div>
+              <div style="width:150px;display:flex;align-items:center;gap:10px"><div class="sw" style="background:{{c.light}}"></div><span class="mono">{{c.light}}</span></div>
+              <div style="font-size:13px;color:var(--on2);font-weight:500">{{c.use}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:var(--on2);margin-top:12px;line-height:20px;font-weight:500">Contrast: onSurfaceVariant on surface 7.65 dark / 6.68 light; on surfaceContainerHigh 6.34 / 5.43. Primary on surface 6.78 / 6.72. All text pairs ≥ 4.5:1.</div>
+      </div>
+
+      <div>
+        <div class="h2">Chain palette (unchanged, CinemaBrandColors)</div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+          <sc-for list="{{chains}}" as="k" hint-placeholder-count="8">
+            <div style="background:{{k.bg}};color:{{k.fg}};border-radius:16px;padding:14px;height:84px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px {{k.edge}}">
+              <div style="font-size:15px;font-weight:800">{{k.name}}</div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;opacity:.92"><span>{{k.bg}}</span><span>{{k.ratio}}:1</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:var(--on2);margin-top:12px;line-height:20px;font-weight:500">Ratios are the given on-color against the fill. The Space orange with white is 3.33:1: fine for the 24dp badge and bold 14sp+ chips, below AA for small regular text, so the chip label is always 12sp/700 or larger and never used for body copy. Cinemazero, Cinergia and UCI sit close to the dark ground (1.1, 2.1, 1.8): in dark theme every chain chip gets a 1dp chainEdge stroke (white 28%).</div>
+      </div>
+
+      <div style="display:flex;gap:40px">
+        <div style="flex:1">
+          <div class="h2">Spacing</div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{spacing}}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px"><div class="mono" style="width:70px">{{s.n}}</div><div style="height:12px;border-radius:6px;background:var(--pri);width:{{s.px}}px"></div><div class="mono">{{s.px}}dp</div></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="h2">Shapes</div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{shapes}}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:32px;background:var(--pc);border-radius:{{s.r}}px"></div><div style="font-size:13px;font-weight:700;width:34px">{{s.n}}</div><div class="mono">{{s.r}}dp · {{s.use}}</div></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div>
+        <div class="h2">Typography · Plus Jakarta Sans</div>
+        <div class="panel" style="display:flex;flex-direction:column;gap:0;padding:8px 20px">
+          <sc-for list="{{type}}" as="t" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:16px;padding:10px 0;border-top:1px solid var(--line)">
+              <div style="width:170px"><div style="font-size:13px;font-weight:700">{{t.n}}</div><div class="mono">{{t.spec}}</div></div>
+              <div style="flex:1;min-width:0;font-size:{{t.size}}px;font-weight:{{t.w}};line-height:{{t.lh}}px;letter-spacing:{{t.ls}}px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{t.sample}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:var(--on2);margin-top:12px;line-height:20px;font-weight:500">Scales with the system font size: sizes are sp, line heights are set in sp too so Italian labels wrap instead of clipping. Showtimes use fontFeatureSettings "tnum".</div>
+      </div>
+
+      <div style="display:flex;gap:40px">
+        <div style="flex:1.3">
+          <div class="h2">Elevation</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <div style="background:var(--s1);border-radius:20px;height:86px;padding:14px;box-sizing:border-box"><b style="font-size:13px">L0 · card</b><div class="mono">surface, no shadow</div></div>
+            <div style="background:var(--s2);border-radius:20px;height:86px;padding:14px;box-sizing:border-box"><b style="font-size:13px">L1 · raised</b><div class="mono">surfaceContainer, tonal</div></div>
+            <div style="background:var(--s2);border-radius:20px;height:86px;padding:14px;box-sizing:border-box;box-shadow:var(--sh)"><b style="font-size:13px">L2 · floating</b><div class="mono">bottom bar, FAB, one shadow</div></div>
+            <div style="background:var(--s3);border-radius:20px;height:86px;padding:14px;box-sizing:border-box;box-shadow:var(--sh)"><b style="font-size:13px">L3 · sheet</b><div class="mono">sheet + scrim, no blur</div></div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="h2">Motion</div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;line-height:19px">
+            <div>Press: scale .97, 90ms</div>
+            <div>List enter: fade + 12dp rise, 220ms, 40ms stagger (max 8)</div>
+            <div>Poster to details: shared bounds, 320ms emphasized</div>
+            <div>Sheet: 300ms decelerate</div>
+            <div style="color:var(--on2)">Smooth animations off: all durations 0, no stagger, no shared bounds.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="h2">Compose mapping</div>
+        <div class="panel" style="background:var(--s2)">
+<pre>@Immutable
+data class CinemerickColors(
+    val background: Color, val surface: Color,
+    val surfaceContainer: Color, val surfaceContainerHigh: Color,
+    val outlineVariant: Color, val onSurface: Color,
+    val onSurfaceVariant: Color, val primary: Color,
+    val onPrimary: Color, val primaryContainer: Color,
+    val onPrimaryContainer: Color, val scrim: Color,
+    val chainEdge: Color,
+)
+val DarkColors = CinemerickColors(
+    background = Color(0xFF0D0B14), surface = Color(0xFF15121F),
+    surfaceContainer = Color(0xFF1D1930),
+    surfaceContainerHigh = Color(0xFF262140),
+    primary = Color(0xFFA78BFA), onPrimary = Color(0xFF1A0F3D),
+    primaryContainer = Color(0xFF3A2C7A),
+    onPrimaryContainer = Color(0xFFE7DEFF), /* … */
+)
+val LocalCinemerickColors =
+    staticCompositionLocalOf&lt;CinemerickColors&gt; { DarkColors }
+
+object CinemerickTheme {
+    val colors @Composable get() = LocalCinemerickColors.current
+    val spacing = Spacing()   // space1..space12
+    val chain = CinemaBrandColors   // existing object, untouched
+}
+// MaterialTheme.colorScheme gets the same roles so M3 widgets
+// (Switch, Slider, DatePicker) inherit them.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["dark","light"],"default":"dark"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const m = this.props.mode ?? 'dark';
+    const colors = [
+      { name: 'background', dark: '#0D0B14', light: '#FAF8FF', use: 'screen ground' },
+      { name: 'surface', dark: '#15121F', light: '#FFFFFF', use: 'cards, sheets' },
+      { name: 'surfaceContainer', dark: '#1D1930', light: '#F3F0FC', use: 'chips, inputs, bars' },
+      { name: 'surfaceContainerHigh', dark: '#262140', light: '#EAE5F8', use: 'tracks, pressed' },
+      { name: 'outlineVariant', dark: '#2E2946', light: '#E2DCF3', use: 'hairlines only' },
+      { name: 'onSurface', dark: '#ECE9F7', light: '#1B1730', use: 'primary text' },
+      { name: 'onSurfaceVariant', dark: '#A9A3C2', light: '#5E5878', use: 'secondary text, icons' },
+      { name: 'primary', dark: '#A78BFA', light: '#5B3FD6', use: 'the one accent' },
+      { name: 'onPrimary', dark: '#1A0F3D', light: '#FFFFFF', use: 'on primary fills' },
+      { name: 'primaryContainer', dark: '#3A2C7A', light: '#E7E0FF', use: 'selected state' },
+      { name: 'onPrimaryContainer', dark: '#E7DEFF', light: '#2A1670', use: 'on selected' }
+    ];
+    const chains = [
+      ['The Space', '#E8650A', '#FFFFFF', '3.33'], ['UCI', '#1F3F7A', '#FFFFFF', '10.24'],
+      ['Notorious', '#A4A5A6', '#1A1A1A', '7.05'], ['Cinergia', '#414C4C', '#FFFFFF', '8.89'],
+      ['Cristallo', '#D22D27', '#FFFFFF', '5.07'], ['Don Bosco', '#8B3A3B', '#FFFFFF', '7.59'],
+      ['Cinemazero', '#022129', '#FFFFFF', '16.77'], ['Arcadia', '#6E398A', '#FFFFFF', '8.03']
+    ].map(([name, bg, fg, ratio]) => ({ name, bg, fg, ratio, edge: m === 'dark' ? 'rgba(255,255,255,.28)' : 'rgba(0,0,0,0)' }));
+    const spacing = [['space1', 4], ['space2', 8], ['space3', 12], ['space4', 16], ['space5', 20], ['space6', 24], ['space8', 32], ['space12', 48]].map(([n, px]) => ({ n, px }));
+    const shapes = [['xs', 8, 'format tag'], ['sm', 12, 'chip, badge'], ['md', 16, 'poster, input'], ['lg', 20, 'card'], ['xl', 28, 'sheet, bar'], ['full', 999, 'button, switch']].map(([n, r, use]) => ({ n, r: r > 100 ? 16 : r, use }));
+    const type = [
+      { n: 'headlineLarge', spec: '32/40 · 800 · -0.6', size: 32, lh: 40, w: 800, ls: -0.6, sample: 'Cinemerick' },
+      { n: 'titleLarge', spec: '24/32 · 800 · -0.3', size: 24, lh: 32, w: 800, ls: -0.3, sample: 'Blade Runner 2049' },
+      { n: 'titleMedium', spec: '18/24 · 700', size: 18, lh: 24, w: 700, ls: 0, sample: 'Saturday 17/10' },
+      { n: 'titleSmall', spec: '15/20 · 700', size: 15, lh: 20, w: 700, ls: 0, sample: 'The Space Silea' },
+      { n: 'bodyLarge', spec: '16/24 · 500', size: 16, lh: 24, w: 500, ls: 0, sample: 'A young blade runner uncovers a long-buried secret.' },
+      { n: 'bodyMedium', spec: '14/20 · 500', size: 14, lh: 20, w: 500, ls: 0, sample: 'Pick cinemas, days and times, then share the poll.' },
+      { n: 'labelLarge', spec: '14/20 · 700', size: 14, lh: 20, w: 700, ls: 0, sample: 'Search showtimes' },
+      { n: 'labelMedium', spec: '12/16 · 700 · +0.4', size: 12, lh: 16, w: 700, ls: 0.4, sample: 'XL · 2D · EPIC' },
+      { n: 'labelSmall', spec: '11/16 · 700 · +0.5', size: 11, lh: 16, w: 700, ls: 0.5, sample: 'SECTION LABEL' },
+      { n: 'time (custom)', spec: '16/20 · 800 · tnum', size: 16, lh: 20, w: 800, ls: 0, sample: '18:30   21:15   23:40' }
+    ];
+    return { theme: m === 'dark' ? 't-dark' : 't-light', colors, chains, spacing, shapes, type };
+  }
+}
+</script>
+</body>
+</html>

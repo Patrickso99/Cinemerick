@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Component specs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.t-dark{--stage:#07060B;--bg:#0D0B14;--s1:#15121F;--s2:#1D1930;--s3:#262140;--line:#2E2946;--on:#ECE9F7;--on2:#A9A3C2;--pri:#A78BFA;--onpri:#1A0F3D;--pc:#3A2C7A;--onpc:#E7DEFF;--sh:0 10px 28px rgba(0,0,0,.5);--edge:rgba(255,255,255,.28)}
+.t-light{--stage:#E9E4F6;--bg:#FAF8FF;--s1:#FFFFFF;--s2:#F3F0FC;--s3:#EAE5F8;--line:#E2DCF3;--on:#1B1730;--on2:#5E5878;--pri:#5B3FD6;--onpri:#FFFFFF;--pc:#E7E0FF;--onpc:#2A1670;--sh:0 10px 28px rgba(60,36,140,.18);--edge:rgba(0,0,0,0)}
+.root{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--stage);color:var(--on);width:1700px;box-sizing:border-box;padding:56px;display:flex;flex-direction:column;gap:32px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;align-items:start}
+.cmp{background:var(--bg);border-radius:24px;padding:24px;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;gap:16px}
+.cmp h3{margin:0;font-size:18px;line-height:24px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
+.cmp h3 span{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--on2)}
+.spec{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:18px;color:var(--on2);font-weight:500}
+.spec b{color:var(--on);font-weight:700}
+.stage{background:var(--s2);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.h1{font-size:32px;line-height:40px;font-weight:800;letter-spacing:-.6px}
+.cap{font-size:13px;line-height:18px;color:var(--on2);font-weight:500}
+.nm{font-size:15px;line-height:20px;font-weight:700}
+.ib{width:48px;height:48px;border-radius:24px;border:0;background:var(--s3);color:var(--on);display:flex;align-items:center;justify-content:center;padding:0;flex:none}
+.chip{height:40px;box-sizing:border-box;padding:0 14px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;background:var(--s3);color:var(--on);border:0;font-family:inherit}
+.chip.on{background:var(--pc);color:var(--onpc)}
+.chip .ic{width:18px;height:18px}
+.btn{height:52px;border-radius:26px;border:0;font-family:inherit;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 22px;box-sizing:border-box}
+.btn.p{background:var(--pri);color:var(--onpri)}
+.btn.t{background:transparent;color:var(--on);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.tn{background:var(--s3);color:var(--on)}
+.btn.s{height:44px;padding:0 16px;font-size:13px}
+.bdg{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none;box-shadow:inset 0 0 0 1px var(--edge)}
+.cnt{min-width:28px;height:28px;border-radius:14px;padding:0 8px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:var(--pc);color:var(--onpc);font-size:12px;font-weight:800}
+.vc{height:28px;border-radius:8px;padding:0 10px;display:inline-flex;align-items:center;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--edge);box-sizing:border-box}
+.fmt{height:24px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;font-size:11px;font-weight:800;letter-spacing:.4px;background:var(--s3);color:var(--on2);box-sizing:border-box}
+.tm{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.day{width:64px;height:84px;border-radius:16px;background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:none;box-sizing:border-box}
+.day small{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--on2)}
+.day b{font-size:22px;line-height:28px;font-weight:800}
+.day.on{background:var(--pc);color:var(--onpc)}
+.day.on small{color:var(--onpc)}
+.cells{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cell{height:48px;display:flex;align-items:center;justify-content:center;border-radius:24px;font-size:15px;font-weight:600;background:var(--s1);flex-direction:column;font-size:13px}
+.cell.past{color:var(--on2);opacity:.45}
+.cell.today{box-shadow:inset 0 0 0 2px var(--pri)}
+.cell.sel{background:var(--pri);color:var(--onpri);font-weight:800}
+.sl{position:relative;height:28px;margin:6px 12px 0}
+.sl .tr{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:3px;background:var(--s3)}
+.sl .ac{position:absolute;top:11px;height:6px;border-radius:3px;background:var(--pri)}
+.sl .th{position:absolute;top:2px;width:24px;height:24px;margin-left:-12px;border-radius:12px;background:var(--pri);box-shadow:0 0 0 4px var(--s2)}
+.poster{border-radius:16px;position:relative;overflow:hidden;flex:none;color:#fff}
+.poster i{position:absolute;left:10px;right:10px;bottom:10px;font-style:normal;font-size:11px;line-height:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.seg{display:flex;background:var(--s3);border-radius:24px;padding:4px;height:48px;box-sizing:border-box;gap:4px}
+.seg button{flex:1;border:0;border-radius:20px;background:transparent;color:var(--on2);font-family:inherit;font-size:13px;font-weight:700;padding:0}
+.seg button.on{background:var(--pc);color:var(--onpc)}
+.swt{width:52px;height:32px;border-radius:16px;border:0;background:var(--s3);position:relative;flex:none;padding:0}
+.swt i{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:12px;background:var(--on2)}
+.swt.on{background:var(--pri)}
+.swt.on i{left:24px;background:var(--onpri)}
+.hdl{width:36px;height:4px;border-radius:2px;background:var(--on2);opacity:.5;margin:10px auto 0}
+</style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 9a2 2 0 0 0 0 6v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2a2 2 0 0 1 0-6V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1z"/><path d="M14 7v10" stroke-dasharray="2 2.4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+<div class="root {{theme}}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <div style="font-size:40px;line-height:46px;font-weight:800;letter-spacing:-.02em">Component specs</div>
+      <div style="font-size:15px;color:var(--on2);font-weight:500;margin-top:6px">Sizes in dp/sp. Every interactive element has a 48dp hit area, even where the visual is smaller. Flip the theme in Tweaks.</div>
+    </div>
+  </div>
+  <div class="grid">
+
+    <div class="cmp">
+      <h3>Top bar <span>CinemerickTopBar</span></h3>
+      <div class="stage">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-left:4px"><div><div class="h1">Cinemerick</div><div class="cap">Find showtimes. Share the poll.</div></div><button class="ib" aria-label="Settings"><svg class="ic"><use href="#i-sliders"/></svg></button></div>
+        <div style="height:1px;background:var(--line)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-left:4px"><div style="font-size:20px;font-weight:800">Cinemerick</div><button class="ib" aria-label="Settings"><svg class="ic"><use href="#i-sliders"/></svg></button></div>
+      </div>
+      <ul class="spec">
+        <li><b>Large:</b> headlineLarge 32/40 + tagline labelMedium. Collapses over 72dp of scroll to 20sp titleMedium, 64dp tall.</li>
+        <li><b>Surface:</b> background, no gradient. Collapsed adds a 1dp outlineVariant hairline.</li>
+        <li><b>Action:</b> 48dp circular icon button, surfaceContainer fill. Version string lives in Settings.</li>
+        <li><b>Compose:</b> <code>LargeTopAppBar</code> + <code>exitUntilCollapsedScrollBehavior</code>.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Chain row <span>ChainCard</span></h3>
+      <div class="stage">
+        <div style="background:var(--s1);border-radius:20px">
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 6px 8px 12px;min-height:64px"><div class="bdg" style="background:#E8650A;color:#FFFFFF">TS</div><div style="flex:1"><div class="nm">The Space</div><div class="cap">2 of 5 venues</div></div><span class="cnt">2</span><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--on2)"><svg class="ic"><use href="#i-up"/></svg></div></div>
+          <div style="padding:0 14px 14px 64px;display:flex;flex-wrap:wrap;gap:8px"><span class="chip on"><svg class="ic"><use href="#i-check"/></svg>Silea</span><span class="chip on"><svg class="ic"><use href="#i-check"/></svg>Villorba</span><span class="chip"><svg class="ic"><use href="#i-plus"/></svg>Add venue</span></div>
+        </div>
+        <div style="background:var(--s1);border-radius:20px"><div style="display:flex;align-items:center;gap:12px;padding:8px 6px 8px 12px;min-height:64px"><div class="bdg" style="background:#A4A5A6;color:#1A1A1A">NO</div><div style="flex:1"><div class="nm">Notorious</div><div class="cap">No venue selected</div></div><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--on2)"><svg class="ic"><use href="#i-plus"/></svg></div></div></div>
+      </div>
+      <ul class="spec">
+        <li><b>Card:</b> surface, shape lg 20, 64dp min row, no outline. Tap anywhere toggles expand.</li>
+        <li><b>Badge:</b> 40dp, shape sm, exact chain fill and on-color from CinemaBrandColors; initials labelMedium. Dark theme adds the 1dp chainEdge stroke.</li>
+        <li><b>State:</b> count pill (primaryContainer) = selected venues. Empty chain shows a plus, nothing else.</li>
+        <li><b>Long IT labels:</b> subtitle wraps to 2 lines; row grows, badge stays top-aligned.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Chips <span>FilterChip, VenueChip</span></h3>
+      <div class="stage">
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip on"><svg class="ic"><use href="#i-check"/></svg>2D</span><span class="chip">3D</span><span class="chip on"><svg class="ic"><use href="#i-check"/></svg>XL</span><span class="chip">EPIC</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="vc" style="background:#E8650A;color:#FFFFFF">The Space</span><span class="vc" style="background:#1F3F7A;color:#FFFFFF">UCI</span><span class="vc" style="background:#A4A5A6;color:#1A1A1A">Notorious</span><span class="vc" style="background:#414C4C;color:#FFFFFF">Cinergia</span><span class="vc" style="background:#D22D27;color:#FFFFFF">Cristallo</span><span class="vc" style="background:#8B3A3B;color:#FFFFFF">Don Bosco</span><span class="vc" style="background:#022129;color:#FFFFFF">Cinemazero</span><span class="vc" style="background:#6E398A;color:#FFFFFF">Arcadia</span></div>
+      </div>
+      <ul class="spec">
+        <li><b>Filter chip:</b> 40dp visual, 48dp hit, shape sm. Selected = primaryContainer <b>plus a check icon</b>, so state never relies on color alone.</li>
+        <li><b>Chain chip (results):</b> 28dp, shape xs 8, labelMedium. Fill and text are the CinemaBrandColors pairs, unchanged. Label always carries the chain name.</li>
+        <li><b>Format tag:</b> 24dp, shape 6, surfaceContainerHigh, onSurfaceVariant text.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Buttons <span>Button, IconButton, ExtendedFab</span></h3>
+      <div class="stage">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn p"><svg class="ic"><use href="#i-search"/></svg>Search showtimes</button><button class="btn t">Clear</button></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn tn s">Open details<svg class="ic" style="width:18px;height:18px"><use href="#i-right"/></svg></button><button class="ib" aria-label="Tickets"><svg class="ic" style="width:20px;height:20px"><use href="#i-ticket"/></svg></button><button class="btn p" style="height:56px;border-radius:28px"><svg class="ic"><use href="#i-copy"/></svg>Copy poll</button></div>
+      </div>
+      <ul class="spec">
+        <li><b>One primary per screen:</b> Search (Home), Copy poll (Results), Watch trailer (Details), Done (sheets). Primary = <b>primary</b> fill, 52dp, full shape.</li>
+        <li><b>Secondary:</b> text button with 1dp outlineVariant for Clear; tonal (surfaceContainerHigh) for Open details.</li>
+        <li><b>Icon button:</b> 48dp, 22dp outline icon, always with contentDescription. No emoji anywhere.</li>
+        <li><b>Press:</b> scale .97, 90ms, tonal overlay; skipped when animations are off.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Date and time pickers <span>DayStrip, CalendarCell, RangeSlider</span></h3>
+      <div class="stage">
+        <div style="display:flex;gap:8px"><div class="day"><small>Fri</small><b>16</b></div><div class="day on"><small>Sat</small><b>17</b></div><div class="day on"><small>Sun</small><b>18</b></div></div>
+        <div class="cells"><div class="cell past">9</div><div class="cell today">16</div><div class="cell sel">17</div><div class="cell">19</div></div>
+        <div style="display:flex;justify-content:space-between;padding:0 4px"><span class="nm">Sat 17</span><span class="tm" style="font-size:14px">18:00 – 23:00</span></div>
+        <div class="sl"><div class="tr"></div><div class="ac" style="left:62.5%;right:6.25%"></div><div class="th" style="left:62.5%"></div><div class="th" style="left:93.75%"></div></div>
+      </div>
+      <ul class="spec">
+        <li><b>Day tile:</b> 64×84dp, shape md. Selected = primaryContainer; today = 5dp primary dot. Strip scrolls horizontally; Calendar link opens the sheet (phone) or the inline month (tablet, desktop).</li>
+        <li><b>Calendar cell:</b> 48dp circle. Today = 2dp primary ring, selected = primary fill, past = disabled at 45%.</li>
+        <li><b>Time window:</b> Material <code>RangeSlider</code>, 08:00–24:00 in 30-minute steps, thumbs 24dp inside a 48dp touch zone, value in the time style.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Film card <span>FilmCard</span></h3>
+      <div class="stage">
+        <div style="background:var(--s1);border-radius:24px;padding:14px;display:flex;gap:14px">
+          <div class="poster" style="width:104px;height:156px;background:linear-gradient(160deg,#ff8a3d 0%,#b4341f 45%,#1a1033 100%)"><i>Blade Runner 2049</i></div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between"><div><div style="font-size:20px;line-height:26px;font-weight:800">Blade Runner 2049</div><div class="cap" style="margin-top:4px">2017 · 2h 44m</div><div style="margin-top:8px;color:var(--pri);font-size:13px;font-weight:800">★ 7.6 <span class="cap">TMDB</span></div></div><button class="btn tn s" style="align-self:flex-start">Open details<svg class="ic" style="width:18px;height:18px"><use href="#i-right"/></svg></button></div>
+        </div>
+      </div>
+      <ul class="spec">
+        <li><b>Poster:</b> 104×156dp (2:3), shape md 16, the visual anchor. Same bounds animate into the details backdrop (shared element).</li>
+        <li><b>Card:</b> surface, shape xl-minus 24, 14dp padding, tonal only, no shadow. Title titleLarge-small 20/26, max 2 lines.</li>
+        <li><b>Showtimes</b> follow in the same card, grouped by day (see next).</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Showtime row <span>ShowtimeRow</span></h3>
+      <div class="stage">
+        <div style="background:var(--s1);border-radius:18px;padding:4px 14px">
+          <div style="font-size:13px;font-weight:800;padding:10px 0 2px;display:flex;justify-content:space-between"><b>Sat 17/10</b><span class="cap">2 showings</span></div>
+          <div style="display:flex;align-items:center;gap:10px;min-height:52px;border-top:1px solid var(--line)"><span class="tm" style="width:48px">18:30</span><span class="vc" style="background:#E8650A;color:#FFFFFF">The Space · Silea</span><span class="fmt">2D</span><span style="flex:1"></span><button class="ib" aria-label="Tickets" style="width:44px;height:44px"><svg class="ic" style="width:20px;height:20px"><use href="#i-ticket"/></svg></button></div>
+          <div style="display:flex;align-items:center;gap:10px;min-height:52px;border-top:1px solid var(--line)"><span class="tm" style="width:48px">21:15</span><span class="vc" style="background:#1F3F7A;color:#FFFFFF">UCI · Marcon</span><span class="fmt">XL</span></div>
+        </div>
+      </div>
+      <ul class="spec">
+        <li><b>Columns:</b> time 48dp (tabular numerals) · chain chip · format tag · ticket button, always in this order so columns align down the card.</li>
+        <li><b>Day heading</b> appears once per day with a showing count, replacing the repeated date pills.</li>
+        <li><b>Ticket:</b> 44dp visible, 48dp hit, outline ticket icon, opens the cart link.</li>
+        <li><b>Row:</b> 52dp, 1dp hairline separators only between rows.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Bottom sheet <span>ModalBottomSheet</span></h3>
+      <div class="stage" style="padding:0;overflow:hidden">
+        <div style="background:var(--s1);border-radius:28px 28px 0 0;margin-top:16px;padding-bottom:16px">
+          <div class="hdl"></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 12px 8px 20px"><div class="bdg" style="background:#E8650A;color:#FFFFFF">TS</div><div style="flex:1"><div style="font-size:20px;line-height:26px;font-weight:800">The Space</div><div class="cap">Choose venues</div></div></div>
+          <div style="margin:0 12px;display:flex;align-items:center;gap:14px;min-height:60px;padding:6px 14px;border-radius:16px;background:var(--pc);box-sizing:border-box"><div style="width:24px;height:24px;border-radius:12px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center"><svg class="ic" style="width:16px;height:16px;stroke-width:2.6"><use href="#i-check"/></svg></div><div class="nm">Silea</div></div>
+        </div>
+      </div>
+      <ul class="spec">
+        <li><b>Shape:</b> xl 28 on the top corners; 36×4dp drag handle; scrim 62% black (dark) / 38% violet-black (light). No blur.</li>
+        <li><b>Detail sheet:</b> full height, 236dp backdrop with surface-color gradient scrim at the bottom so the title stays legible.</li>
+        <li><b>Picker rows:</b> 60dp, 24dp check circle, selected row in primaryContainer.</li>
+      </ul>
+    </div>
+
+    <div class="cmp">
+      <h3>Settings rows <span>SettingsGroup</span></h3>
+      <div class="stage">
+        <div class="seg"><button class="on">Auto</button><button>Light</button><button>Dark</button></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:56px"><div style="flex:1"><div class="nm">Smooth animations</div><div class="cap">Poster transitions and list motion</div></div><button class="swt on" role="switch" aria-checked="true" aria-label="Smooth animations"><i></i></button></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px"><span class="nm">Default time window</span><span class="tm" style="font-size:14px">18:00 – 23:00</span></div>
+      </div>
+      <ul class="spec">
+        <li><b>Group:</b> section label (labelSmall caps) above a surface card, shape lg.</li>
+        <li><b>Theme and language:</b> 48dp segmented control (<code>SingleChoiceSegmentedButtonRow</code>); theme adds three 64dp preview tiles, selected tile gets a 2dp primary ring.</li>
+        <li><b>Switch:</b> 52×32dp, on = primary track. The row, not just the thumb, is toggleable.</li>
+        <li><b>Value rows:</b> label left, value in the time style right; time window uses the same range slider as Home.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["dark","light"],"default":"dark"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { theme: (this.props.mode ?? 'dark') === 'dark' ? 't-dark' : 't-light' };
+  }
+}
+</script>
+</body>
+</html>
