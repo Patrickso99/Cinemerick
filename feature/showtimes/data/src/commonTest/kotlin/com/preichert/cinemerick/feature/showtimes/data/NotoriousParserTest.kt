@@ -95,6 +95,28 @@ class NotoriousParserTest {
     }
 
     @Test
+    fun listsVenuesFromHomepageIncludingComingSoonOnes() {
+        val html = """
+            <li><a href="../ferrara/index.php">Ferrara</a></li>
+            <li><a href="../fiumeveneto/index.php"><span style="color: #f00;">Coming soon!</span> Fiume Veneto</a></li>
+            <li><a href="../sinalunga/index.php">Sinalunga</a></li>
+        """.trimIndent()
+
+        val venues = parseNotoriousVenues(html)
+
+        assertEquals(listOf("ferrara", "fiumeveneto", "sinalunga"), venues.map { it.id })
+        assertEquals(listOf("Ferrara", "Fiume Veneto", "Sinalunga"), venues.map { it.name })
+        assertEquals("https://www.notoriouscinemas.it/fiumeveneto/index.php", venues[1].webUrl)
+    }
+
+    @Test
+    fun decodesHtmlEntitiesInVenueNames() {
+        val html = "<li><a href=\"../fiumeveneto/index.php\">Fiume&nbsp;Veneto &amp; Sacile</a></li>"
+
+        assertEquals("Fiume Veneto & Sacile", parseNotoriousVenues(html).single().name)
+    }
+
+    @Test
     fun filmWithoutFilmPageLinkHasNoDetailsUrl() {
         val html = film(1, "DIGGER", "Gioved&igrave; 01/10" to listOf("20:05")).replace(Regex("<div class=\"scheda\"[^>]*>.*?</div>"), "")
 

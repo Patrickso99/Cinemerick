@@ -21,7 +21,9 @@ private val CINEMA_ID = Regex("<span class=\"cinema\" id=\"(\\d+)\"")
 private val TAG = Regex("<[^>]*>")
 private val YEAR_TAG = Regex("\\s*\\[\\d{4}]")
 private val NEW_BADGE = Regex("^NEW!\\s*")
-private val VENUE_LINK = Regex("<a href=\"\\.\\./([a-z]+)/index\\.php\">([^<]+)<")
+private val VENUE_LINK = Regex("<a href=\"\\.\\./([a-z]+)/index\\.php\">([\\s\\S]*?)</a>")
+// A venue not open yet is labelled e.g. `<span style="color: #f00;">Coming soon!</span> Fiume Veneto`
+private val COMING_SOON_BADGE = Regex("<span[^>]*>\\s*Coming soon!\\s*</span>", RegexOption.IGNORE_CASE)
 
 // e.g. "DIGGER [2026] | ORIGINAL VERSION" -> title "Digger", format "VO"
 private const val ORIGINAL_VERSION = "ORIGINAL VERSION"
@@ -29,11 +31,11 @@ private const val ORIGINAL_VERSION = "ORIGINAL VERSION"
 // Parse venue links from homepage
 internal fun parseNotoriousVenues(html: String): List<Venue> =
     VENUE_LINK.findAll(html).map { match ->
-        val (slug, name) = match.destructured
+        val (slug, label) = match.destructured
         Venue(
             chain = Chain.NOTORIOUS,
             id = slug,
-            name = name.trim().ifEmpty { slug.capitalize() },
+            name = label.replace(COMING_SOON_BADGE, "").replace(TAG, "").unescapeHtml().trim().ifEmpty { slug.capitalize() },
             region = null,
             webUrl = "$SITE_ROOT$slug/index.php"
         )
