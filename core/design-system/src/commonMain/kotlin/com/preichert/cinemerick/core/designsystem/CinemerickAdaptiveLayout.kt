@@ -1,249 +1,215 @@
 package com.preichert.cinemerick.core.designsystem
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
 
+/** Scroll distance over which the large phone header collapses into the compact bar. */
+private val CollapseDistance = 72.dp
+
 /**
- * Adaptive layout for Cinemerick app, responding to screen size and orientation.
+ * Responsive layout of the redesign. The configuration comes from the window size class:
+ * - phone portrait: one scrolling column; the large header scrolls away and a compact bar pins at the top
+ *   once it collapses; [actionBar] floats at the bottom.
+ * - phone landscape and tablet portrait: filters and results side by side or stacked, no gradient header.
+ * - tablet landscape and desktop: two panes (filters | results), desktop adds the navigation rail
+ *   ([desktopRail]) on the left.
  *
- * @param header A header composable (typically with gradient background)
- * @param filtersContent The filters section (days, time range, film search)
- * @param resultsContent The results section (cinema showtimes), optional for single-panel layouts
- * @param modifier Layout modifier
+ * @param header the large header (title, tagline). On wide layouts it is the top of the filter pane.
+ * @param filtersContent the filter sections, in order
+ * @param collapsedTitle title shown in the pinned compact bar on phones once [header] scrolls away
+ * @param collapsedAction trailing action of the compact bar (e.g. the settings button)
+ * @param actionBar sticky actions (Clear / Search). Floats at the bottom on phones, ends the filter pane on wide layouts
+ * @param resultsContent results of a wide layout, shown in the right pane
+ * @param mobileResultsItems results of the phone layout, as lazy items
+ * @param desktopRail navigation rail, shown on desktop only
  */
 @Composable
 fun CinemerickAdaptiveLayout(
     header: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
     filtersContent: @Composable ColumnScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    collapsedTitle: String? = null,
+    collapsedAction: (@Composable () -> Unit)? = null,
+    actionBar: (@Composable () -> Unit)? = null,
     resultsContent: (@Composable ColumnScope.() -> Unit)? = null,
+    mobileResultsItems: (LazyListScope.() -> Unit)? = null,
+    desktopRail: (@Composable () -> Unit)? = null,
 ) {
-    val configuration = currentDeviceConfiguration()
-
-    when (configuration) {
-        // Single column on mobile portrait: header, filters, results stacked
-        DeviceConfiguration.MOBILE_PORTRAIT -> {
-            val scrollState = rememberScrollState()
+    val colors = CinemerickTheme.colors
+    when (val configuration = currentDeviceConfiguration()) {
+        DeviceConfiguration.MOBILE_PORTRAIT -> if (mobileResultsItems != null) {
+            PhoneLazyLayout(
+                modifier = modifier,
+                header = header,
+                filtersContent = filtersContent,
+                collapsedTitle = collapsedTitle,
+                collapsedAction = collapsedAction,
+                actionBar = actionBar,
+                mobileResultsItems = mobileResultsItems,
+            )
+        } else {
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .background(colors.background)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState()),
             ) {
-                Box(modifier = Modifier.scrollParallax(scrollState)) { header() }
+                header()
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                        .padding(horizontal = Spacing.lg, vertical = Spacing.xl),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.lg),
-                ) {
-                    filtersContent()
-                }
-                if (resultsContent != null) {
-                    Spacer(modifier = Modifier.height(Spacing.lg))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                            .padding(Spacing.lg),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                    ) {
-                        resultsContent()
-                    }
-                }
-                Spacer(modifier = Modifier.height(Spacing.xl))
-                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
+                        .padding(horizontal = CinemerickTheme.spacing.space4),
+                    verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+                    content = filtersContent,
+                )
+                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         }
 
-        // Two-column layout on mobile landscape: logo + filters on left, results on right
-        DeviceConfiguration.MOBILE_LANDSCAPE -> {
-            if (resultsContent != null) {
-                Row(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .padding(horizontal = Spacing.lg, vertical = Spacing.md),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.lg),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.Top,
-                    ) {
-                        header()
-                        Spacer(modifier = Modifier.height(Spacing.lg))
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                        ) {
-                            filtersContent()
-                        }
-                    }
-                    Panel(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        scrollable = true,
-                    ) {
-                        resultsContent()
-                    }
-                }
-            } else {
-                Column(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.Top,
-                ) {
-                    header()
-                    Spacer(modifier = Modifier.height(Spacing.lg))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Spacing.lg),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.md),
-                    ) {
-                        filtersContent()
-                    }
-                }
-            }
-        }
-
-        // Tablet portrait: centered content, side-by-side filters | results
-        DeviceConfiguration.TABLET_PORTRAIT -> {
-            val scrollState = rememberScrollState()
+        // Phone landscape: filters on the left, results on the right
+        DeviceConfiguration.MOBILE_LANDSCAPE -> if (resultsContent != null) {
+            TwoPanes(
+                modifier = modifier,
+                header = header,
+                filtersContent = filtersContent,
+                actionBar = actionBar,
+                resultsContent = resultsContent,
+                filterWeight = 0.9f,
+                resultsWeight = 1.1f,
+            )
+        } else {
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
+                    .background(colors.background)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                Box(modifier = Modifier.scrollParallax(scrollState)) { header() }
-                if (resultsContent != null) {
-                    Row(
-                        modifier = Modifier
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                            .fillMaxWidth()
-                            .padding(Spacing.xl),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
-                    ) {
-                        Panel(modifier = Modifier.weight(1f)) {
-                            filtersContent()
-                        }
-                        Panel(modifier = Modifier.weight(1f)) {
-                            resultsContent()
-                        }
-                    }
-                } else {
-                    Panel(
-                        modifier = Modifier
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                            .fillMaxWidth()
-                            .padding(Spacing.xl)
-                    ) {
-                        filtersContent()
-                    }
-                }
-                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
+                header()
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = CinemerickTheme.spacing.space4),
+                    verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space3),
+                    content = filtersContent,
+                )
             }
         }
 
-        // Tablet landscape and desktop: fixed header, two panels scrolling independently
+        // Tablet portrait: filters and results stacked, both in the content column
+        // Tablet portrait: the same two panes as the desktop, filters on the left and results on the right
+        DeviceConfiguration.TABLET_PORTRAIT -> if (resultsContent != null) {
+            TwoPanes(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(colors.background)
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
+                header = header,
+                filtersContent = filtersContent,
+                actionBar = actionBar,
+                resultsContent = resultsContent,
+                filterWidth = 340.dp,
+            )
+        } else Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(colors.background)
+                .imePadding()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 900.dp)
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .padding(horizontal = CinemerickTheme.spacing.space6),
+                verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+            ) {
+                header()
+                filtersContent()
+                actionBar?.invoke()
+                resultsContent?.invoke(this)
+            }
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+        }
+
+        // Tablet landscape and desktop: two panes, desktop adds the navigation rail
         DeviceConfiguration.TABLET_LANDSCAPE,
         DeviceConfiguration.DESKTOP -> {
             val isDesktop = configuration == DeviceConfiguration.DESKTOP
-            Column(
+            Row(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top,
+                    .background(colors.background)
+                    .windowInsetsPadding(WindowInsets.safeDrawing),
             ) {
-                header()
+                if (isDesktop && desktopRail != null) {
+                    desktopRail()
+                }
                 if (resultsContent != null) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                            .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
-                            .fillMaxWidth()
-                            .padding(Spacing.xl),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.xl),
-                    ) {
-                        Panel(
+                    TwoPanes(
+                        modifier = Modifier.weight(1f),
+                        header = header,
+                        filtersContent = filtersContent,
+                        actionBar = actionBar,
+                        resultsContent = resultsContent,
+                        filterWidth = if (isDesktop) 340.dp else 360.dp,
+                    )
+                } else {
+                    Box(Modifier.weight(1f).fillMaxHeight()) {
+                        Column(
                             modifier = Modifier
-                                .weight(if (isDesktop) 0.8f else 1f)
-                                .fillMaxHeight(),
-                            scrollable = true,
+                                .widthIn(max = 720.dp)
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(24.dp),
+                            verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
                         ) {
+                            header()
                             filtersContent()
                         }
-                        Panel(
-                            modifier = Modifier
-                                .weight(if (isDesktop) 1.2f else 1f)
-                                .fillMaxHeight(),
-                            scrollable = true,
-                        ) {
-                            resultsContent()
-                        }
-                    }
-                } else {
-                    Panel(
-                        modifier = Modifier
-                            .weight(1f)
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                            .widthIn(max = if (isDesktop) 1400.dp else 1200.dp)
-                            .fillMaxWidth()
-                            .padding(Spacing.xl)
-                            .fillMaxHeight(),
-                        scrollable = true,
-                    ) {
-                        filtersContent()
                     }
                 }
             }
@@ -251,96 +217,131 @@ fun CinemerickAdaptiveLayout(
     }
 }
 
-/**
- * Panel that groups a section on wide layouts: tonal surface with a subtle outline.
- */
+/** Filter pane (fixed width, hairline on its right edge) and results pane. */
 @Composable
-private fun Panel(
+private fun TwoPanes(
+    header: @Composable () -> Unit,
+    filtersContent: @Composable ColumnScope.() -> Unit,
+    resultsContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
-    scrollable: Boolean = false,
-    content: @Composable ColumnScope.() -> Unit,
+    actionBar: (@Composable () -> Unit)? = null,
+    filterWidth: Dp? = null,
+    filterWeight: Float = 1f,
+    resultsWeight: Float = 1f,
 ) {
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-    ) {
+    val colors = CinemerickTheme.colors
+    Row(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = (if (filterWidth != null) Modifier.width(filterWidth) else Modifier.weight(filterWeight))
+                .fillMaxHeight()
+                .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+        ) {
+            header()
+            Column(
+                modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+                content = filtersContent,
+            )
+            actionBar?.invoke()
+        }
+        Spacer(
+            modifier = Modifier
+                .width(1.dp)
+                .fillMaxHeight()
+                .background(colors.outlineVariant),
+        )
         Column(
             modifier = Modifier
-                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
-                .padding(Spacing.lg),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md),
-            content = content,
+                .weight(resultsWeight)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 88.dp),
+            verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+            content = resultsContent,
         )
     }
 }
 
-/**
- * Gradient header with decorative circles, used for app branding.
- */
+/** Phone layout: lazy list with the large header, filters and results, plus the pinned compact bar and action bar. */
 @Composable
-fun CinemerickHeader(
-    title: String,
-    subtitle: String? = null,
-    version: String? = null,
+private fun PhoneLazyLayout(
+    header: @Composable () -> Unit,
+    filtersContent: @Composable ColumnScope.() -> Unit,
+    collapsedTitle: String?,
+    collapsedAction: (@Composable () -> Unit)?,
+    actionBar: (@Composable () -> Unit)?,
+    mobileResultsItems: LazyListScope.() -> Unit,
     modifier: Modifier = Modifier,
-    trailing: @Composable (() -> Unit)? = null,
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val brush = Brush.linearGradient(if (isDark) PurpleGradientDark else PurpleGradient)
-    val accent = MaterialTheme.colorScheme.secondaryContainer
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .background(brush)
-            .drawBehind {
-                drawCircle(Color.White.copy(alpha = 0.08f), radius = size.height * 0.9f, center = Offset(size.width * 0.95f, size.height * 0.1f))
-                drawCircle(accent.copy(alpha = 0.18f), radius = size.height * 0.45f, center = Offset(size.width * 0.78f, size.height * 0.95f))
+    val colors = CinemerickTheme.colors
+    val listState = rememberLazyListState()
+    val collapseDistancePx = with(LocalDensity.current) { CollapseDistance.toPx() }
+    val collapsedFraction by remember(listState, collapseDistancePx) {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex > 0) {
+                1f
+            } else {
+                (listState.firstVisibleItemScrollOffset / collapseDistancePx).coerceIn(0f, 1f)
             }
-            // Gradient extends behind the status bar; content stays clear of it.
-            .windowInsetsPadding(
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-            )
-            .padding(start = Spacing.xl, end = Spacing.xl, top = Spacing.xl, bottom = Spacing.xxl),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-            verticalAlignment = Alignment.CenterVertically,
+        }
+    }
+    Box(modifier = modifier.fillMaxSize().background(colors.background)) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                .imePadding(),
+            contentPadding = PaddingValues(bottom = if (actionBar != null) 104.dp else 0.dp),
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.displaySmall,
-                        color = Color.White,
-                    )
-                    if (version != null) {
-                        Text(
-                            text = "v$version",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(bottom = Spacing.xs),
-                        )
-                    }
-                }
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White.copy(alpha = 0.85f),
-                    )
-                }
+            item(key = "header", contentType = "header") { header() }
+            item(key = "filters", contentType = "filters") {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space6),
+                    content = filtersContent,
+                )
             }
-            trailing?.invoke()
+            mobileResultsItems()
+            item(key = "footer", contentType = "footer") {
+                Spacer(modifier = Modifier.height(96.dp))
+                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            }
+        }
+
+        // Pinned compact bar: fades in as the large header scrolls away
+        if (collapsedTitle != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(collapsedFraction)
+                    .background(colors.background)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .height(64.dp)
+                    .padding(start = 20.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = collapsedTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                collapsedAction?.invoke()
+            }
+        }
+
+        if (actionBar != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+            ) {
+                actionBar()
+            }
         }
     }
 }

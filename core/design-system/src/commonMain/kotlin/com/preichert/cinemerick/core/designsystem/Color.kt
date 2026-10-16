@@ -1,96 +1,64 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-// Purple tonal palette (Material 3 style)
-object CinemerickColors {
-    // Light mode palette
-    val lightPrimary = Color(0xFF6750A4)
-    val lightOnPrimary = Color(0xFFFFFFFF)
-    val lightPrimaryContainer = Color(0xFFEADDFF)
-    val lightOnPrimaryContainer = Color(0xFF21005D)
-
-    val lightSecondary = Color(0xFF8A5100)
-    val lightOnSecondary = Color(0xFFFFFFFF)
-    val lightSecondaryContainer = Color(0xFFFFDCBE)
-    val lightOnSecondaryContainer = Color(0xFF2C1600)
-
-    val lightTertiary = Color(0xFF7D5260)
-    val lightOnTertiary = Color(0xFFFFFFFF)
-    val lightTertiaryContainer = Color(0xFFFFD8E4)
-    val lightOnTertiaryContainer = Color(0xFF2F111D)
-
-    val lightError = Color(0xFFB3261E)
-    val lightOnError = Color(0xFFFFFFFF)
-    val lightErrorContainer = Color(0xFFF9DEDC)
-    val lightOnErrorContainer = Color(0xFF410E0B)
-
-    val lightBackground = Color(0xFFFFFBFE)
-    val lightOnBackground = Color(0xFF1C1B1F)
-    val lightSurface = Color(0xFFFFFBFE)
-    val lightOnSurface = Color(0xFF1C1B1F)
-    val lightSurfaceVariant = Color(0xFFEFE0F0)
-    val lightOnSurfaceVariant = Color(0xFF49454E)
-    val lightSurfaceContainerLowest = Color(0xFFFFFFFF)
-    val lightSurfaceContainerLow = Color(0xFFF7F2FA)
-    val lightSurfaceContainer = Color(0xFFF3EEF6)
-    val lightSurfaceContainerHigh = Color(0xFFECE9F1)
-    val lightSurfaceContainerHighest = Color(0xFFE6E1E9)
-    val lightOutline = Color(0xFF79747E)
-    val lightOutlineVariant = Color(0xFFCAC4D0)
-    val lightScrim = Color(0xFF000000)
-
-    // Dark mode palette
-    val darkPrimary = Color(0xFFD0BCFF)
-    val darkOnPrimary = Color(0xFF371E55)
-    val darkPrimaryContainer = Color(0xFF4F378B)
-    val darkOnPrimaryContainer = Color(0xFFEADDFF)
-
-    val darkSecondary = Color(0xFFFFB870)
-    val darkOnSecondary = Color(0xFF4A2800)
-    val darkSecondaryContainer = Color(0xFF693C00)
-    val darkOnSecondaryContainer = Color(0xFFFFDCBE)
-
-    val darkTertiary = Color(0xFFFFB1C6)
-    val darkOnTertiary = Color(0xFF5A1D34)
-    val darkTertiaryContainer = Color(0xFF78334B)
-    val darkOnTertiaryContainer = Color(0xFFFFD8E4)
-
-    val darkError = Color(0xFFF2B8B5)
-    val darkOnError = Color(0xFF601410)
-    val darkErrorContainer = Color(0xFF8C1D18)
-    val darkOnErrorContainer = Color(0xFFF9DEDC)
-
-    val darkBackground = Color(0xFF1C1B1F)
-    val darkOnBackground = Color(0xFFE6E1E9)
-    val darkSurface = Color(0xFF1C1B1F)
-    val darkOnSurface = Color(0xFFE6E1E9)
-    val darkSurfaceVariant = Color(0xFF49454E)
-    val darkOnSurfaceVariant = Color(0xFFCAC4D0)
-    val darkSurfaceContainerLowest = Color(0xFF0F0D13)
-    val darkSurfaceContainerLow = Color(0xFF1D1B20)
-    val darkSurfaceContainer = Color(0xFF211F26)
-    val darkSurfaceContainerHigh = Color(0xFF2B2930)
-    val darkSurfaceContainerHighest = Color(0xFF36343B)
-    val darkOutline = Color(0xFF938F99)
-    val darkOutlineVariant = Color(0xFF49454E)
-    val darkScrim = Color(0xFF000000)
-}
-
-// Gradient helper for hero sections
-val PurpleGradient = listOf(
-    Color(0xFF4F378B),
-    Color(0xFF6750A4),
-    Color(0xFF7C4DFF),
+/**
+ * Role-based colors of the Cinemerick redesign (docs/design, Main). Material's colorScheme is built from
+ * these too, so M3 widgets inherit the same palette. Chain colors are not part of it: see [CinemaBrandColors].
+ */
+@Immutable
+data class CinemerickColors(
+    val background: Color,
+    val surface: Color,
+    val surfaceContainer: Color,
+    val surfaceContainerHigh: Color,
+    val outlineVariant: Color,
+    val onSurface: Color,
+    val onSurfaceVariant: Color,
+    val primary: Color,
+    val onPrimary: Color,
+    val primaryContainer: Color,
+    val onPrimaryContainer: Color,
+    val scrim: Color,
+    /** 1dp stroke around chain badges and chips in dark theme: makes the dark chains (Cinemazero, Cinergia, UCI) visible. */
+    val chainEdge: Color,
 )
 
-val PurpleGradientDark = listOf(
-    Color(0xFF371E55),
-    Color(0xFF4F378B),
-    Color(0xFF6A4C93),
+val DarkCinemerickColors = CinemerickColors(
+    background = Color(0xFF0D0B14),
+    surface = Color(0xFF15121F),
+    surfaceContainer = Color(0xFF24203D),
+    surfaceContainerHigh = Color(0xFF2D2750),
+    outlineVariant = Color(0xFF2E2946),
+    onSurface = Color(0xFFECE9F7),
+    onSurfaceVariant = Color(0xFFA9A3C2),
+    primary = Color(0xFFA78BFA),
+    onPrimary = Color(0xFF1A0F3D),
+    primaryContainer = Color(0xFF3A2C7A),
+    onPrimaryContainer = Color(0xFFE7DEFF),
+    scrim = Color(0xA806040C),
+    chainEdge = Color(0x47FFFFFF),
+)
+
+val LightCinemerickColors = CinemerickColors(
+    background = Color(0xFFFAF8FF),
+    surface = Color(0xFFFFFFFF),
+    surfaceContainer = Color(0xFFF3F0FC),
+    surfaceContainerHigh = Color(0xFFEAE5F8),
+    outlineVariant = Color(0xFFE2DCF3),
+    onSurface = Color(0xFF1B1730),
+    onSurfaceVariant = Color(0xFF5E5878),
+    primary = Color(0xFF5B3FD6),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE7E0FF),
+    onPrimaryContainer = Color(0xFF2A1670),
+    scrim = Color(0x6B140C32),
+    chainEdge = Color(0x00000000),
 )
 
 // Cinema brand colors: fixed in light and dark mode so each cinema is always recognizable.
+// Values are the ones in use before the redesign; the redesign does not change them.
 object CinemaBrandColors {
     val uciBlue = Color(0xFF1F3F7A)
     val onUciBlue = Color(0xFFFFFFFF)
@@ -108,10 +76,4 @@ object CinemaBrandColors {
     val onCinemazero = Color(0xFFFFFFFF)
     val arcadia = Color(0xFF6E398A)
     val onArcadia = Color(0xFFFFFFFF)
-}
-
-// Buy-ticket action: a green no other chip in a showing row uses. Fixed in light and dark mode like the brand colors.
-object TicketActionColors {
-    val container = Color(0xFFCBCBCB)
-    val content = Color(0xFFFFFFFF)
 }

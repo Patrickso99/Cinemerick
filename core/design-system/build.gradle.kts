@@ -7,3 +7,8 @@ kotlin {
         implementation(project(":core:presentation"))
     }
 }
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.preichert.cinemerick.core.designsystem.resources"
+}
