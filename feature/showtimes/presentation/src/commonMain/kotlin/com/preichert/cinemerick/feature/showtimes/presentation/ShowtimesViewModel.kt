@@ -30,7 +30,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copied
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.invalid_time
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_day
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.venues_load_error
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -196,7 +195,8 @@ class ShowtimesViewModel(
     private companion object {
         val defaultVenues = setOf(
             Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),
-            Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto")
+            Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto"),
+            Venue(Chain.NOTORIOUS, "fiumeveneto", "Fiume Veneto", "Friuli", "https://www.notoriouscinemas.it/fiumeveneto/index.php")
         )
     }
 
@@ -348,11 +348,11 @@ class ShowtimesViewModel(
     private fun openFilmDetails(title: String) {
         val group = _state.value.groups.firstOrNull { it.title == title } ?: return
         detailsJob?.cancel()
-        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true)) }
+        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true, posterUrl = group.posterUrl)) }
         detailsJob = viewModelScope.launch {
             val details = filmDetailsRepository.getFilmDetails(title, group.details, group.detailsSources)
             _state.update { state ->
-                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details)) else state
+                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details, posterUrl = group.posterUrl)) else state
             }
         }
     }

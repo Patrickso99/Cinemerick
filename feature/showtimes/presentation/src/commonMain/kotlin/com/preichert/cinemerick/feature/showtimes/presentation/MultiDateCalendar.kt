@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import com.preichert.cinemerick.core.designsystem.CinemerickIcons
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,10 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.pressScale
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -63,7 +65,7 @@ fun MultiDateCalendar(
     var firstOfMonth by remember { mutableStateOf(LocalDate(minDate.year, minDate.month, 1)) }
     val minMonth = remember(minDate) { LocalDate(minDate.year, minDate.month, 1) }
 
-    Column(modifier = modifier.fillMaxWidth().widthIn(max = MAX_CALENDAR_WIDTH), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Column(modifier = modifier.fillMaxWidth().widthIn(max = MAX_CALENDAR_WIDTH), verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val prevSource = remember { MutableInteractionSource() }
             IconButton(
@@ -73,10 +75,10 @@ fun MultiDateCalendar(
                 modifier = Modifier.pressScale(prevSource)
             ) {
                 val description = stringResource(Res.string.calendar_prev_month)
-                Text(
-                    text = "‹",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.semantics { contentDescription = description }
+                Icon(
+                    painter = painterResource(CinemerickIcons.ArrowBack),
+                    contentDescription = description,
+                    modifier = Modifier.size(22.dp),
                 )
             }
             Text(
@@ -92,10 +94,10 @@ fun MultiDateCalendar(
                 modifier = Modifier.pressScale(nextSource)
             ) {
                 val description = stringResource(Res.string.calendar_next_month)
-                Text(
-                    text = "›",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.semantics { contentDescription = description }
+                Icon(
+                    painter = painterResource(CinemerickIcons.ChevronRight),
+                    contentDescription = description,
+                    modifier = Modifier.size(22.dp),
                 )
             }
         }
@@ -144,11 +146,10 @@ private fun DayCell(
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .padding(2.dp)
-            .aspectRatio(1f)
+            .size(48.dp)
             .clip(CircleShape)
             .background(if (isSelected) colors.primary else Color.Transparent)
-            .then(if (isToday && !isSelected) Modifier.border(1.dp, colors.primary, CircleShape) else Modifier)
+            .then(if (isToday && !isSelected) Modifier.border(2.dp, colors.primary, CircleShape) else Modifier)
             .toggleable(value = isSelected, enabled = enabled, role = Role.Checkbox, onValueChange = { onToggle() })
     ) {
         Text(
@@ -157,7 +158,7 @@ private fun DayCell(
             color = when {
                 isSelected -> colors.onPrimary
                 enabled -> colors.onSurface
-                else -> colors.onSurface.copy(alpha = 0.38f)
+                else -> colors.onSurface.copy(alpha = 0.45f)
             }
         )
     }

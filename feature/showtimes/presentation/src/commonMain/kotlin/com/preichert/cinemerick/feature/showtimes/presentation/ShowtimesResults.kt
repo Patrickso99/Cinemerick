@@ -1,30 +1,37 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
-import co.touchlab.kermit.Logger
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,38 +40,164 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
-import kotlinx.datetime.DayOfWeek
-import com.preichert.cinemerick.core.designsystem.Spacing
-import com.preichert.cinemerick.core.designsystem.TicketActionColors
-import com.preichert.cinemerick.core.designsystem.bounceClickable
-import com.preichert.cinemerick.core.designsystem.pressScale
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import com.preichert.cinemerick.core.designsystem.staggeredAppear
-import com.preichert.cinemerick.core.designsystem.DevicePreviews
-import com.preichert.cinemerick.core.designsystem.LightThemePreview
+import co.touchlab.kermit.Logger
+import com.preichert.cinemerick.core.designsystem.CinemerickChainChip
+import com.preichert.cinemerick.core.designsystem.CinemerickIconButton
+import com.preichert.cinemerick.core.designsystem.CinemerickIcons
+import com.preichert.cinemerick.core.designsystem.CinemerickPrimaryButton
+import com.preichert.cinemerick.core.designsystem.CinemerickTheme
+import com.preichert.cinemerick.core.designsystem.CinemerickTimeText
+import com.preichert.cinemerick.core.designsystem.CinemerickTonalButton
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
+import com.preichert.cinemerick.core.designsystem.LightThemePreview
+import com.preichert.cinemerick.core.designsystem.Spacing
+import com.preichert.cinemerick.core.designsystem.animateItemIfEnabled
+import com.preichert.cinemerick.core.designsystem.bounceClickable
+import com.preichert.cinemerick.core.designsystem.staggeredAppear
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy_poll
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.film_details
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.sold_out
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.options_count
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.results_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.sold_out
+import kotlinx.datetime.DayOfWeek
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 
 private val log = Logger.withTag("ShowtimesResults")
 
 private val MIN_GRID_CARD_WIDTH = 340.dp
+
+// Phone portrait: one lazy item per card, so only the visible film cards are composed.
+internal fun LazyListScope.resultsItems(
+    state: ShowtimesState,
+    onAction: (ShowtimesAction) -> Unit
+) {
+    state.venueErrors.forEachIndexed { index, error ->
+        item(key = "error-$index", contentType = "error") {
+            ResultItem(animateItemIfEnabled()) { VenueErrorBanner(error) }
+        }
+    }
+
+    if (state.isLoading) {
+        items(3, key = { "skeleton-$it" }, contentType = { "skeleton" }) {
+            ResultItem { SkeletonCard() }
+        }
+        return
+    }
+
+    if (!state.hasGenerated) {
+        item(key = "hint", contentType = "message") {
+            ResultItem(animateItemIfEnabled()) { MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint)) }
+        }
+    } else if (state.groups.isEmpty()) {
+        item(key = "empty", contentType = "message") {
+            ResultItem(animateItemIfEnabled()) { MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.no_results)) }
+        }
+    }
+
+    if (state.pollText.isNotEmpty()) {
+        item(key = "copy", contentType = "copy") {
+            ResultItem(animateItemIfEnabled()) { ResultsSummary(state, onCopy = null) }
+        }
+    }
+
+    items(state.groups, key = { it.title }, contentType = { "film" }) { group ->
+        ResultItem(animateItemIfEnabled()) {
+            FilmGroupCard(
+                group = group,
+                large = false,
+                onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResultItem(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+            .padding(horizontal = Spacing.space4)
+            .padding(bottom = Spacing.space3)
+    ) { content() }
+}
+
+@Composable
+private fun VenueErrorBanner(error: VenueErrorUi) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = colors.errorContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(Spacing.space3),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.space2)
+        ) {
+            Icon(
+                painter = painterResource(CinemerickIcons.Alert),
+                contentDescription = null,
+                tint = colors.onErrorContainer,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = "${error.venueName}: ${error.message.asString()}",
+                color = colors.onErrorContainer,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+/**
+ * "Results" heading with the showing count and timing. On wide layouts [onCopy] adds the Copy poll button in the
+ * header; on phones Copy poll is the floating action instead, so the caller passes null.
+ */
+@Composable
+private fun ResultsSummary(state: ShowtimesState, onCopy: (() -> Unit)?) {
+    val colors = CinemerickTheme.colors
+    val elapsed = state.elapsedTimeMillis?.let { millis -> "${millis / 1000}.${(millis % 1000).toString().padStart(3, '0')}s" }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
+            Text(
+                text = stringResource(Res.string.results_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = colors.onSurface
+            )
+            Text(
+                text = listOfNotNull(stringResource(Res.string.options_count, state.optionsCount), elapsed).joinToString(" · "),
+                style = MaterialTheme.typography.labelLarge,
+                color = colors.onSurfaceVariant
+            )
+        }
+        if (onCopy != null) {
+            CinemerickPrimaryButton(
+                text = stringResource(Res.string.copy_poll),
+                onClick = onCopy,
+                icon = painterResource(CinemerickIcons.Copy),
+            )
+        }
+    }
+}
 
 @Composable
 internal fun ColumnScope.ResultsSection(
@@ -72,26 +205,7 @@ internal fun ColumnScope.ResultsSection(
     onAction: (ShowtimesAction) -> Unit,
     configuration: DeviceConfiguration
 ) {
-    state.venueErrors.forEach { error ->
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.errorContainer
-        ) {
-            Row(
-                modifier = Modifier.padding(Spacing.md),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-            ) {
-                Text("⚠", color = MaterialTheme.colorScheme.onErrorContainer)
-                Text(
-                    text = "${error.venueName}: ${error.message.asString()}",
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
+    state.venueErrors.forEach { error -> VenueErrorBanner(error) }
 
     if (state.isLoading) {
         repeat(3) { SkeletonCard() }
@@ -99,40 +213,13 @@ internal fun ColumnScope.ResultsSection(
     }
 
     if (!state.hasGenerated) {
-        MessageCard(emoji = "🎬", text = stringResource(Res.string.generate_hint))
+        MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint))
     } else if (state.groups.isEmpty()) {
-        MessageCard(emoji = "🍿", text = stringResource(Res.string.no_results))
+        MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.no_results))
     }
 
     if (state.pollText.isNotEmpty()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            val copySource = remember { MutableInteractionSource() }
-            FilledTonalButton(
-                onClick = { onAction(ShowtimesAction.OnCopyClick) },
-                shape = MaterialTheme.shapes.large,
-                interactionSource = copySource,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .pressScale(copySource)
-            ) {
-                Text(stringResource(Res.string.copy), style = MaterialTheme.typography.titleSmall)
-            }
-            Text(
-                text = buildString {
-                    append(stringResource(Res.string.options_count, state.optionsCount))
-                    state.elapsedTimeMillis?.let { millis ->
-                        append(" (${millis / 1000}.${(millis % 1000).toString().padStart(3, '0')}s)")
-                    }
-                },
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        ResultsSummary(state, onCopy = null)
     }
 
     if (configuration.isMobile) {
@@ -141,16 +228,16 @@ internal fun ColumnScope.ResultsSection(
         }
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceAtLeast(1)
+            val columns = (maxWidth / MIN_GRID_CARD_WIDTH).toInt().coerceIn(1, 2)
             // Masonry: independent columns so cards stack without vertical gaps
             Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.space3),
                 verticalAlignment = Alignment.Top
             ) {
                 repeat(columns) { colIndex ->
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                        verticalArrangement = Arrangement.spacedBy(Spacing.space3)
                     ) {
                         state.groups.forEachIndexed { index, group ->
                             if (index % columns == colIndex) {
@@ -185,51 +272,55 @@ internal fun AnimatedFilmGroupCard(
     }
 }
 
+/**
+ * Film card: poster first (104x156 on phone, 132 on wide layouts), then the title, the details button and the
+ * showtimes grouped by day. Surface only, no outline and no shadow.
+ */
 @Composable
 internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: () -> Unit = {}) {
-    SectionCard(modifier = Modifier.fillMaxWidth()) {
-        SelectionContainer {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.lg),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
-                    group.posterUrl?.let {
-                        PosterImage(
-                            url = it,
-                            contentDescription = group.title,
-                            width = if (large) 132.dp else 96.dp
-                        )
-                    }
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = group.title,
-                            color = MaterialTheme.colorScheme.primary,
-                            style = if (large) MaterialTheme.typography.headlineSmall
-                            else MaterialTheme.typography.titleLarge
-                        )
-                        FilmDetailsButton(onClick = onDetailsClick)
-                    }
+    val colors = CinemerickTheme.colors
+    SelectionContainer {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.large)
+                .background(colors.surfaceContainer)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.space3)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.space3)) {
+                group.posterUrl?.let {
+                    PosterImage(
+                        url = it,
+                        contentDescription = group.title,
+                        width = 104.dp
+                    )
                 }
-                Spacer(modifier = Modifier.height(Spacing.xs))
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.lg)) {
-                    group.showings.groupBy { it.date }.forEach { (date, showingsForDate) ->
-                        val dayName = showingsForDate.firstOrNull()?.day?.fullName() ?: ""
-                        Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                            Badge(
-                                text = "$dayName $date",
-                                container = MaterialTheme.colorScheme.primary,
-                                content = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.height(Spacing.xs))
-                            showingsForDate.forEach { showing -> ShowingRow(showing) }
-                        }
-                        Spacer(modifier = Modifier.height(Spacing.xs))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.space2),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = group.title,
+                        color = colors.onSurface,
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 26.sp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    CinemerickTonalButton(
+                        text = stringResource(Res.string.film_details),
+                        onClick = onDetailsClick,
+                        icon = painterResource(CinemerickIcons.ChevronRight),
+                    )
+                }
+            }
+            group.showings.groupBy { it.date }.entries.forEachIndexed { index, (date, showingsForDate) ->
+                val dayName = showingsForDate.firstOrNull()?.day?.fullName() ?: ""
+                DayHeader(dayName = dayName, date = date, count = showingsForDate.size, first = index == 0)
+                // Rows of one day sit flush; a hairline separates the rows, not the day heading.
+                Column {
+                    showingsForDate.forEachIndexed { rowIndex, showing ->
+                        ShowingRow(showing, withDivider = rowIndex > 0)
                     }
                 }
             }
@@ -237,9 +328,34 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: (
     }
 }
 
+/** Day heading shown once per day: the date in bold on the left, the showing count on the right. */
 @Composable
-internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96.dp) {
+private fun DayHeader(dayName: String, date: String, count: Int, first: Boolean) {
+    val colors = CinemerickTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = if (first) Spacing.space1 else Spacing.space4, bottom = Spacing.space1),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$dayName $date",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.onSurface
+        )
+        Text(
+            text = stringResource(Res.string.options_count, count),
+            style = MaterialTheme.typography.labelMedium,
+            color = colors.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+internal fun PosterImage(url: String, contentDescription: String, width: Dp = 104.dp) {
     var isEnlarged by remember { mutableStateOf(false) }
+    val placeholder = CinemerickTheme.colors.surfaceContainerHigh
 
     AsyncImage(
         model = url,
@@ -248,8 +364,8 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96
         modifier = Modifier
             .width(width)
             .aspectRatio(2f / 3f)
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clip(MaterialTheme.shapes.medium)
+            .background(placeholder)
             .bounceClickable { isEnlarged = true }
     )
 
@@ -270,84 +386,72 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 96
     }
 }
 
+/**
+ * One showing, in fixed columns: time (48dp, tabular) · chain chip · format tag · sold out · ticket.
+ * The ticket is a 48dp icon button with a content description.
+ */
 @Composable
-internal fun ShowingRow(showing: ShowingUi) {
+internal fun ShowingRow(showing: ShowingUi, withDivider: Boolean = false) {
     val uriHandler = LocalUriHandler.current
-    FlowRow(
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        itemVerticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Badge(
-            text = showing.time,
-            container = if (showing.soldOut) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
-            content = if (showing.soldOut) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
-            bold = true
-        )
-        val (container, content) = showing.venue.chain.badgeColors()
-        Badge(text = showing.venue.name, container = container, content = content)
-        showing.format?.let {
-            Badge(
-                text = it,
-                container = MaterialTheme.colorScheme.secondaryContainer,
-                content = MaterialTheme.colorScheme.onSecondaryContainer
+    val colors = CinemerickTheme.colors
+    val (chainContainer, chainContent) = showing.venue.chain.badgeColors()
+    Column {
+        if (withDivider) HorizontalDivider(color = colors.outlineVariant)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 52.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.space2)
+        ) {
+            CinemerickTimeText(
+                text = showing.time,
+                color = if (showing.soldOut) colors.onSurfaceVariant else colors.onSurface,
+                modifier = Modifier.width(48.dp),
             )
-        }
-        showing.ticketUrl?.let { url ->
-            TicketButton(onClick = {
-                log.i { "Opening purchase page for ${showing.venue.name} ${showing.date} ${showing.time}: $url" }
-                uriHandler.openUri(url)
-            })
-        }
-        if (showing.soldOut) {
-            Badge(
-                text = stringResource(Res.string.sold_out),
-                container = MaterialTheme.colorScheme.errorContainer,
-                content = MaterialTheme.colorScheme.onErrorContainer
+            CinemerickChainChip(
+                label = showing.venue.name,
+                container = chainContainer,
+                content = chainContent,
+                modifier = Modifier.widthIn(max = 180.dp),
             )
+            showing.format?.let { FormatTag(text = it) }
+            Spacer(modifier = Modifier.weight(1f))
+            if (showing.soldOut) {
+                Badge(
+                    text = stringResource(Res.string.sold_out),
+                    container = colors.primaryContainer,
+                    content = colors.onPrimaryContainer
+                )
+            }
+            showing.ticketUrl?.let { url ->
+                CinemerickIconButton(
+                    icon = painterResource(CinemerickIcons.Cart),
+                    contentDescription = stringResource(Res.string.buy_ticket),
+                    onClick = {
+                        log.i { "Opening purchase page for ${showing.venue.name} ${showing.date} ${showing.time}: $url" }
+                        uriHandler.openUri(url)
+                    },
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun FilmDetailsButton(onClick: () -> Unit) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.secondaryContainer,
+private fun FormatTag(text: String) {
+    Box(
         modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .bounceClickable(role = Role.Button, onClick = onClick)
+            .height(24.dp)
+            .clip(MaterialTheme.shapes.extraSmall)
+            .background(CinemerickTheme.colors.surfaceContainerHigh)
+            .padding(horizontal = Spacing.space2),
+        contentAlignment = Alignment.Center
     ) {
         Text(
-            text = stringResource(Res.string.film_details),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            maxLines = 1,
-            softWrap = false,
-            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)
-        )
-    }
-}
-
-@Composable
-private fun TicketButton(onClick: () -> Unit) {
-    val description = stringResource(Res.string.buy_ticket)
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = TicketActionColors.container,
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .semantics { contentDescription = description }
-            .bounceClickable(role = Role.Button, onClick = onClick)
-    ) {
-        Text(
-            text = "\uD83D\uDED2",
-            style = MaterialTheme.typography.titleMedium,
-            color = TicketActionColors.content,
-            maxLines = 1,
-            softWrap = false,
-            modifier = Modifier.padding(horizontal = Spacing.md, vertical = Spacing.xs)
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = CinemerickTheme.colors.onSurfaceVariant
         )
     }
 }
@@ -366,10 +470,10 @@ private fun FilmGroupCardPreviewLight() {
 @Composable
 private fun ShowingRowPreviewLight() {
     LightThemePreview {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.space3)) {
             ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
-            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null))
-            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null), withDivider = true)
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true), withDivider = true)
         }
     }
 }
@@ -388,10 +492,10 @@ private fun FilmGroupCardPreviewDark() {
 @Composable
 private fun ShowingRowPreviewDark() {
     DarkThemePreview {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.space3)) {
             ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:00", PreviewData.sileaVenue, "2D · VO", "https://example.com/buy"))
-            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null))
-            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true))
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "21:30", PreviewData.marconVenue, null), withDivider = true)
+            ShowingRow(showing = ShowingUi(DayOfWeek.THURSDAY, "01/10", "22:00", PreviewData.sileaVenue, "2D", "https://example.com/buy", soldOut = true), withDivider = true)
         }
     }
 }

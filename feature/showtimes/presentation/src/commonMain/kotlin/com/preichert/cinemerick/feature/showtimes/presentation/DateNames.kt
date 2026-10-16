@@ -99,9 +99,9 @@ internal fun DayOfWeek.initial(): String = stringResource(initialResource())
 @Composable
 internal fun Month.displayName(): String = stringResource(nameResource())
 
-/** "wed 14/10" / "mer 14/10", for the per-day time window of the filters. */
+/** "Wednesday 14/10" / "Mercoledì 14/10", for the per-day time window of the filters. */
 @Composable
-internal fun LocalDate.dayLabel(): String = "${stringResource(dayOfWeek.shortNameResource()).lowercase()} ${shortDate()}"
+internal fun LocalDate.dayLabel(): String = "${stringResource(dayOfWeek.fullNameResource())} ${shortDate()}"
 
 /** "WED" / "MER", for the day chips. */
 @Composable

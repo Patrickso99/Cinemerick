@@ -1,7 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
-import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import kotlin.math.roundToInt

@@ -58,7 +58,8 @@ data class FilmGroupUi(
 data class FilmDetailsUi(
     val title: String,
     val details: FilmDetails,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val posterUrl: String? = null
 )
 
 data class ShowingUi(
