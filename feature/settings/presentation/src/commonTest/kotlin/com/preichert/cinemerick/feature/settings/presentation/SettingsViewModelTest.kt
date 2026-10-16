@@ -8,6 +8,8 @@ import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.data.SettingsTimeWindowPreferences
 import com.preichert.cinemerick.core.data.SettingsAnimationPreferences
+import com.preichert.cinemerick.core.data.SettingsLanguagePreferences
+import com.preichert.cinemerick.core.presentation.LanguageController
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +25,7 @@ import kotlin.test.assertNull
 class SettingsViewModelTest {
 
     private fun timeWindow() = TimeWindowController(SettingsTimeWindowPreferences(MemorySettings()))
+    private fun languageController() = LanguageController(SettingsLanguagePreferences(MemorySettings()))
 
     @AfterTest
     fun tearDown() {
@@ -32,7 +35,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledTrueSwitchesToSystem() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow())
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow(), languageController())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = true, systemDark = false))
 
@@ -42,7 +45,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkTrueSwitchesToDark() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow())
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow(), languageController())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = true))
 
@@ -52,7 +55,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkFalseSwitchesToLight() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow())
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow(), languageController())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = false))
 
@@ -62,7 +65,7 @@ class SettingsViewModelTest {
     @Test
     fun onThemeModeSelectedUpdatesMode() = runTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow())
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow(), languageController())
 
         viewModel.onAction(SettingsAction.OnThemeModeSelected(ThemeMode.DARK))
 
@@ -74,7 +77,7 @@ class SettingsViewModelTest {
         val controller = ThemeController(SettingsThemePreferences(MemorySettings()))
         controller.setMode(ThemeMode.LIGHT)
 
-        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow())
+        val viewModel = SettingsViewModel(controller, AnimationController(SettingsAnimationPreferences(MemorySettings())), timeWindow(), languageController())
 
         val state = viewModel.state.first()
         assertEquals(ThemeMode.LIGHT, state.themeMode)
@@ -84,7 +87,7 @@ class SettingsViewModelTest {
     fun onAnimationsToggledUpdatesControllerAndState() = runTest {
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
         val animations = AnimationController(SettingsAnimationPreferences(MemorySettings()))
-        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), animations, timeWindow())
+        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), animations, timeWindow(), languageController())
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.state.collect {} }
 
@@ -97,7 +100,7 @@ class SettingsViewModelTest {
     @Test
     fun validWindowChangesAreApplied() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window)
+        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window, languageController())
 
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(23 * 60))
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(18 * 60))
@@ -109,7 +112,7 @@ class SettingsViewModelTest {
     @Test
     fun invalidWindowChangesAreRejected() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window)
+        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window, languageController())
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(22 * 60))
 
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(23 * 60))
@@ -122,7 +125,7 @@ class SettingsViewModelTest {
     @Test
     fun noLimitClearsMax() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window)
+        val viewModel = SettingsViewModel(ThemeController(SettingsThemePreferences(MemorySettings())), AnimationController(SettingsAnimationPreferences(MemorySettings())), window, languageController())
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(23 * 60))
 
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(null))

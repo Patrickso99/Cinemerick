@@ -2,6 +2,8 @@ package com.preichert.cinemerick.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.preichert.cinemerick.core.domain.AppLanguage
+import com.preichert.cinemerick.core.presentation.LanguageController
 import com.preichert.cinemerick.core.presentation.AnimationController
 import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.presentation.TimeWindow
@@ -16,12 +18,14 @@ class SettingsViewModel(
     private val themeController: ThemeController,
     private val animationController: AnimationController,
     private val timeWindowController: TimeWindowController,
+    private val languageController: LanguageController,
 ) : ViewModel() {
 
     val state: StateFlow<SettingsState> = combine(
         themeController.mode,
         animationController.isEnabled,
         timeWindowController.window,
+        languageController.language,
         ::toState
     ).stateIn(
         scope = viewModelScope,
@@ -29,12 +33,14 @@ class SettingsViewModel(
         initialValue = toState(
             themeController.mode.value,
             animationController.isEnabled.value,
-            timeWindowController.window.value
+            timeWindowController.window.value,
+            languageController.language.value,
         )
     )
 
-    private fun toState(themeMode: ThemeMode, animationsEnabled: Boolean, window: TimeWindow) = SettingsState(
+    private fun toState(themeMode: ThemeMode, animationsEnabled: Boolean, window: TimeWindow, language: AppLanguage) = SettingsState(
         themeMode = themeMode,
+        language = language,
         animationsEnabled = animationsEnabled,
         defaultMinMinutes = window.minMinutes,
         defaultMaxMinutes = window.maxMinutes,
@@ -42,6 +48,7 @@ class SettingsViewModel(
 
     fun onAction(action: SettingsAction) {
         when (action) {
+            is SettingsAction.OnLanguageSelected -> languageController.setLanguage(action.language)
             is SettingsAction.OnAutoToggled -> {
                 val newMode = if (action.enabled) {
                     ThemeMode.SYSTEM
