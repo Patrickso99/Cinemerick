@@ -3,7 +3,6 @@ package com.preichert.cinemerick.core.presentation
 import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.core.data.SettingsThemePreferences
 import com.preichert.cinemerick.core.domain.ThemeMode
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
