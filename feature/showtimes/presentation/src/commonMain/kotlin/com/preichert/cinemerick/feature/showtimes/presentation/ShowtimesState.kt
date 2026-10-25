@@ -35,6 +35,8 @@ data class ShowtimesState(
     val personDetails: PersonUi? = null,
     // TMDB details of the films whose cards have been on screen, by film title.
     val cardDetails: Map<String, FilmDetails> = emptyMap(),
+    // The film database id of each showing's title: showings with the same id are grouped as one film.
+    val movieIds: Map<String, Int> = emptyMap(),
     // Films whose card lookup has answered, with or without a TMDB match: until then the card shows a placeholder poster.
     val resolvedCards: Set<String> = emptySet()
 ) {

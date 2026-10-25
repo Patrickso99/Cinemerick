@@ -34,12 +34,17 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.invalid
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_day
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.venues_load_error
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -74,6 +79,7 @@ class ShowtimesViewModel(
     // Card lookups answered since the last flush, and the flush that applies them. Both are only touched on the main thread.
     private val answeredCards = mutableMapOf<String, FilmDetails?>()
     private var cardFlushJob: Job? = null
+    private var movieIdJob: Job? = null
 
     private class Fetch(
         val showings: List<Showing>,
@@ -152,6 +158,7 @@ class ShowtimesViewModel(
         }
     }
 
+
     private fun openVenuePicker(chain: Chain) {
         _state.update { it.copy(venuePicker = VenuePickerUi(chain = chain)) }
         viewModelScope.launch {
@@ -206,6 +213,7 @@ class ShowtimesViewModel(
 
     private companion object {
         const val CARD_FLUSH_MILLIS = 150L
+        const val MOVIE_ID_CONCURRENCY = 4
         val defaultVenues = setOf(
             Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),
             Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto"),
@@ -233,6 +241,7 @@ class ShowtimesViewModel(
     private fun clear() {
         if (_state.value.isLoading) return
         lastFetch = null
+        movieIdJob?.cancel()
         filterPreferences.setSelectedVenues(emptySet())
         _state.value = freshState(selectedVenues = emptySet())
     }
@@ -306,6 +315,7 @@ class ShowtimesViewModel(
             _state.update {
                 it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis).withResults(lastFetch)
             }
+            loadMovieIds(showings)
         }
     }
 
@@ -326,7 +336,7 @@ class ShowtimesViewModel(
         val showings = fetch.showings.filter { it.venue in selectedVenues }
         val groups = showings
             .filterShowings(ranges, fetch.filmQueries, now, hiddenTags)
-            .groupByFilm()
+            .groupByFilm(movieIds)
         // Tags come from the unfiltered-by-format results, so hidden ones stay toggleable.
         val tags = showings.filterShowings(ranges, fetch.filmQueries, now).availableTags()
         return copy(
@@ -382,6 +392,23 @@ class ShowtimesViewModel(
                 scheduleCardFlush()
             } finally {
                 cardLookups.remove(title)
+            }
+        }
+    }
+
+    // The film database id of each showing's title, so that titles of the same film are grouped together. Resolved once per
+    // title (a title that could not be resolved is asked again on the next fetch), then the groups are rebuilt with the ids.
+    private fun loadMovieIds(showings: List<Showing>) {
+        val titles = showings.map { it.title }.distinct().filterNot { it in _state.value.movieIds }
+        movieIdJob?.cancel()
+        if (titles.isEmpty()) return
+        movieIdJob = viewModelScope.launch {
+            val semaphore = Semaphore(MOVIE_ID_CONCURRENCY)
+            val ids = coroutineScope {
+                titles.map { title -> async { semaphore.withPermit { title to filmDetailsRepository.getMovieId(title) } } }.awaitAll()
+            }
+            _state.update { state ->
+                state.copy(movieIds = state.movieIds + ids.mapNotNull { (title, id) -> id?.let { title to it } }).withResults(lastFetch)
             }
         }
     }

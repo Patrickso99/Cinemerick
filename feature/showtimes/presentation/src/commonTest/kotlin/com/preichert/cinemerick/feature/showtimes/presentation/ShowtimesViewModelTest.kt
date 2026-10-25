@@ -234,6 +234,7 @@ class ShowtimesViewModelTest {
                 override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>) =
                     onFilmDetails(title, known, sources)
                 override suspend fun getDatabaseDetails(title: String) = onDatabaseDetails(title)
+                override suspend fun getMovieId(title: String): Int? = null
             }
         )
         venues.forEach { viewModel.onAction(ShowtimesAction.OnVenueToggle(it)) }
@@ -379,6 +380,7 @@ class ShowtimesViewModelTest {
     private object FakeFilmDetailsRepository : FilmDetailsRepository {
         override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails = known
         override suspend fun getDatabaseDetails(title: String): FilmDetails? = null
+        override suspend fun getMovieId(title: String): Int? = null
     }
 
     private object FakePersonLookup : PersonLookup {

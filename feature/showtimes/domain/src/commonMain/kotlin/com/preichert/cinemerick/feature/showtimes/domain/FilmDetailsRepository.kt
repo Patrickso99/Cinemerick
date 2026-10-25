@@ -7,6 +7,9 @@ import com.preichert.cinemerick.core.domain.Result
 interface FilmLookup {
     /** The film's details, or `Success(null)` when the database has no confident match for [searchTitle]. */
     suspend fun find(searchTitle: String): Result<FilmDetails?, DataError.Network>
+
+    /** The database's id of the film matching [searchTitle], or `Success(null)` when there is no confident match. */
+    suspend fun movieId(searchTitle: String): Result<Int?, DataError.Network>
 }
 
 interface FilmDetailsRepository {
@@ -21,4 +24,10 @@ interface FilmDetailsRepository {
      * asked. Nothing is taken from the cinemas, and each film is asked for once per session.
      */
     suspend fun getDatabaseDetails(title: String): FilmDetails?
+
+    /**
+     * The external database's id of the film called [title], or null when it has no match or could not be asked. Two
+     * titles with the same id are the same film, whatever the cinema called them.
+     */
+    suspend fun getMovieId(title: String): Int?
 }

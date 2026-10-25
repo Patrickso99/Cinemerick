@@ -47,35 +47,20 @@ fun titleKey(title: String): String =
         .replace(whitespace, " ")
         .trim()
 
-// Two cinemas name the same film differently ("Naza" / "Naza C.A.", "X - Sottotitolo"): compare on this key.
+// Two cinemas name the same film differently ("Naza" / "Naza C.A.", "Carlo Acutis: Il Giovane Santo" / "Carlo Acutis - Il
+// Giovane Santo"): compare on this key. Colons and dashes both become a space, so the subtitle is kept, never cut.
 fun filmKey(title: String): String {
     val normalized = title.map { diacriticsMap[it] ?: it }.joinToString("")
-    val lowercased = normalized.lowercase()
+    return normalized.lowercase()
         .replace(" c.a.", "")
         .replace(formatSuffixPattern, "")
         .replace(sentenceSubtitlePattern) { "${it.groupValues[1]} - " }
-    val hasColonAndDash = lowercased.contains(":") && lowercased.contains(" - ")
-
-    return if (hasColonAndDash) {
-        // When colon and dash both exist, the dash is likely a language suffix
-        lowercased.replace(languageSuffixPattern, "")
-            .replace(": ", " - ")
-            .split(" - ")
-            .first()
-    } else if (lowercased.contains(":")) {
-        // Colon without language suffix: keep colon content by converting to space
-        lowercased.replace(languageSuffixPattern, "")
-            .replace(": ", " ")
-    } else {
-        // No colon: use original split logic for dash-separated subtitles
-        lowercased.replace(languageSuffixPattern, "")
-            .replace(": ", " - ")
-            .split(" - ")
-            .first()
-    }
-    .replace(specialChars, "")
-    .replace(whitespace, " ")
-    .trim()
+        .replace(languageSuffixPattern, "")
+        .replace(": ", " ")
+        .replace(" - ", " ")
+        .replace(specialChars, "")
+        .replace(whitespace, " ")
+        .trim()
 }
 
 private fun String.toTitleCase(): String {

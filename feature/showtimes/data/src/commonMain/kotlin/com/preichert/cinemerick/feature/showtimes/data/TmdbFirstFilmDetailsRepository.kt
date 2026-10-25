@@ -33,6 +33,15 @@ class TmdbFirstFilmDetailsRepository(
 
     override suspend fun getDatabaseDetails(title: String): FilmDetails? = databaseDetails(title)
 
+    override suspend fun getMovieId(title: String): Int? =
+        when (val result = lookup.movieId(searchTitle(title))) {
+            is Result.Success -> result.data
+            is Result.Failure -> {
+                log.w { "Film id lookup failed for \"$title\": ${result.error}" }
+                null
+            }
+        }
+
     private suspend fun databaseDetails(title: String): FilmDetails? {
         val key = filmKey(title)
         outcomesLock.withLock { outcomes[key] }?.let { return it.details }

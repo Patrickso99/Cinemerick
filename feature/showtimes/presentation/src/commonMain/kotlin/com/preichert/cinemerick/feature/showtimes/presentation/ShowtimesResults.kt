@@ -42,15 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import coil3.compose.AsyncImage
 import co.touchlab.kermit.Logger
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import com.preichert.cinemerick.core.designsystem.CinemerickChainChip
 import com.preichert.cinemerick.core.designsystem.CinemerickIconButton
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
@@ -63,6 +63,7 @@ import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.animateItemIfEnabled
 import com.preichert.cinemerick.core.designsystem.bounceClickable
+import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.core.designsystem.staggeredAppear
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
@@ -417,26 +418,32 @@ internal fun PosterPlaceholder(width: Dp) {
             .width(width)
             .aspectRatio(2f / 3f)
             .clip(MaterialTheme.shapes.medium)
-            .background(CinemerickTheme.colors.surfaceContainerHigh)
+            .shimmer()
     )
 }
 
 @Composable
 internal fun PosterImage(url: String, contentDescription: String, width: Dp = 104.dp) {
     var isEnlarged by remember { mutableStateOf(false) }
-    val placeholder = CinemerickTheme.colors.surfaceContainerHigh
+    // The shimmer stays under the image while it loads and is gone once the image (or its error) is on screen.
+    var isLoading by remember(url) { mutableStateOf(true) }
 
-    AsyncImage(
-        model = url,
-        contentDescription = contentDescription,
-        contentScale = ContentScale.Crop,
+    Box(
         modifier = Modifier
             .width(width)
             .aspectRatio(2f / 3f)
             .clip(MaterialTheme.shapes.medium)
-            .background(placeholder)
             .bounceClickable { isEnlarged = true }
-    )
+    ) {
+        AsyncImage(
+            model = url,
+            contentDescription = contentDescription,
+            contentScale = ContentScale.Crop,
+            onState = { isLoading = it is AsyncImagePainter.State.Loading || it is AsyncImagePainter.State.Empty },
+            modifier = Modifier.matchParentSize()
+        )
+        if (isLoading) Box(modifier = Modifier.matchParentSize().shimmer())
+    }
 
     if (isEnlarged) {
         Dialog(onDismissRequest = { isEnlarged = false }) {

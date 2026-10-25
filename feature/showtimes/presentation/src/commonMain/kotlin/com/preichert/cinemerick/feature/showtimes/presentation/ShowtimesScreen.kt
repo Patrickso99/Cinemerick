@@ -143,7 +143,12 @@ fun ShowtimesScreen(
             }
             val settingsLabel = stringResource(Res.string.open_settings)
             CinemerickAdaptiveLayout(
-                header = { HomeHeader(onSettingsClick = { onAction(ShowtimesAction.OnSettingsClick) }, settingsLabel = settingsLabel) },
+                header = {
+                    HomeHeader(
+                        onSettingsClick = { onAction(ShowtimesAction.OnSettingsClick) },
+                        settingsLabel = settingsLabel,
+                    )
+                },
                 collapsedTitle = BuildKonfig.APP_NAME,
                 collapsedAction = {
                     CinemerickIconButton(

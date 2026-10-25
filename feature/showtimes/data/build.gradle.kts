@@ -6,6 +6,7 @@ plugins {
 
 kotlin {
     sourceSets.commonTest.dependencies {
+        implementation(project(":core:testing"))
         implementation(libs.coroutines.test)
         implementation(libs.ktor.mock)
     }

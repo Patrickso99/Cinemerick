@@ -27,6 +27,7 @@ class TmdbFirstFilmDetailsRepositoryTest {
             searched += searchTitle
             return outcomes.removeFirst()
         }
+        override suspend fun movieId(searchTitle: String): Result<Int?, DataError.Network> = Result.Success(null)
     }
 
     private inner class FakeShowtimes : ShowtimesRepository {

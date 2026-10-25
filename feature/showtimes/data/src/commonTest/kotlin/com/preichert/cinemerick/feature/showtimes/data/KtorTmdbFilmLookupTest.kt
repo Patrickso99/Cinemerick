@@ -3,6 +3,7 @@ package com.preichert.cinemerick.feature.showtimes.data
 import com.preichert.cinemerick.core.data.HttpClientFactory
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
+import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -25,7 +26,11 @@ class KtorTmdbFilmLookupTest {
     private val today = LocalDate(2026, 10, 14)
     private val requests = mutableListOf<HttpRequestData>()
 
-    private fun lookup(token: String = "secret-token", handler: (HttpRequestData) -> Pair<HttpStatusCode, String>): KtorTmdbFilmLookup {
+    private fun lookup(
+        token: String = "secret-token",
+        store: TmdbMatchStore = SettingsTmdbMatchStore(MemorySettings()),
+        handler: (HttpRequestData) -> Pair<HttpStatusCode, String>
+    ): KtorTmdbFilmLookup {
         val engine = MockEngine { request ->
             requests += request
             val (status, body) = handler(request)
@@ -33,7 +38,7 @@ class KtorTmdbFilmLookupTest {
                 respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
             }
         }
-        return KtorTmdbFilmLookup(HttpClientFactory.create(engine), token) { today }
+        return KtorTmdbFilmLookup(HttpClientFactory.create(engine), store, token) { today }
     }
 
     private fun ok(body: String) = HttpStatusCode.OK to body
@@ -119,6 +124,46 @@ class KtorTmdbFilmLookupTest {
 
         assertEquals(Result.Failure(DataError.Network.UNAUTHORIZED), result)
         assertEquals(1, requests.size)
+    }
+
+    @Test
+    fun aMatchedTitleFetchesOnlyTheDetailTheNextTime() = runTest {
+        val lookup = lookup { route(it) }
+        lookup.find("Star Wars")
+        requests.clear()
+
+        val details = detailsOf(lookup.find("Star Wars"))
+
+        assertEquals("George Lucas", details.director)
+        assertEquals(listOf("/3/movie/11"), requests.map { it.url.encodedPath })
+    }
+
+    @Test
+    fun aNoMatchIsNotSearchedAgainUntilItExpires() = runTest {
+        var now = 0L
+        val store = SettingsTmdbMatchStore(MemorySettings()) { now }
+        val lookup = lookup(store = store) { ok("""{"results":[]}""") }
+        assertNull(lookup.find("Mammina").let { (it as Result.Success).data })
+        assertNull(lookup.find("Mammina").let { (it as Result.Success).data })
+        assertEquals(1, requests.size)
+
+        now = 8L * 24 * 60 * 60 * 1000
+        lookup.find("Mammina")
+        assertEquals(2, requests.size)
+    }
+
+    @Test
+    fun aFailedSearchIsNotRememberedAsNoMatch() = runTest {
+        var searchFails = true
+        val lookup = lookup {
+            if (it.url.encodedPath.endsWith("/search/movie") && searchFails) HttpStatusCode.Unauthorized to ""
+            else if (it.url.encodedPath.endsWith("/search/movie")) ok(SEARCH_JSON) else ok(MOVIE_JSON)
+        }
+        assertEquals(Result.Failure(DataError.Network.UNAUTHORIZED), lookup.find("Star Wars"))
+
+        searchFails = false
+        assertEquals("George Lucas", detailsOf(lookup.find("Star Wars")).director)
+        assertEquals(3, requests.size)
     }
 
     @Test

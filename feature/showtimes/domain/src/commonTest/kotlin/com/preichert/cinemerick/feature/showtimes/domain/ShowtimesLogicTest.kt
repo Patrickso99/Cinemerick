@@ -72,17 +72,17 @@ class ShowtimesLogicTest {
     @Test
     fun sameFilmFromBothCinemasIsGroupedWithShortestTitleAsHeader() {
         val groups = listOf(
-            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", venueTheSpace),
+            showing("HEART OF THE BEAST", thursday, "21:40", venueTheSpace),
             showing("Heart of the Beast", thursday, "21:40", venueUci),
             showing("Naza", friday, "21:40", venueTheSpace),
             showing("Naza C.A.", friday, "19:40", venueUci)
         ).groupByFilm()
 
         // Group titles are the shortest originals
-        assertEquals(listOf("Heart of the Beast", "Naza"), groups.map { it.title })
+        assertEquals(listOf("HEART OF THE BEAST", "Naza"), groups.map { it.title })
         // Original titles are preserved in showings (not transformed); at the same time they are ordered by venue name
         assertEquals(
-            listOf("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", "Heart of the Beast"),
+            listOf("HEART OF THE BEAST", "Heart of the Beast"),
             groups.first().showings.map { it.title }
         )
         assertEquals(
@@ -120,12 +120,12 @@ class ShowtimesLogicTest {
     @Test
     fun pollTextUsesGroupTitleForAllCinemas() {
         val text = listOf(
-            showing("Heart Of The Beast - Nel Profondo Selvaggio", thursday, "21:40", venueTheSpace),
+            showing("Heart Of The Beast", thursday, "21:40", venueTheSpace),
             showing("Heart of the Beast", thursday, "21:40", venueUci)
         ).groupByFilm().toPollText()
 
         assertEquals(
-            "Heart of the Beast (Giovedì - 21:40 - Silea)\nHeart of the Beast (Giovedì - 21:40 - UCI Luxe Marcon)",
+            "Heart Of The Beast (Giovedì - 21:40 - Silea)\nHeart Of The Beast (Giovedì - 21:40 - UCI Luxe Marcon)",
             text
         )
     }
@@ -272,7 +272,7 @@ class ShowtimesLogicTest {
     @Test
     fun filmKeyTreatsSentenceSubtitleAsDashSubtitle() {
         assertEquals(filmKey("Carlo Acutis - Il giovane santo"), filmKey("Carlo Acutis. Il Giovane Santo"))
-        assertEquals("carlo acutis", filmKey("Carlo Acutis. Il Giovane Santo"))
+        assertEquals("carlo acutis il giovane santo", filmKey("Carlo Acutis. Il Giovane Santo"))
 
         // Abbreviations are not subtitle separators
         assertEquals("dr strange", filmKey("Dr. Strange"))
@@ -322,7 +322,7 @@ class ShowtimesLogicTest {
         assertEquals("千と千尋の神隠し", titleKey("千と千尋の神隠し"))
         assertEquals("", titleKey(" !!! "))
         // `filmKey` cuts the subtitle: this is why matching must not use it.
-        assertEquals("star wars", filmKey("Star Wars: Episode III - Revenge of the Sith"))
+        assertEquals("star wars episode iii revenge of the sith", filmKey("Star Wars: Episode III - Revenge of the Sith"))
     }
 
     @Test
@@ -357,6 +357,75 @@ class ShowtimesLogicTest {
         // Both should normalize to "linkin park unshatter"
         assertEquals("linkin park unshatter", filmKey("Linkin Park: Unshatter"))
         assertEquals("linkin park unshatter", filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+    }
+
+    @Test
+    fun colonAndDashSubtitleVariantsAreGroupedTogether() {
+        val groups = listOf(
+            showing("Carlo Acutis: Il Giovane Santo", thursday, "19:00", venueTheSpace),
+            showing("Carlo Acutis - Il Giovane Santo", thursday, "21:00", venueUci)
+        ).groupByFilm()
+
+        assertEquals(1, groups.size)
+        assertEquals(2, groups.first().showings.size)
+    }
+
+    @Test
+    fun titlesWithTheSameDatabaseIdAreOneFilmWhateverTheirTitles() {
+        val groups = listOf(
+            showing("HEART OF THE BEAST - NEL PROFONDO SELVAGGIO", thursday, "21:40", venueTheSpace),
+            showing("Heart of the Beast", thursday, "19:40", venueUci)
+        ).groupByFilm(mapOf(
+            "HEART OF THE BEAST - NEL PROFONDO SELVAGGIO" to 42,
+            "Heart of the Beast" to 42
+        ))
+
+        assertEquals(1, groups.size)
+        assertEquals(2, groups.first().showings.size)
+    }
+
+    @Test
+    fun differentDatabaseIdsStaySeparateEvenWhenTitlesMatch() {
+        val groups = listOf(
+            showing("Avengers: Endgame", thursday, "19:00", venueTheSpace),
+            showing("Avengers: Endgame Extra", thursday, "21:00", venueUci)
+        ).groupByFilm(mapOf(
+            "Avengers: Endgame" to 1,
+            "Avengers: Endgame Extra" to 2
+        ))
+
+        assertEquals(2, groups.size)
+    }
+
+    @Test
+    fun showingsWithoutAnIdAreGroupedByTitleAsBefore() {
+        val showings = listOf(
+            showing("Naza", friday, "21:40", venueTheSpace),
+            showing("Naza C.A.", friday, "19:40", venueUci)
+        )
+
+        assertEquals(1, showings.groupByFilm().size)
+        assertEquals(1, showings.groupByFilm(emptyMap()).size)
+    }
+
+    @Test
+    fun aShowingWithAnIdIsNotMergedWithOneWithoutUntilItsIdIsKnown() {
+        val groups = listOf(
+            showing("Naza", friday, "21:40", venueTheSpace),
+            showing("Naza C.A.", friday, "19:40", venueUci)
+        ).groupByFilm(mapOf("Naza" to 7))
+
+        assertEquals(2, groups.size)
+    }
+
+    @Test
+    fun avengersWithAndWithoutExtraAreNotGroupedTogether() {
+        val groups = listOf(
+            showing("Avengers: Endgame", thursday, "19:00", venueTheSpace),
+            showing("Avengers: Endgame Extra", thursday, "21:00", venueUci)
+        ).groupByFilm()
+
+        assertEquals(2, groups.size)
     }
 
     @Test

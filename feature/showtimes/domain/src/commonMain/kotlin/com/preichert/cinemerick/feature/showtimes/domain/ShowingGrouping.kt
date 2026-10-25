@@ -8,12 +8,14 @@ data class FilmGroup(
     val detailsSources: List<DetailsSource> = emptyList()
 )
 
-fun List<Showing>.groupByFilm(): List<FilmGroup> {
+// [movieIds] maps a showing's title to its film database id: showings with the same id are the same film, whatever their
+// titles. A showing without an id is grouped by its title's `filmKey`, as before.
+fun List<Showing>.groupByFilm(movieIds: Map<String, Int> = emptyMap()): List<FilmGroup> {
     val showingOrder = compareBy<Showing>({ it.day }, { it.time }, { it.venue.name })
 
-    return groupBy { filmKey(it.title) }
+    return groupBy { movieIds[it.title]?.let { id -> "id:$id" } ?: filmKey(it.title) }
         .entries
-        .sortedBy { it.key }
+        .sortedBy { (_, showings) -> showings.minOf { filmKey(it.title) } }
         .map { (_, showings) ->
             val sorted = showings.sortedWith(showingOrder)
             // Use shortest original title as group header, keep original titles for each showing

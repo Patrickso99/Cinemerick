@@ -1,6 +1,8 @@
 package com.preichert.cinemerick.core.designsystem
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,7 @@ private val CollapseDistance = 72.dp
  * @param header the large header (title, tagline). On wide layouts it is the top of the filter pane.
  * @param filtersContent the filter sections, in order
  * @param collapsedTitle title shown in the pinned compact bar on phones once [header] scrolls away
+ * @param onCollapsedTitleClick called when the compact bar's title is tapped, without a visual feedback
  * @param collapsedAction trailing action of the compact bar (e.g. the settings button)
  * @param actionBar sticky actions (Clear / Search). Floats at the bottom on phones, ends the filter pane on wide layouts
  * @param resultsContent results of a wide layout, shown in the right pane
@@ -70,6 +73,7 @@ fun CinemerickAdaptiveLayout(
     filtersContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     collapsedTitle: String? = null,
+    onCollapsedTitleClick: (() -> Unit)? = null,
     collapsedAction: (@Composable () -> Unit)? = null,
     actionBar: (@Composable () -> Unit)? = null,
     resultsContent: (@Composable ColumnScope.() -> Unit)? = null,
@@ -84,6 +88,7 @@ fun CinemerickAdaptiveLayout(
                 header = header,
                 filtersContent = filtersContent,
                 collapsedTitle = collapsedTitle,
+                onCollapsedTitleClick = onCollapsedTitleClick,
                 collapsedAction = collapsedAction,
                 actionBar = actionBar,
                 mobileResultsItems = mobileResultsItems,
@@ -269,6 +274,7 @@ private fun PhoneLazyLayout(
     header: @Composable () -> Unit,
     filtersContent: @Composable ColumnScope.() -> Unit,
     collapsedTitle: String?,
+    onCollapsedTitleClick: (() -> Unit)?,
     collapsedAction: (@Composable () -> Unit)?,
     actionBar: (@Composable () -> Unit)?,
     mobileResultsItems: LazyListScope.() -> Unit,
@@ -326,7 +332,12 @@ private fun PhoneLazyLayout(
                     text = collapsedTitle,
                     style = MaterialTheme.typography.titleMedium,
                     color = colors.onSurface,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).clickable(
+                        enabled = onCollapsedTitleClick != null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { onCollapsedTitleClick?.invoke() },
+                    ),
                 )
                 collapsedAction?.invoke()
             }

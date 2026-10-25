@@ -23,7 +23,8 @@ val showtimesDataModule = module {
     singleOf(::KtorArcadiaShowtimesDataSource) bind ShowtimesDataSource::class
     singleOf(::KtorTheSpaceShowtimesDataSource) bind ShowtimesDataSource::class
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
-    single<FilmLookup> { KtorTmdbFilmLookup(get()) }
+    single<TmdbMatchStore> { SettingsTmdbMatchStore(Settings()) }
+    single<FilmLookup> { KtorTmdbFilmLookup(get(), get()) }
     single<FilmDetailsRepository> { TmdbFirstFilmDetailsRepository(get(), get()) }
     single<PersonLookup> { KtorTmdbPersonLookup(get()) }
 }
