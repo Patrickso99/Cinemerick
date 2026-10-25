@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Redesign background, dark (docs/design, Main: background). -->
+    <color name="app_background">#3A2C7A</color>
+</resources>

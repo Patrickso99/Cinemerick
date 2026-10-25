@@ -3,6 +3,7 @@ package com.preichert.cinemerick.feature.showtimes.data
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilmLookup
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
+import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.russhwolf.settings.Settings
@@ -24,4 +25,5 @@ val showtimesDataModule = module {
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
     single<FilmLookup> { KtorTmdbFilmLookup(get()) }
     single<FilmDetailsRepository> { TmdbFirstFilmDetailsRepository(get(), get()) }
+    single<PersonLookup> { KtorTmdbPersonLookup(get()) }
 }

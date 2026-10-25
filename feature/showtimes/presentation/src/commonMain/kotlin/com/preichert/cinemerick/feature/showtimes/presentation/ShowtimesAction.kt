@@ -1,6 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 
@@ -25,7 +26,10 @@ sealed interface ShowtimesAction {
     data object OnCopyClick : ShowtimesAction
     data object OnClearClick : ShowtimesAction
     data object OnVenuesReload : ShowtimesAction
+    data class OnFilmCardVisible(val title: String) : ShowtimesAction
     data class OnFilmDetailsOpen(val title: String) : ShowtimesAction
     data object OnFilmDetailsDismiss : ShowtimesAction
+    data class OnPersonOpen(val person: FilmPerson) : ShowtimesAction
+    data object OnPersonDismiss : ShowtimesAction
     data object OnSettingsClick : ShowtimesAction
 }

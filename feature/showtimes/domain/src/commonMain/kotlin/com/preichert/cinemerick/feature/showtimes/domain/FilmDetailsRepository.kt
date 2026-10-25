@@ -15,4 +15,10 @@ interface FilmDetailsRepository {
      * cinemas publish ([known] from the showtimes, completed from the film pages in [sources]).
      */
     suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails
+
+    /**
+     * The external database's details of the film called [title] alone, or null when it has no match or could not be
+     * asked. Nothing is taken from the cinemas, and each film is asked for once per session.
+     */
+    suspend fun getDatabaseDetails(title: String): FilmDetails?
 }

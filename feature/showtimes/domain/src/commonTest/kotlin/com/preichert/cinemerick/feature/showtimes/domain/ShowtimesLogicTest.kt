@@ -236,6 +236,14 @@ class ShowtimesLogicTest {
     }
 
     @Test
+    fun cleanTitleDropsRatingSuffix() {
+        assertEquals("Mammina", cleanTitle("Mammina - V.M.14"))
+        assertEquals("Mammina", cleanTitle("MAMMINA - V.M.14"))
+        assertEquals("Mammina", cleanTitle("Mammina (V.M.14)"))
+        assertEquals(filmKey("Mammina"), filmKey(cleanTitle("Mammina - V.M.14")))
+    }
+
+    @Test
     fun cleanTitleConvertsAllCapsToTitleCaseAndKeepsOthers() {
         assertEquals("Avengers: Endgame Extra", cleanTitle("AVENGERS: ENDGAME EXTRA"))
         assertEquals("Avengers: Endgame Extra", cleanTitle("Avengers:  Endgame Extra "))
@@ -262,6 +270,15 @@ class ShowtimesLogicTest {
     }
 
     @Test
+    fun filmKeyTreatsSentenceSubtitleAsDashSubtitle() {
+        assertEquals(filmKey("Carlo Acutis - Il giovane santo"), filmKey("Carlo Acutis. Il Giovane Santo"))
+        assertEquals("carlo acutis", filmKey("Carlo Acutis. Il Giovane Santo"))
+
+        // Abbreviations are not subtitle separators
+        assertEquals("dr strange", filmKey("Dr. Strange"))
+    }
+
+    @Test
     fun sameFilmWithPunctuationVariantsIsGrouped() {
         val groups = listOf(
             showing("Coyote Vs Acme", thursday, "19:00", venueTheSpace),
@@ -274,13 +291,16 @@ class ShowtimesLogicTest {
     }
 
     @Test
-    fun searchTitleDropsOnlyFormatAndLanguageSuffixes() {
+    fun searchTitleDropsOnlyFormatLanguageAndRatingSuffixes() {
         assertEquals("Dune", searchTitle("Dune (3D)"))
         assertEquals("Avatar", searchTitle("Avatar (IMAX)"))
         assertEquals("Café", searchTitle("Café - Lingua originale"))
         assertEquals("Linkin Park Unshatter", searchTitle("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
         assertEquals("Naza", searchTitle("Naza C.A."))
         assertEquals("Cars", searchTitle("Cars - 20 Anni"))
+        assertEquals("Mammina", searchTitle("Mammina - V.M.14"))
+        assertEquals("Mammina", searchTitle("Mammina (V.M.14)"))
+        assertEquals("Mammina", searchTitle("Mammina V.M. 14"))
     }
 
     @Test

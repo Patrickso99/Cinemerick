@@ -11,8 +11,10 @@ import com.preichert.cinemerick.core.presentation.toUiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DayRange
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
+import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
@@ -51,7 +53,8 @@ class ShowtimesViewModel(
     private val showtimesRepository: ShowtimesRepository,
     private val filmDetailsRepository: FilmDetailsRepository,
     private val filterPreferences: FilterPreferences,
-    private val timeWindowController: TimeWindowController
+    private val timeWindowController: TimeWindowController,
+    private val personLookup: PersonLookup
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState())
@@ -65,6 +68,12 @@ class ShowtimesViewModel(
     private var generateJob: Job? = null
     private var refreshJob: Job? = null
     private var detailsJob: Job? = null
+    private var personJob: Job? = null
+    // Titles whose TMDB details are being looked up for a card, so a card that scrolls back in does not ask again.
+    private val cardLookups = mutableSetOf<String>()
+    // Card lookups answered since the last flush, and the flush that applies them. Both are only touched on the main thread.
+    private val answeredCards = mutableMapOf<String, FilmDetails?>()
+    private var cardFlushJob: Job? = null
 
     private class Fetch(
         val showings: List<Showing>,
@@ -101,8 +110,11 @@ class ShowtimesViewModel(
                 val chain = _state.value.venuePicker?.chain
                 if (chain != null) openVenuePicker(chain)
             }
+            is ShowtimesAction.OnFilmCardVisible -> loadCardDetails(action.title)
             is ShowtimesAction.OnFilmDetailsOpen -> openFilmDetails(action.title)
             ShowtimesAction.OnFilmDetailsDismiss -> dismissFilmDetails()
+            is ShowtimesAction.OnPersonOpen -> openPerson(action.person)
+            ShowtimesAction.OnPersonDismiss -> dismissPerson()
             ShowtimesAction.OnSettingsClick -> {
                 // Navigation is handled in ShowtimesScreenContent
             }
@@ -193,6 +205,7 @@ class ShowtimesViewModel(
     )
 
     private companion object {
+        const val CARD_FLUSH_MILLIS = 150L
         val defaultVenues = setOf(
             Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),
             Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto"),
@@ -324,6 +337,8 @@ class ShowtimesViewModel(
                     posterUrl = group.posterUrl,
                     details = group.details,
                     detailsSources = group.detailsSources,
+                    tmdb = cardDetails[group.title],
+                    posterPending = group.title !in resolvedCards,
                     showings = group.showings.map { showing ->
                         ShowingUi(
                             day = showing.day.dayOfWeek,
@@ -348,11 +363,40 @@ class ShowtimesViewModel(
     private fun openFilmDetails(title: String) {
         val group = _state.value.groups.firstOrNull { it.title == title } ?: return
         detailsJob?.cancel()
-        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true, posterUrl = group.posterUrl)) }
+        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true, posterUrl = group.tmdb?.posterUrl ?: group.posterUrl)) }
         detailsJob = viewModelScope.launch {
             val details = filmDetailsRepository.getFilmDetails(title, group.details, group.detailsSources)
             _state.update { state ->
-                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details, posterUrl = group.posterUrl)) else state
+                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details, posterUrl = details.posterUrl ?: group.posterUrl)) else state
+            }
+        }
+    }
+
+    // Looked up as each card comes on screen. A failed lookup is not remembered, so the card asks again when it returns.
+    // The answers are applied in batches (see scheduleCardFlush), so a screenful of cards is one state update, not one each.
+    private fun loadCardDetails(title: String) {
+        if (title in _state.value.resolvedCards || title in answeredCards || !cardLookups.add(title)) return
+        viewModelScope.launch {
+            try {
+                answeredCards[title] = filmDetailsRepository.getDatabaseDetails(title)
+                scheduleCardFlush()
+            } finally {
+                cardLookups.remove(title)
+            }
+        }
+    }
+
+    private fun scheduleCardFlush() {
+        if (cardFlushJob?.isActive == true) return
+        cardFlushJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(CARD_FLUSH_MILLIS)
+            val answers = answeredCards.toMap()
+            answeredCards.clear()
+            _state.update { state ->
+                state.copy(
+                    cardDetails = state.cardDetails + answers.mapNotNull { (title, details) -> details?.let { title to it } },
+                    resolvedCards = state.resolvedCards + answers.keys,
+                ).withResults(lastFetch)
             }
         }
     }
@@ -360,6 +404,30 @@ class ShowtimesViewModel(
     private fun dismissFilmDetails() {
         detailsJob?.cancel()
         _state.update { it.copy(filmDetails = null) }
+    }
+
+    // Shows what the person page has, and the photo the cast row already had, while TMDB answers. A failed lookup leaves
+    // the page with the name and the photo only.
+    private fun openPerson(person: FilmPerson) {
+        personJob?.cancel()
+        _state.update { it.copy(personDetails = PersonUi(person, isLoading = true)) }
+        personJob = viewModelScope.launch {
+            val details = when (val result = personLookup.find(person.id)) {
+                is Result.Success -> result.data
+                is Result.Failure -> {
+                    log.w { "Person lookup failed for ${person.id}: ${result.error}" }
+                    null
+                }
+            }
+            _state.update { state ->
+                if (state.personDetails?.person == person) state.copy(personDetails = PersonUi(person, details)) else state
+            }
+        }
+    }
+
+    private fun dismissPerson() {
+        personJob?.cancel()
+        _state.update { it.copy(personDetails = null) }
     }
 
     private fun showSnackbar(message: UiText) {

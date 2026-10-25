@@ -4,7 +4,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
-// TMDB API v3: GET /search/movie and GET /movie/{id}?append_to_response=credits,videos,release_dates
+// TMDB API v3: GET /search/movie, GET /movie/{id}?append_to_response=credits,videos,release_dates,images and
+// GET /person/{id}?append_to_response=combined_credits
 
 @Serializable
 internal data class TmdbSearchDto(
@@ -43,7 +44,8 @@ internal data class TmdbMovieDto(
     @SerialName("production_companies") val productionCompanies: List<TmdbCompanyDto> = emptyList(),
     val budget: Long = 0,
     val revenue: Long = 0,
-    val images: TmdbImagesDto? = null
+    val images: TmdbImagesDto? = null,
+    @SerialName("poster_path") val posterPath: String? = null
 )
 
 @Serializable
@@ -53,13 +55,16 @@ internal data class TmdbCompanyDto(
 
 @Serializable
 internal data class TmdbImagesDto(
-    val backdrops: List<TmdbImageDto> = emptyList()
+    val backdrops: List<TmdbImageDto> = emptyList(),
+    val logos: List<TmdbImageDto> = emptyList()
 )
 
 @Serializable
 internal data class TmdbImageDto(
     @SerialName("file_path") val filePath: String = "",
-    @SerialName("vote_average") val voteAverage: Double = 0.0
+    @SerialName("vote_average") val voteAverage: Double = 0.0,
+    // Null for an image without text.
+    @SerialName("iso_639_1") val language: String? = null
 )
 
 @Serializable
@@ -132,4 +137,34 @@ internal data class TmdbReleaseDateDto(
     @SerialName("release_date") val releaseDate: String = "",
     // Kept as raw JSON: only plain strings are used, and an unexpected shape must not fail the whole film.
     val descriptors: List<JsonElement> = emptyList()
+)
+
+@Serializable
+internal data class TmdbPersonDto(
+    val id: Int = 0,
+    val name: String = "",
+    val biography: String? = null,
+    val birthday: String? = null,
+    val deathday: String? = null,
+    @SerialName("place_of_birth") val placeOfBirth: String? = null,
+    @SerialName("profile_path") val profilePath: String? = null,
+    @SerialName("combined_credits") val combinedCredits: TmdbCombinedCreditsDto? = null
+)
+
+@Serializable
+internal data class TmdbCombinedCreditsDto(
+    val cast: List<TmdbPersonCreditDto> = emptyList(),
+    val crew: List<TmdbPersonCreditDto> = emptyList()
+)
+
+// A film or a series: only the films are used.
+@Serializable
+internal data class TmdbPersonCreditDto(
+    val id: Int = 0,
+    @SerialName("media_type") val mediaType: String = "",
+    val title: String? = null,
+    @SerialName("release_date") val releaseDate: String? = null,
+    val character: String? = null,
+    @SerialName("poster_path") val posterPath: String? = null,
+    @SerialName("vote_average") val voteAverage: Double = 0.0
 )

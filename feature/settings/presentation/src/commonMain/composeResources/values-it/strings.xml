@@ -2,7 +2,7 @@
 <resources>
     <string name="settings_title">Impostazioni</string>
     <string name="app_theme_title">Tema app</string>
-    <string name="theme_auto">Automatico</string>
+    <string name="theme_auto">Auto</string>
     <string name="theme_auto_description">Passa automaticamente tra chiaro e scuro in base alle impostazioni del dispositivo</string>
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>

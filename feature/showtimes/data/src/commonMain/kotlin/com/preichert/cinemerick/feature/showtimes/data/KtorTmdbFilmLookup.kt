@@ -24,8 +24,8 @@ private const val TMDB_API = "https://api.themoviedb.org/3"
 private const val LANGUAGE = "it-IT"
 private const val VIDEO_LANGUAGE = "it"
 private const val REGION = "IT"
-// Images without text, and those with Italian text.
-private const val IMAGE_LANGUAGES = "it,null"
+// Italian and English logos, and images without text. The gallery keeps Italian and untagged backdrops only.
+private const val IMAGE_LANGUAGES = "it,en,null"
 
 /**
  * Looks a film up on TMDB: a search by title, then the detail of the film it trusts (with credits, trailers, images and the

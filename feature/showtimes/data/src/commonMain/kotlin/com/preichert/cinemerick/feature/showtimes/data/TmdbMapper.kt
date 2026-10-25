@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 
 private const val MAX_CAST = 8
 private const val ITALIAN = "it"
+private const val ENGLISH = "en"
 private const val YOUTUBE = "YouTube"
 private const val TRAILER = "Trailer"
 private const val ITALY = "IT"
@@ -19,6 +20,8 @@ private const val GALLERY_THUMB_SIZE = "w300"
 private const val GALLERY_FULL_SIZE = "w1280"
 private const val MAX_GALLERY = 9
 private const val THEATRICAL = 3
+private const val POSTER_SIZE = "w342"
+private const val LOGO_SIZE = "w500"
 
 /** TMDB's description of a film, as it was requested: in Italian, so a missing synopsis or trailer stays missing. */
 internal fun TmdbMovieDto.toFilmDetails(): FilmDetails = FilmDetails(
@@ -43,7 +46,9 @@ internal fun TmdbMovieDto.toFilmDetails(): FilmDetails = FilmDetails(
     budget = budget.takeIf { it > 0 },
     revenue = revenue.takeIf { it > 0 },
     releaseDate = italianTheatricalDate() ?: releaseDate.toDateOrNull(),
-    gallery = gallery()
+    gallery = gallery(),
+    posterUrl = posterPath.imageUrl(POSTER_SIZE),
+    logoUrl = logo()
 )
 
 // The earliest Italian theatrical release (a premiere or a re-release may come later); null if there is none.
@@ -56,12 +61,12 @@ private fun TmdbMovieDto.italianTheatricalDate(): LocalDate? =
         .minOrNull()
 
 // TMDB writes "2024-02-28" for the primary date and "2024-02-28T00:00:00.000Z" for the dated entries.
-private fun String?.toDateOrNull(): LocalDate? = this?.take(10)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+internal fun String?.toDateOrNull(): LocalDate? = this?.take(10)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
 // The best rated backdrops, apart from the one already shown at the top of the sheet.
 private fun TmdbMovieDto.gallery(): List<FilmImage> =
     images?.backdrops.orEmpty()
-        .filter { it.filePath.isNotBlank() && it.filePath != backdropPath }
+        .filter { it.filePath.isNotBlank() && it.filePath != backdropPath && (it.language == ITALIAN || it.language == null) }
         .sortedByDescending { it.voteAverage }
         .distinctBy { it.filePath }
         .take(MAX_GALLERY)
@@ -71,7 +76,18 @@ private fun TmdbMovieDto.gallery(): List<FilmImage> =
             if (thumb != null && full != null) FilmImage(thumb, full) else null
         }
 
-private fun String?.imageUrl(size: String): String? = orNullIfBlank()?.let { "$IMAGE_BASE/$size${if (it.startsWith("/")) it else "/$it"}" }
+// The best logo in Italian, else in English, the best rated first. A logo without a language tag is never used: its text
+// can be in any language (Whalefall's shows a Portuguese title). When there is none, the sheet shows the plain title.
+private fun TmdbMovieDto.logo(): String? =
+    images?.logos.orEmpty()
+        .filter { it.filePath.isNotBlank() && (it.language == ITALIAN || it.language == ENGLISH) }
+        .minWithOrNull(
+            compareBy<TmdbImageDto> { if (it.language == ITALIAN) 0 else 1 }
+                .thenByDescending { it.voteAverage }
+        )
+        ?.filePath.imageUrl(LOGO_SIZE)
+
+internal fun String?.imageUrl(size: String): String? = orNullIfBlank()?.let { "$IMAGE_BASE/$size${if (it.startsWith("/")) it else "/$it"}" }
 
 private fun TmdbMovieDto.directorPeople(): List<FilmPerson> =
     credits?.crew.orEmpty()

@@ -38,10 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,13 +96,14 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun FilmDetailsOverlay(
     film: FilmDetailsUi,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onPersonClick: (FilmPerson) -> Unit = {},
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        FilmDetailsLayer(film = film, onDismiss = onDismiss)
+        FilmDetailsLayer(film = film, onDismiss = onDismiss, onPersonClick = onPersonClick)
     }
 }
 
@@ -109,6 +112,7 @@ internal fun FilmDetailsOverlay(
 internal fun FilmDetailsLayer(
     film: FilmDetailsUi,
     onDismiss: () -> Unit,
+    onPersonClick: (FilmPerson) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -120,6 +124,7 @@ internal fun FilmDetailsLayer(
         FilmDetailsSheet(
             film = film,
             onDismiss = onDismiss,
+            onPersonClick = onPersonClick,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -129,6 +134,7 @@ internal fun FilmDetailsLayer(
 private fun FilmDetailsSheet(
     film: FilmDetailsUi,
     onDismiss: () -> Unit,
+    onPersonClick: (FilmPerson) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -187,12 +193,12 @@ private fun FilmDetailsSheet(
                     )
                 }
                 if (details.directors.isNotEmpty()) {
-                    PeopleRow(stringResource(Res.string.details_director), details.directors)
+                    PeopleRow(stringResource(Res.string.details_director), details.directors, onPersonClick)
                 } else {
                     details.director?.let { DetailField(stringResource(Res.string.details_director), it) }
                 }
                 if (details.castMembers.isNotEmpty()) {
-                    PeopleRow(stringResource(Res.string.details_cast), details.castMembers)
+                    PeopleRow(stringResource(Res.string.details_cast), details.castMembers, onPersonClick)
                 } else {
                     details.cast?.let { DetailField(stringResource(Res.string.details_cast), it) }
                 }
@@ -269,39 +275,60 @@ private fun FilmHeader(film: FilmDetailsUi, onDismiss: () -> Unit) {
                 Spacer(Modifier.width(Spacing.space4))
             }
             Column(modifier = Modifier.padding(top = if (film.posterUrl != null) 90.dp else 0.dp).weight(1f, fill = false)) {
-                Text(
-                    text = film.title,
-                    style = titleStyle,
-                    color = colors.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                // Year · runtime, then the TMDB score with a star, as in docs/design (Phone, 04).
+                TitleOrLogo(film = film, style = titleStyle)
                 val meta = details.metaLine()
-                if (meta != null || details.score != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.space2)) {
-                        meta?.let {
-                            Text(text = it, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
-                        }
-                        details.score?.let { score ->
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Icon(
-                                    painter = painterResource(CinemerickIcons.Star),
-                                    contentDescription = null,
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                                Text(
-                                    text = formatScore(score.value),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = colors.primary,
-                                )
-                            }
+                if (meta == null && details.score == null) return
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.space2)) {
+                    meta?.let {
+                        Text(text = it, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+                    }
+                    details.score?.let { score ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Icon(
+                                painter = painterResource(CinemerickIcons.Star),
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Text(
+                                text = formatScore(score.value),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.primary,
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * The title as text, or as TMDB's logo when TMDB has one, tinted to the surface so it reads in both themes. The text is
+ * kept when the logo cannot be loaded.
+ */
+@Composable
+private fun TitleOrLogo(film: FilmDetailsUi, style: TextStyle) {
+    val colors = CinemerickTheme.colors
+    var logoFailed by remember(film.details.logoUrl) { mutableStateOf(false) }
+    val logo = film.details.logoUrl?.takeUnless { logoFailed }
+    if (logo != null) {
+        AsyncImage(
+            model = logo,
+            contentDescription = film.title,
+            contentScale = ContentScale.Fit,
+            colorFilter = ColorFilter.tint(colors.onSurface),
+            onError = { logoFailed = true },
+            modifier = Modifier.height(64.dp).widthIn(max = 220.dp),
+        )
+    } else {
+        Text(
+            text = film.title,
+            style = style,
+            color = colors.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -344,7 +371,7 @@ private fun GenreTags(genres: String) {
 
 /** Synopsis, three lines; "Read more" appears only when the text is longer and opens the rest. */
 @Composable
-private fun Synopsis(text: String) {
+internal fun Synopsis(text: String) {
     var expanded by remember(text) { mutableStateOf(false) }
     var overflows by remember(text) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
@@ -420,7 +447,7 @@ private fun GalleryField(label: String, images: List<FilmImage>) {
 
 /** Cast or directors as a horizontal row of round avatars with the name and, for cast, the character. */
 @Composable
-private fun PeopleRow(label: String, people: List<FilmPerson>) {
+private fun PeopleRow(label: String, people: List<FilmPerson>, onPersonClick: (FilmPerson) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
         Text(
             text = label.uppercase(),
@@ -428,17 +455,20 @@ private fun PeopleRow(label: String, people: List<FilmPerson>) {
             color = CinemerickTheme.colors.onSurfaceVariant,
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.space3)) {
-            items(people) { person -> PersonAvatar(person) }
+            items(people) { person -> PersonAvatar(person, onClick = { onPersonClick(person) }) }
         }
     }
 }
 
 /** 64dp round photo, the initial of the name behind it. A failed load leaves the initial showing. */
 @Composable
-private fun PersonAvatar(person: FilmPerson) {
+private fun PersonAvatar(person: FilmPerson, onClick: () -> Unit) {
     val colors = CinemerickTheme.colors
     Column(
-        modifier = Modifier.width(72.dp),
+        modifier = Modifier
+            .width(72.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(role = Role.Button, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Spacing.space1),
     ) {
@@ -485,7 +515,7 @@ private fun PersonAvatar(person: FilmPerson) {
 }
 
 @Composable
-private fun DetailField(label: String, value: String) {
+internal fun DetailField(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
         Text(
             text = label.uppercase(),

@@ -37,7 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -315,7 +315,7 @@ private fun PhoneLazyLayout(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .alpha(collapsedFraction)
+                    .graphicsLayer { alpha = collapsedFraction }
                     .background(colors.background)
                     .windowInsetsPadding(WindowInsets.statusBars)
                     .height(64.dp)

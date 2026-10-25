@@ -13,7 +13,7 @@
     <string name="invalid_time">Invalid time: use HH or HH:MM</string>
     <string name="no_results">No showings found with these filters</string>
     <string name="options_count">%1$d showings</string>
-    <string name="app_subtitle">Centralized movie showtimes for Italian cinemas</string>
+    <string name="app_subtitle">Movie showtimes from Italian cinemas</string>
     <string name="theme_dark">Dark theme</string>
     <string name="quick_today">Today</string>
     <string name="quick_tomorrow">Tomorrow</string>
@@ -86,10 +86,17 @@
     <string name="details_release_date">Release date</string>
     <string name="details_gallery">Gallery</string>
     <string name="details_gallery_close">Close image</string>
+    <string name="person_birthday">Born</string>
+    <string name="person_deathday">Died</string>
+    <string name="person_birthplace">Place of birth</string>
+    <string name="person_biography">Biography</string>
+    <string name="person_filmography">Filmography</string>
+    <string name="person_none">No details available for this person</string>
     <string name="open_settings">Settings</string>
     <string name="choose_venues">Choose venues</string>
     <string name="venues_selected_count">%1$d selected</string>
     <string name="select_all">Select all</string>
+    <string name="deselect_all">Deselect all</string>
     <string name="done_with_count">Done · %1$d selected</string>
     <string name="open_calendar">Calendar</string>
     <string name="formats_selected_count">%1$d selected</string>

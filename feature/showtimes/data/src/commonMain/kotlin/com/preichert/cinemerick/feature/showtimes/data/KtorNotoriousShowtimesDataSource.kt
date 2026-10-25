@@ -13,7 +13,9 @@ import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
 private val log = Logger.withTag("NotoriousShowtimes")
@@ -30,7 +32,7 @@ class KtorNotoriousShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                Result.Success(parseNotoriousVenues(html))
+                Result.Success(withContext(Dispatchers.Default) { parseNotoriousVenues(html) })
             }
         }
 
@@ -48,7 +50,7 @@ class KtorNotoriousShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = parseNotoriousShowings(html, venue, days)
+                val showings = withContext(Dispatchers.Default) { parseNotoriousShowings(html, venue, days) }
                 log.d { "$url: ${html.length} chars, ${showings.size} showing(s) for ${days.size} day(s)" }
                 Result.Success(showings)
             }

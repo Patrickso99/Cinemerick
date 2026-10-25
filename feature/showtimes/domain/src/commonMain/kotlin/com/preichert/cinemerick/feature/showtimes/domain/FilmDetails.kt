@@ -17,7 +17,8 @@ data class FilmImage(val thumbUrl: String, val fullUrl: String)
 /**
  * What is known about a film. Every field is optional: chains disagree on what they offer, and TMDB may not know a film.
  * [runtimeMinutes], [year], [originalTitle], [score], the people lists, [tagline], [backdropUrl], [saga], [originalLanguage],
- * [countries], [productionCompanies], [budget], [revenue], [releaseDate] and [gallery] only ever come from TMDB.
+ * [countries], [productionCompanies], [budget], [revenue], [releaseDate], [gallery], [posterUrl] and [logoUrl] only ever come
+ * from TMDB.
  */
 data class FilmDetails(
     val synopsis: String? = null,
@@ -42,14 +43,18 @@ data class FilmDetails(
     val budget: Long? = null,
     val revenue: Long? = null,
     val releaseDate: LocalDate? = null,
-    val gallery: List<FilmImage> = emptyList()
+    val gallery: List<FilmImage> = emptyList(),
+    /** TMDB's poster: the home list shows it whenever TMDB knows the film. */
+    val posterUrl: String? = null,
+    /** TMDB's title logo, in Italian when TMDB has one. */
+    val logoUrl: String? = null
 ) {
     val isEmpty: Boolean
         get() = synopsis == null && genre == null && director == null && cast == null && rating == null && trailerUrl == null &&
             runtimeMinutes == null && year == null && originalTitle == null && score == null &&
             directors.isEmpty() && castMembers.isEmpty() && tagline == null && backdropUrl == null && saga == null &&
             originalLanguage == null && countries == null && productionCompanies == null &&
-            budget == null && revenue == null && releaseDate == null && gallery.isEmpty()
+            budget == null && revenue == null && releaseDate == null && gallery.isEmpty() && posterUrl == null && logoUrl == null
 
     /** Every field the chains publish is present; the TMDB-only fields are deliberately not part of this. */
     val isComplete: Boolean
@@ -78,7 +83,9 @@ data class FilmDetails(
         budget = budget ?: fallback.budget,
         revenue = revenue ?: fallback.revenue,
         releaseDate = releaseDate ?: fallback.releaseDate,
-        gallery = gallery.ifEmpty { fallback.gallery }
+        gallery = gallery.ifEmpty { fallback.gallery },
+        posterUrl = posterUrl ?: fallback.posterUrl,
+        logoUrl = logoUrl ?: fallback.logoUrl
     )
 }
 

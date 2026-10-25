@@ -5,6 +5,8 @@ private val specialChars = Regex("[^a-z0-9 ]")
 private val languageSuffixPattern = Regex(""" - (Lingua originale|Original Language|VO|Dubbed|20 Anni|Extended|Director'?s).*$""", RegexOption.IGNORE_CASE)
 private val formatSuffixPattern = Regex("""\s*\((infinity vision|epic|imax|dolby atmos|4dx|screenx|vo|v\.o\.|3d|2d|live action[^)]*)\)\s*$""", RegexOption.IGNORE_CASE)
 private val audioDescriptionPattern = Regex(""" c\.a\.""", RegexOption.IGNORE_CASE)
+private val ratingSuffixPattern = Regex("""\s*(-\s*|\(\s*)?V\.\s?M\.\s?\d{1,2}\s*\)?\s*$""", RegexOption.IGNORE_CASE)
+private val sentenceSubtitlePattern = Regex("""(\p{L}{3})\. """)
 private val diacriticsMap = mapOf(
     'à' to 'a', 'á' to 'a', 'â' to 'a', 'ã' to 'a', 'ä' to 'a', 'å' to 'a',
     'è' to 'e', 'é' to 'e', 'ê' to 'e', 'ë' to 'e',
@@ -21,13 +23,13 @@ private val diacriticsMap = mapOf(
 )
 
 fun cleanTitle(raw: String): String {
-    val title = raw.trim().replace(whitespace, " ")
+    val title = raw.trim().replace(whitespace, " ").replace(ratingSuffixPattern, "")
     val isAllCaps = title.any { it.isLetter() } && title == title.uppercase()
     return if (isAllCaps) title.toTitleCase() else title
 }
 
-// The title to look a film up by in an external database: only the format and language suffixes `filmKey` also ignores
-// are removed, accents and punctuation stay ("Dune (3D)" -> "Dune", "Café - Lingua originale" -> "Café").
+// The title to look a film up by in an external database: only the format and language suffixes are removed on top of
+// `cleanTitle`, accents and punctuation stay ("Dune (3D)" -> "Dune", "Café - Lingua originale" -> "Café").
 fun searchTitle(raw: String): String =
     cleanTitle(raw)
         .replace(audioDescriptionPattern, "")
@@ -46,17 +48,16 @@ fun titleKey(title: String): String =
         .trim()
 
 // Two cinemas name the same film differently ("Naza" / "Naza C.A.", "X - Sottotitolo"): compare on this key.
-// Also handles diacritics: "La città dei vivi" == "La citta dei vivi" == "La Citta' Dei Vivi"
-// Removes all special characters to handle punctuation variants: "Coyote Vs Acme" == "Coyote Vs. Acme"
-// Normalizes language/format suffixes: "Linkin Park: Unshatter" == "LINKIN PARK UNSHATTER - Lingua originale"
 fun filmKey(title: String): String {
     val normalized = title.map { diacriticsMap[it] ?: it }.joinToString("")
-    val lowercased = normalized.lowercase().replace(" c.a.", "").replace(formatSuffixPattern, "")
+    val lowercased = normalized.lowercase()
+        .replace(" c.a.", "")
+        .replace(formatSuffixPattern, "")
+        .replace(sentenceSubtitlePattern) { "${it.groupValues[1]} - " }
     val hasColonAndDash = lowercased.contains(":") && lowercased.contains(" - ")
 
     return if (hasColonAndDash) {
         // When colon and dash both exist, the dash is likely a language suffix
-        // Remove language suffix and split on colon-to-dash conversion, keeping only main title
         lowercased.replace(languageSuffixPattern, "")
             .replace(": ", " - ")
             .split(" - ")

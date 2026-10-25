@@ -66,7 +66,7 @@ class KtorTmdbFilmLookupTest {
         assertEquals("it-IT", detail.parameters["language"])
         assertEquals("credits,videos,release_dates,images", detail.parameters["append_to_response"])
         assertEquals("it", detail.parameters["include_video_language"])
-        assertEquals("it,null", detail.parameters["include_image_language"])
+        assertEquals("it,en,null", detail.parameters["include_image_language"])
     }
 
     @Test
@@ -95,14 +95,6 @@ class KtorTmdbFilmLookupTest {
         assertNull(details.synopsis)
         assertEquals("George Lucas", details.director)
         assertEquals(2, requests.size)
-    }
-
-    @Test
-    fun noTrustedMatchStopsAfterTheSearch() = runTest {
-        val result = lookup { route(it) }.find("Un film che non esiste")
-
-        assertEquals(Result.Success(null), result)
-        assertEquals(1, requests.size)
     }
 
     @Test

@@ -273,4 +273,49 @@ class TmdbMapperTest {
 
         assertEquals("A24, Blumhouse", details.productionCompanies)
     }
+
+    @Test
+    fun takesTheTmdbPosterAndTheItalianLogo() {
+        val details = movie().copy(
+            posterPath = "/poster.jpg",
+            images = TmdbImagesDto(
+                logos = listOf(
+                    TmdbImageDto(filePath = "/en.png", voteAverage = 9.0, language = "en"),
+                    TmdbImageDto(filePath = "/pt.png", voteAverage = 9.5, language = "pt"),
+                    TmdbImageDto(filePath = "/it.png", voteAverage = 5.0, language = "it"),
+                    TmdbImageDto(filePath = "/none.png", voteAverage = 8.0, language = null)
+                )
+            )
+        ).toFilmDetails()
+
+        assertEquals("https://image.tmdb.org/t/p/w342/poster.jpg", details.posterUrl)
+        assertEquals("https://image.tmdb.org/t/p/w500/it.png", details.logoUrl)
+    }
+
+    @Test
+    fun logoFallsBackToEnglishAndNeverToAnUntaggedOrOtherLanguage() {
+        val english = movie().copy(images = TmdbImagesDto(logos = listOf(
+            TmdbImageDto(filePath = "/en.png", voteAverage = 2.0, language = "en"),
+            TmdbImageDto(filePath = "/none.png", voteAverage = 9.0, language = null),
+            TmdbImageDto(filePath = "/pt.png", voteAverage = 9.5, language = "pt")
+        ))).toFilmDetails()
+        val nothing = movie().copy(images = TmdbImagesDto(logos = listOf(
+            TmdbImageDto(filePath = "/none.png", voteAverage = 9.0, language = null),
+            TmdbImageDto(filePath = "/pt.png", voteAverage = 9.5, language = "pt")
+        ))).toFilmDetails()
+
+        assertEquals("https://image.tmdb.org/t/p/w500/en.png", english.logoUrl)
+        assertNull(nothing.logoUrl)
+    }
+
+    @Test
+    fun galleryKeepsItalianAndUntaggedBackdropsOnly() {
+        val details = movie().copy(images = TmdbImagesDto(backdrops = listOf(
+            TmdbImageDto(filePath = "/it.jpg", voteAverage = 5.0, language = "it"),
+            TmdbImageDto(filePath = "/en.jpg", voteAverage = 9.0, language = "en"),
+            TmdbImageDto(filePath = "/none.jpg", voteAverage = 7.0, language = null)
+        ))).toFilmDetails()
+
+        assertEquals(listOf("/none.jpg", "/it.jpg"), details.gallery.map { it.fullUrl.substringAfter("w1280") })
+    }
 }

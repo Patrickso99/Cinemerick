@@ -9,6 +9,8 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
+import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
+import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
@@ -16,6 +18,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -40,6 +43,8 @@ class ShowtimesViewModelTest {
     private val second = LocalDate(2026, 10, 2)
 
     private val controller = TimeWindowController(SettingsTimeWindowPreferences(MemorySettings()))
+    // Main's clock, so a test can move past the card flush delay with scheduler.advanceUntilIdle().
+    private val scheduler = TestCoroutineScheduler()
 
     @AfterTest
     fun tearDown() {
@@ -50,8 +55,8 @@ class ShowtimesViewModelTest {
         repository: ShowtimesRepository = FakeRepository,
         filmDetails: FilmDetailsRepository = FakeFilmDetailsRepository
     ): ShowtimesViewModel {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller)
+        Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
+        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonLookup)
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }
@@ -217,6 +222,7 @@ class ShowtimesViewModelTest {
     private fun viewModelShowing(
         showings: List<Showing>,
         venues: Set<Venue>,
+        onDatabaseDetails: suspend (String) -> FilmDetails? = { null },
         onFilmDetails: suspend (String, FilmDetails, List<DetailsSource>) -> FilmDetails = { _, known, _ -> known }
     ): ShowtimesViewModel {
         val viewModel = viewModel(
@@ -227,6 +233,7 @@ class ShowtimesViewModelTest {
             object : FilmDetailsRepository {
                 override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>) =
                     onFilmDetails(title, known, sources)
+                override suspend fun getDatabaseDetails(title: String) = onDatabaseDetails(title)
             }
         )
         venues.forEach { viewModel.onAction(ShowtimesAction.OnVenueToggle(it)) }
@@ -335,6 +342,34 @@ class ShowtimesViewModelTest {
         assertNull(viewModel.state.value.filmDetails)
     }
 
+    @Test
+    fun cardAsksTmdbOnceAndShowsItsFactsOnTheFilm() = runTest {
+        val tmdb = FilmDetails(year = 2026, runtimeMinutes = 95)
+        val asked = mutableListOf<String>()
+        val viewModel = viewModelShowing(
+            listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue)), emptySet(),
+            onDatabaseDetails = { title -> asked += title; tmdb }
+        )
+
+        viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Mammina"))
+        viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Mammina"))
+        scheduler.advanceUntilIdle()
+
+        assertEquals(listOf("Mammina"), asked)
+        assertEquals(tmdb, viewModel.state.value.groups.single().tmdb)
+    }
+
+    @Test
+    fun cardPosterIsPendingUntilItsLookupAnswers() = runTest {
+        val viewModel = viewModelShowing(listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue)), emptySet())
+        assertTrue(viewModel.state.value.groups.single().posterPending)
+
+        viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Mammina"))
+        scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.state.value.groups.single().posterPending)
+    }
+
     private object FakeRepository : ShowtimesRepository {
         override suspend fun getVenues(): Map<Chain, Result<List<Venue>, DataError.Network>> = emptyMap()
         override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>): List<VenueShowings> = emptyList()
@@ -343,6 +378,11 @@ class ShowtimesViewModelTest {
 
     private object FakeFilmDetailsRepository : FilmDetailsRepository {
         override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails = known
+        override suspend fun getDatabaseDetails(title: String): FilmDetails? = null
+    }
+
+    private object FakePersonLookup : PersonLookup {
+        override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> = Result.Success(null)
     }
 
     private object FakeFilterPreferences : FilterPreferences {

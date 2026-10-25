@@ -60,6 +60,7 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.done_wi
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_venues_found
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.retry
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.search_venue
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.deselect_all
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_all
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.venues_selected_count
 import org.jetbrains.compose.resources.painterResource
@@ -218,13 +219,25 @@ internal fun VenuePickerSheet(
                                 fontWeight = FontWeight.Bold,
                                 color = colors.onSurfaceVariant
                             )
-                            TextButton(onClick = { localSelected = localSelected + filtered }) {
-                                Text(
-                                    text = stringResource(Res.string.select_all),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = colors.primary
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (selectedCount > 0) {
+                                    TextButton(onClick = { localSelected = localSelected - filtered.toSet() }) {
+                                        Text(
+                                            text = stringResource(Res.string.deselect_all),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = colors.primary
+                                        )
+                                    }
+                                }
+                                TextButton(onClick = { localSelected = localSelected + filtered }) {
+                                    Text(
+                                        text = stringResource(Res.string.select_all),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = colors.primary
+                                    )
+                                }
                             }
                         }
                         LazyColumn(

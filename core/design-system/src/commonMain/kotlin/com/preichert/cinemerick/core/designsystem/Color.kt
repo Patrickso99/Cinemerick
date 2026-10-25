@@ -58,7 +58,6 @@ val LightCinemerickColors = CinemerickColors(
 )
 
 // Cinema brand colors: fixed in light and dark mode so each cinema is always recognizable.
-// Values are the ones in use before the redesign; the redesign does not change them.
 object CinemaBrandColors {
     val uciBlue = Color(0xFF1F3F7A)
     val onUciBlue = Color(0xFFFFFFFF)

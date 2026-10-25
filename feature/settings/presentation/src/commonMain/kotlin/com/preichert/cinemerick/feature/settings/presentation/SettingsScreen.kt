@@ -27,8 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
@@ -241,28 +246,21 @@ private fun ThemeModeControl(
             ThemeTile(
                 label = autoLabel,
                 selected = selectedIndex == 0,
-                background = Brush.horizontalGradient(
-                    colorStops = arrayOf(
-                        0f to LightThemePreviewBackground,
-                        0.5f to LightThemePreviewBackground,
-                        0.5f to DarkThemePreviewBackground,
-                        1f to DarkThemePreviewBackground,
-                    ),
-                ),
+                preview = ThemeTilePreview.AUTO,
                 onClick = { select(0) },
                 modifier = Modifier.weight(1f),
             )
             ThemeTile(
                 label = lightLabel,
                 selected = selectedIndex == 1,
-                background = Brush.linearGradient(listOf(LightThemePreviewBackground, LightThemePreviewBackground)),
+                preview = ThemeTilePreview.LIGHT,
                 onClick = { select(1) },
                 modifier = Modifier.weight(1f),
             )
             ThemeTile(
                 label = darkLabel,
                 selected = selectedIndex == 2,
-                background = Brush.linearGradient(listOf(DarkThemePreviewBackground, DarkThemePreviewBackground)),
+                preview = ThemeTilePreview.DARK,
                 onClick = { select(2) },
                 modifier = Modifier.weight(1f),
             )
@@ -277,15 +275,25 @@ private fun ThemeModeControl(
     }
 }
 
+private enum class ThemeTilePreview { AUTO, LIGHT, DARK }
+
 private val LightThemePreviewBackground = Color(0xFFFAF8FF)
 private val DarkThemePreviewBackground = Color(0xFF0D0B14)
+private val LightThemePreviewAccent = Color(0xFF5B3FD6)
+private val DarkThemePreviewAccent = Color(0xFFA78BFA)
+private val LightThemePreviewBar = Color(0xFFE7E3F5)
+private val DarkThemePreviewBar = Color(0xFF262140)
+private val AutoThemePreviewBar = Color(0xFFA9A3C2).copy(alpha = 0.45f)
 
-/** 64dp preview of a theme. The selected one gets a 2dp primary ring. */
+/**
+ * 64dp preview of a theme: a miniature card with an accent bar and a muted bar. Auto splits the tile on a diagonal,
+ * light on the left and dark on the right. The selected one gets a 2dp primary ring.
+ */
 @Composable
 private fun ThemeTile(
     label: String,
     selected: Boolean,
-    background: Brush,
+    preview: ThemeTilePreview,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -294,7 +302,53 @@ private fun ThemeTile(
         modifier = modifier
             .height(64.dp)
             .clip(MaterialTheme.shapes.small)
-            .background(background)
+            .drawWithCache {
+                val width = size.width
+                val height = size.height
+                // The boundary runs from 64% of the top edge to 37% of the bottom edge. The gradient follows its normal,
+                // so the hard stops at 0.5 sit on the boundary.
+                val normal = Offset(height, width * (0.64f - 0.37f))
+                val center = Offset(width / 2f, height / 2f)
+                val split = Brush.linearGradient(
+                    colorStops = arrayOf(
+                        0f to LightThemePreviewBackground,
+                        0.5f to LightThemePreviewBackground,
+                        0.5f to DarkThemePreviewBackground,
+                        1f to DarkThemePreviewBackground,
+                    ),
+                    start = center - normal,
+                    end = center + normal,
+                )
+                val background = when (preview) {
+                    ThemeTilePreview.AUTO -> split
+                    ThemeTilePreview.LIGHT -> SolidColor(LightThemePreviewBackground)
+                    ThemeTilePreview.DARK -> SolidColor(DarkThemePreviewBackground)
+                }
+                val accent = if (preview == ThemeTilePreview.LIGHT) LightThemePreviewAccent else DarkThemePreviewAccent
+                val bar = when (preview) {
+                    ThemeTilePreview.AUTO -> AutoThemePreviewBar
+                    ThemeTilePreview.LIGHT -> LightThemePreviewBar
+                    ThemeTilePreview.DARK -> DarkThemePreviewBar
+                }
+                val inset = 12.dp.toPx()
+                val barHeight = 12.dp.toPx()
+                val corner = CornerRadius(barHeight / 2f)
+                onDrawBehind {
+                    drawRect(background)
+                    drawRoundRect(
+                        color = accent,
+                        topLeft = Offset(inset, 12.dp.toPx()),
+                        size = Size(width * 0.39f, barHeight),
+                        cornerRadius = corner,
+                    )
+                    drawRoundRect(
+                        color = bar,
+                        topLeft = Offset(inset, 34.dp.toPx()),
+                        size = Size(width - 2 * inset, barHeight),
+                        cornerRadius = corner,
+                    )
+                }
+            }
             .then(
                 if (selected) Modifier.border(2.dp, colors.primary, MaterialTheme.shapes.small)
                 else Modifier.border(1.dp, colors.outlineVariant, MaterialTheme.shapes.small)

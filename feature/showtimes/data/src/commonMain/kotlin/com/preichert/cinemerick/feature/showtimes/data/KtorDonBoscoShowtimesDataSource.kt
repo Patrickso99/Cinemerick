@@ -10,6 +10,8 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
 private val log = Logger.withTag("DonBoscoShowtimes")
@@ -31,7 +33,7 @@ class KtorDonBoscoShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val body = response.data.bodyAsText()
-                val showings = parseDonBoscoShowings(body, venue, days)
+                val showings = withContext(Dispatchers.Default) { parseDonBoscoShowings(body, venue, days) }
                 log.d { "${body.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

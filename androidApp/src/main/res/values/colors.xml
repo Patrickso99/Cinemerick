@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#4F378B</color>
+    <!-- Redesign background, light (docs/design, Main: background). -->
+    <color name="app_background">#E7E0FF</color>
 </resources>

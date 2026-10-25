@@ -31,6 +31,8 @@ class TmdbFirstFilmDetailsRepository(
     override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails =
         databaseDetails(title) ?: showtimesRepository.getFilmDetails(known, sources)
 
+    override suspend fun getDatabaseDetails(title: String): FilmDetails? = databaseDetails(title)
+
     private suspend fun databaseDetails(title: String): FilmDetails? {
         val key = filmKey(title)
         outcomesLock.withLock { outcomes[key] }?.let { return it.details }

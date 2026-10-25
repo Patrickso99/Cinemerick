@@ -370,12 +370,12 @@ fun CinemerickTonalButton(
         onClick = onClick,
         enabled = true,
         height = 44.dp,
-        container = colors.surfaceContainerHigh,
+        container = colors.primaryContainer,
         modifier = modifier,
         horizontalPadding = 16.dp,
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = colors.onSurface, maxLines = 1)
-        if (icon != null) Icon(icon, contentDescription = null, tint = colors.onSurface, modifier = Modifier.size(18.dp))
+        Text(text, style = MaterialTheme.typography.labelLarge, color = colors.onPrimaryContainer, maxLines = 1)
+        if (icon != null) Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(18.dp))
     }
 }
 

@@ -131,7 +131,14 @@ fun ShowtimesScreen(
             state.filmDetails?.let { film ->
                 FilmDetailsOverlay(
                     film = film,
-                    onDismiss = { onAction(ShowtimesAction.OnFilmDetailsDismiss) }
+                    onDismiss = { onAction(ShowtimesAction.OnFilmDetailsDismiss) },
+                    onPersonClick = { onAction(ShowtimesAction.OnPersonOpen(it)) },
+                )
+            }
+            state.personDetails?.let { person ->
+                PersonDetailsOverlay(
+                    person = person,
+                    onDismiss = { onAction(ShowtimesAction.OnPersonDismiss) }
                 )
             }
             val settingsLabel = stringResource(Res.string.open_settings)

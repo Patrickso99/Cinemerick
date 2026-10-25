@@ -1,10 +1,13 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
+import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
@@ -28,7 +31,12 @@ data class ShowtimesState(
     val elapsedTimeMillis: Long? = null,
     val venueCatalog: Map<Chain, VenueCatalogUi> = emptyMap(),
     val venuePicker: VenuePickerUi? = null,
-    val filmDetails: FilmDetailsUi? = null
+    val filmDetails: FilmDetailsUi? = null,
+    val personDetails: PersonUi? = null,
+    // TMDB details of the films whose cards have been on screen, by film title.
+    val cardDetails: Map<String, FilmDetails> = emptyMap(),
+    // Films whose card lookup has answered, with or without a TMDB match: until then the card shows a placeholder poster.
+    val resolvedCards: Set<String> = emptySet()
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }
@@ -46,12 +54,18 @@ data class DayUi(
     val isMaxTimeError: Boolean get() = parseTimeInput(maxTime) is ParsedTime.Invalid
 }
 
+// Immutable so a card whose content did not change is skipped when the list is recomposed.
+@Immutable
 data class FilmGroupUi(
     val title: String,
     val showings: List<ShowingUi>,
     val posterUrl: String? = null,
     val details: FilmDetails = FilmDetails(),
-    val detailsSources: List<DetailsSource> = emptyList()
+    val detailsSources: List<DetailsSource> = emptyList(),
+    // The TMDB details shown on the card (year, runtime, score), once looked up.
+    val tmdb: FilmDetails? = null,
+    // True while the TMDB lookup of the card is in flight, so the poster is shown once and not swapped.
+    val posterPending: Boolean = false
 )
 
 /** Film details overlay: present while it is open. [isLoading] while the film is still being looked up. */
@@ -62,6 +76,14 @@ data class FilmDetailsUi(
     val posterUrl: String? = null
 )
 
+/** Person details overlay: present while it is open. [details] is null when TMDB has no such person (or is unreachable). */
+data class PersonUi(
+    val person: FilmPerson,
+    val details: PersonDetails? = null,
+    val isLoading: Boolean = false
+)
+
+@Immutable
 data class ShowingUi(
     val day: DayOfWeek,
     val date: String,

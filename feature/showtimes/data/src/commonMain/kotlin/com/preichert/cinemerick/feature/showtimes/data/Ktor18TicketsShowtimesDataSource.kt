@@ -13,9 +13,11 @@ import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
 private val log = Logger.withTag("18TicketsShowtimes")
@@ -43,7 +45,7 @@ abstract class Ktor18TicketsShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = parseEighteenTicketsShowings(html, venue, day)
+                val showings = withContext(Dispatchers.Default) { parseEighteenTicketsShowings(html, venue, day) }
                 log.d { "${chain.name} $day: ${html.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

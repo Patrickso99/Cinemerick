@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +65,7 @@ import com.preichert.cinemerick.core.designsystem.animateItemIfEnabled
 import com.preichert.cinemerick.core.designsystem.bounceClickable
 import com.preichert.cinemerick.core.designsystem.staggeredAppear
 import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
+import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy_poll
@@ -119,6 +122,7 @@ internal fun LazyListScope.resultsItems(
             FilmGroupCard(
                 group = group,
                 large = false,
+                onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
                 onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
             )
         }
@@ -224,7 +228,13 @@ internal fun ColumnScope.ResultsSection(
 
     if (configuration.isMobile) {
         state.groups.forEachIndexed { index, group ->
-            AnimatedFilmGroupCard(group, large = false, index = index, onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) })
+            AnimatedFilmGroupCard(
+                group,
+                large = false,
+                index = index,
+                onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
+                onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+            )
         }
     } else {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -245,6 +255,7 @@ internal fun ColumnScope.ResultsSection(
                                     group = group,
                                     large = true,
                                     index = index,
+                                    onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
                                     onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
                                 )
                             }
@@ -262,23 +273,26 @@ internal fun AnimatedFilmGroupCard(
     large: Boolean,
     modifier: Modifier = Modifier,
     index: Int = 0,
+    onVisible: () -> Unit = {},
     onDetailsClick: () -> Unit = {}
 ) {
     // Keyed on the group so a refreshed result list replays the cascade
     key(group) {
         Box(modifier = modifier.staggeredAppear(index)) {
-            FilmGroupCard(group, large = large, onDetailsClick = onDetailsClick)
+            FilmGroupCard(group, large = large, onVisible = onVisible, onDetailsClick = onDetailsClick)
         }
     }
 }
 
 /**
- * Film card: poster first (104x156 on phone, 132 on wide layouts), then the title, the details button and the
- * showtimes grouped by day. Surface only, no outline and no shadow.
+ * Film card: poster first (104x156 on phone, 132 on wide layouts), then the title, the TMDB facts, the details button
+ * and the showtimes grouped by day. Surface only, no outline and no shadow. [onVisible] is called when the card
+ * comes on screen, so its TMDB facts can be looked up as the list scrolls.
  */
 @Composable
-internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: () -> Unit = {}) {
+internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onVisible: () -> Unit = {}, onDetailsClick: () -> Unit = {}) {
     val colors = CinemerickTheme.colors
+    LaunchedEffect(group.title) { onVisible() }
     SelectionContainer {
         Column(
             modifier = Modifier
@@ -288,8 +302,17 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: (
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(Spacing.space3)
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.space3)) {
-                group.posterUrl?.let {
+            // The row is as tall as the poster (104dp wide at 2:3), so the details button sits on the poster's bottom edge.
+            // A fixed height instead of IntrinsicSize.Min: no intrinsic pass over the card while the list scrolls.
+            Row(
+                modifier = Modifier.height(104.dp * 3 / 2),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.space3)
+            ) {
+                // TMDB's poster whenever TMDB knows the film, the cinema's otherwise. Until the lookup answers the slot is
+                // a placeholder, so the poster appears once rather than being swapped.
+                if (group.posterPending) {
+                    PosterPlaceholder(width = 104.dp)
+                } else (group.tmdb?.posterUrl ?: group.posterUrl)?.let {
                     PosterImage(
                         url = it,
                         contentDescription = group.title,
@@ -297,16 +320,19 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: (
                     )
                 }
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.space2),
-                    modifier = Modifier.weight(1f)
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.weight(1f).fillMaxHeight()
                 ) {
-                    Text(
-                        text = group.title,
-                        color = colors.onSurface,
-                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 26.sp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
+                        Text(
+                            text = group.title,
+                            color = colors.onSurface,
+                            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 26.sp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        group.tmdb?.let { TmdbFacts(it) }
+                    }
                     CinemerickTonalButton(
                         text = stringResource(Res.string.film_details),
                         onClick = onDetailsClick,
@@ -323,6 +349,37 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onDetailsClick: (
                         ShowingRow(showing, withDivider = rowIndex > 0)
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Year · runtime, then the TMDB score with a star, as in docs/design (Phone, 03). Nothing is shown for a fact TMDB
+ * does not have, and nothing at all until the lookup has answered.
+ */
+@Composable
+private fun TmdbFacts(details: FilmDetails) {
+    val colors = CinemerickTheme.colors
+    val meta = details.metaLine()
+    if (meta == null && details.score == null) return
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.space2)) {
+        meta?.let {
+            Text(text = it, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+        }
+        details.score?.let { score ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                Icon(
+                    painter = painterResource(CinemerickIcons.Star),
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = formatScore(score.value),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.primary,
+                )
             }
         }
     }
@@ -350,6 +407,18 @@ private fun DayHeader(dayName: String, date: String, count: Int, first: Boolean)
             color = colors.onSurfaceVariant
         )
     }
+}
+
+/** The poster's frame while its lookup is in flight: the same size and shape as [PosterImage], without an image. */
+@Composable
+internal fun PosterPlaceholder(width: Dp) {
+    Box(
+        modifier = Modifier
+            .width(width)
+            .aspectRatio(2f / 3f)
+            .clip(MaterialTheme.shapes.medium)
+            .background(CinemerickTheme.colors.surfaceContainerHigh)
+    )
 }
 
 @Composable

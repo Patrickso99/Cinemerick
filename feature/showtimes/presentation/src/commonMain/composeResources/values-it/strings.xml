@@ -13,7 +13,7 @@
     <string name="invalid_time">Orario non valido: usa HH o HH:MM</string>
     <string name="no_results">Nessuna proiezione trovata con questi filtri</string>
     <string name="options_count">%1$d proiezioni</string>
-    <string name="app_subtitle">Centralizzatore di film e orari per i cinema italiani</string>
+    <string name="app_subtitle">Orari dei film nei cinema italiani</string>
     <string name="theme_dark">Tema scuro</string>
     <string name="quick_today">Oggi</string>
     <string name="quick_tomorrow">Domani</string>
@@ -85,11 +85,18 @@
     <string name="details_revenue">Incasso</string>
     <string name="details_release_date">Data di uscita</string>
     <string name="details_gallery">Galleria</string>
+    <string name="person_birthday">Nato il</string>
+    <string name="person_deathday">Morto il</string>
+    <string name="person_birthplace">Luogo di nascita</string>
+    <string name="person_biography">Biografia</string>
+    <string name="person_filmography">Filmografia</string>
+    <string name="person_none">Nessun dettaglio disponibile per questa persona</string>
     <string name="details_gallery_close">Chiudi immagine</string>
     <string name="open_settings">Impostazioni</string>
     <string name="choose_venues">Scegli le sedi</string>
     <string name="venues_selected_count">%1$d selezionate</string>
     <string name="select_all">Seleziona tutte</string>
+    <string name="deselect_all">Deseleziona tutte</string>
     <string name="done_with_count">Fatto · %1$d selezionate</string>
     <string name="open_calendar">Calendario</string>
     <string name="formats_selected_count">%1$d selezionati</string>

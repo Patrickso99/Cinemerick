@@ -11,11 +11,13 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 
@@ -46,7 +48,7 @@ class KtorCristalloShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val body = response.data.bodyAsText()
-                val showings = parseCristalloShowings(body, venue, day)
+                val showings = withContext(Dispatchers.Default) { parseCristalloShowings(body, venue, day) }
                 log.d { "$day: ${body.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

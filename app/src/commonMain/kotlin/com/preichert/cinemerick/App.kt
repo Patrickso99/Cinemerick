@@ -1,6 +1,9 @@
 package com.preichert.cinemerick
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,6 +22,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import com.preichert.cinemerick.navigation.NavigationRoot
 import com.preichert.cinemerick.feature.showtimes.presentation.navigation.ShowtimesGraphRoutes
 import org.koin.compose.koinInject
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.preichert.cinemerick.core.designsystem.CinemerickSplash
+import com.preichert.cinemerick.core.domain.BuildKonfig
 
 @Composable
 fun App() {
@@ -42,15 +50,25 @@ fun App() {
     }
 
     val navController = rememberNavController()
+    var splashFinished by rememberSaveable { mutableStateOf(false) }
 
     CinemerickTheme(isDarkTheme = isDarkTheme) {
         CompositionLocalProvider(LocalAnimationsEnabled provides animationsEnabled) {
-            // Keyed on the language: the whole UI is composed again when the user changes it, so every string follows.
-            key(language) {
-                NavigationRoot(
-                    navController = navController,
-                    startDestination = ShowtimesGraphRoutes.Graph
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Keyed on the language: the whole UI is composed again when the user changes it, so every string follows.
+                if (splashFinished) {
+                    key(language) {
+                        NavigationRoot(
+                            navController = navController,
+                            startDestination = ShowtimesGraphRoutes.Graph
+                        )
+                    }
+                } else {
+                    CinemerickSplash(
+                        appName = BuildKonfig.APP_NAME,
+                        onFinished = { splashFinished = true },
+                    )
+                }
             }
         }
     }
