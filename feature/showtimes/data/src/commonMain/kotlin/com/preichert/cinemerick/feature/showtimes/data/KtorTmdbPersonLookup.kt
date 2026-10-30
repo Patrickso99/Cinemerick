@@ -1,7 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
 import com.preichert.cinemerick.core.data.get
-import com.preichert.cinemerick.core.domain.BuildKonfig
+import com.preichert.cinemerick.core.data.TmdbConfig
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
@@ -18,7 +18,7 @@ private const val LANGUAGE = "it-IT"
 /** Looks a person up on TMDB: the profile and the film credits in the same response. An empty [token] turns it off. */
 class KtorTmdbPersonLookup(
     private val httpClient: HttpClient,
-    private val token: String = BuildKonfig.TMDB_TOKEN
+    private val token: String = TmdbConfig.TMDB_TOKEN
 ) : PersonLookup {
 
     override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> {

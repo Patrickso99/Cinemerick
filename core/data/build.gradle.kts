@@ -3,6 +3,7 @@ plugins {
     id("com.preichert.convention.ktor")
     id("com.preichert.convention.koin")
     id("com.preichert.convention.serialization")
+    id("com.preichert.convention.tmdb.buildkonfig")
 }
 
 kotlin {

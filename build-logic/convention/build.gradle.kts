@@ -64,6 +64,10 @@ gradlePlugin {
             id = "com.preichert.convention.buildkonfig"
             implementationClass = "BuildKonfigConventionPlugin"
         }
+        register("tmdbBuildKonfig") {
+            id = "com.preichert.convention.tmdb.buildkonfig"
+            implementationClass = "TmdbBuildKonfigConventionPlugin"
+        }
         register("koin") {
             id = "com.preichert.convention.koin"
             implementationClass = "KoinConventionPlugin"

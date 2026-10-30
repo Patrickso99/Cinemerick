@@ -2,7 +2,7 @@ package com.preichert.cinemerick.feature.showtimes.data
 
 import co.touchlab.kermit.Logger
 import com.preichert.cinemerick.core.data.get
-import com.preichert.cinemerick.core.domain.BuildKonfig
+import com.preichert.cinemerick.core.data.TmdbConfig
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
@@ -37,7 +37,7 @@ private const val IMAGE_LANGUAGES = "it,en,null"
 class KtorTmdbFilmLookup(
     private val httpClient: HttpClient,
     private val matchStore: TmdbMatchStore,
-    private val token: String = BuildKonfig.TMDB_TOKEN,
+    private val token: String = TmdbConfig.TMDB_TOKEN,
     private val today: () -> LocalDate = { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
 ) : FilmLookup {
 
