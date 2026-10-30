@@ -51,7 +51,7 @@ import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.domain.BuildKonfig
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
-import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
+import com.preichert.cinemerick.core.designsystem.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res

@@ -43,8 +43,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
-import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
 
 /** Scroll distance over which the large phone header collapses into the compact bar. */
 private val CollapseDistance = 72.dp

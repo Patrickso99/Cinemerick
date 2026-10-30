@@ -16,7 +16,6 @@ kotlin {
         implementation(project(":feature:showtimes:domain"))
         implementation(libs.coroutines.core)
         implementation(libs.kermit)
-        implementation(libs.datetime)
         implementation(libs.settings.no.arg)
     }
 }

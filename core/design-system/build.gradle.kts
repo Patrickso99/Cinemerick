@@ -4,11 +4,7 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation(project(":core:presentation"))
+        implementation(libs.compose.material3.adaptive)
+        implementation(libs.compose.material3.adaptive.layout)
     }
-}
-
-compose.resources {
-    publicResClass = true
-    packageOfResClass = "com.preichert.cinemerick.core.designsystem.resources"
 }

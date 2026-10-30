@@ -21,8 +21,3 @@ kotlin {
         implementation(libs.koin.compose)
     }
 }
-
-compose.resources {
-    publicResClass = true
-    packageOfResClass = "com.preichert.cinemerick.core.presentation.resources"
-}

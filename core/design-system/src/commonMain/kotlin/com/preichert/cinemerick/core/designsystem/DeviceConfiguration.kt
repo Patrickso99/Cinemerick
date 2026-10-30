@@ -1,4 +1,4 @@
-package com.preichert.cinemerick.core.presentation.util
+package com.preichert.cinemerick.core.designsystem
 
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable

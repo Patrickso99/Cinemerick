@@ -1,9 +1,13 @@
 import com.preichert.cinemerick.convention.ConventionPlugin
 import com.preichert.cinemerick.convention.apply
 import com.preichert.cinemerick.convention.libs
+import com.preichert.cinemerick.convention.pathToPackageName
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.compose.ComposeExtension
+import org.jetbrains.compose.resources.ResourcesExtension
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
@@ -15,6 +19,13 @@ class CmpLibraryConventionPlugin : Plugin<Project> {
                 apply(ConventionPlugin.KMP_LIBRARY)
                 apply(libs.plugins.kotlin.compose)
                 apply(libs.plugins.compose.multiplatform)
+            }
+
+            extensions.configure<ComposeExtension> {
+                (this as ExtensionAware).extensions.configure<ResourcesExtension>("resources") {
+                    publicResClass = true
+                    packageOfResClass = "${pathToPackageName()}.resources"
+                }
             }
 
             extensions.configure<ComposeCompilerGradlePluginExtension> {

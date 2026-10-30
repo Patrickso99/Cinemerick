@@ -68,7 +68,7 @@ import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
-import com.preichert.cinemerick.core.presentation.util.currentDeviceConfiguration
+import com.preichert.cinemerick.core.designsystem.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.add_venue

@@ -65,7 +65,7 @@ import com.preichert.cinemerick.core.designsystem.animateItemIfEnabled
 import com.preichert.cinemerick.core.designsystem.bounceClickable
 import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.core.designsystem.staggeredAppear
-import com.preichert.cinemerick.core.presentation.util.DeviceConfiguration
+import com.preichert.cinemerick.core.designsystem.DeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket

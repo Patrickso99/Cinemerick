@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 internal fun Project.configureKotlinMultiplatform() {
     configureAndroidTarget(pathToPackageName())
     configureDesktopTarget()
-    configureIosTargets(frameworkName = pathToFrameworkName(), isStatic = false)
+    configureIosTargets(frameworkName = pathToFrameworkName())
 
     extensions.configure<KotlinMultiplatformExtension> {
         sourceSets.commonTest.dependencies {

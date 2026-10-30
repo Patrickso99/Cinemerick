@@ -1,6 +1,6 @@
 plugins {
     id("com.preichert.convention.cmp.feature")
-    alias(libs.plugins.kotlin.serialization)
+    id("com.preichert.convention.serialization")
 }
 
 kotlin {
@@ -18,12 +18,6 @@ kotlin {
         implementation(libs.kermit)
         implementation(libs.coil.compose)
         implementation(libs.compose.navigation)
-        implementation(libs.serialization.json)
         implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     }
-}
-
-compose.resources {
-    publicResClass = true
-    packageOfResClass = "com.preichert.cinemerick.feature.showtimes.presentation.resources"
 }
