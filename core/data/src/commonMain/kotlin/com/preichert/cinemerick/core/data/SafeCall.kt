@@ -11,7 +11,6 @@ import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
 
 private val log = Logger.withTag("SafeCall")
@@ -94,34 +93,4 @@ fun statusToResult(response: HttpResponse): Result<HttpResponse, DataError.Netwo
         in 500..599 -> Result.Failure(DataError.Network.SERVER_ERROR)
         else -> Result.Failure(DataError.Network.UNKNOWN)
     }
-}
-
-fun isTransientError(error: DataError.Network) = when (error) {
-    DataError.Network.TOO_MANY_REQUESTS,
-    DataError.Network.REQUEST_TIMEOUT,
-    DataError.Network.SERVICE_UNAVAILABLE,
-    DataError.Network.SERVER_ERROR -> true
-    else -> false
-}
-
-suspend inline fun <reified T> withRetry(
-    maxAttempts: Int = 3,
-    crossinline execute: suspend () -> Result<T, DataError.Network>
-): Result<T, DataError.Network> {
-    var lastError: DataError.Network? = null
-    repeat(maxAttempts) { attempt ->
-        val result = execute()
-        when {
-            result is Result.Success<T> -> return result
-            result is Result.Failure && isTransientError(result.error) -> {
-                lastError = result.error
-                if (attempt < maxAttempts - 1) {
-                    val delayMs = 1000L * (1 shl attempt)
-                    delay(delayMs)
-                }
-            }
-            result is Result.Failure -> return result
-        }
-    }
-    return Result.Failure(lastError ?: DataError.Network.UNKNOWN)
 }
