@@ -1,16 +1,16 @@
 package com.preichert.cinemerick.core.presentation
 
-import com.preichert.cinemerick.core.testing.MemorySettings
-import com.preichert.cinemerick.core.data.SettingsTimeWindowPreferences
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import com.preichert.cinemerick.core.domain.TimeWindowPreferences
+import com.preichert.cinemerick.core.testing.FakeTimeWindowPreferences
 
 class TimeWindowControllerTest {
 
-    private fun controller(preferences: SettingsTimeWindowPreferences = SettingsTimeWindowPreferences(MemorySettings())) =
+    private fun controller(preferences: TimeWindowPreferences = FakeTimeWindowPreferences()) =
         TimeWindowController(preferences)
 
     @Test
@@ -23,7 +23,7 @@ class TimeWindowControllerTest {
 
     @Test
     fun rejectsMinAboveMax() {
-        val preferences = SettingsTimeWindowPreferences(MemorySettings())
+        val preferences = FakeTimeWindowPreferences()
         val controller = controller(preferences)
         controller.setMax(22 * 60)
 
@@ -35,7 +35,7 @@ class TimeWindowControllerTest {
 
     @Test
     fun rejectsMaxBelowMin() {
-        val preferences = SettingsTimeWindowPreferences(MemorySettings())
+        val preferences = FakeTimeWindowPreferences()
         val controller = controller(preferences)
 
         assertFalse(controller.setMax(19 * 60))
@@ -53,7 +53,7 @@ class TimeWindowControllerTest {
 
     @Test
     fun persistsAcceptedValuesAndNoLimit() {
-        val preferences = SettingsTimeWindowPreferences(MemorySettings())
+        val preferences = FakeTimeWindowPreferences()
         val controller = controller(preferences)
 
         assertTrue(controller.setMin(18 * 60))
@@ -68,7 +68,7 @@ class TimeWindowControllerTest {
 
     @Test
     fun seedsFromStoredValues() {
-        val preferences = SettingsTimeWindowPreferences(MemorySettings())
+        val preferences = FakeTimeWindowPreferences()
         preferences.setMinMinutes(18 * 60)
         preferences.setMaxMinutes(23 * 60)
 

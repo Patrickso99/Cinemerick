@@ -22,7 +22,6 @@ androidCompileSdk = "37"
 androidMinSdk = "26"
 androidTargetSdk = "37"
 assertk = "0.28.1"
-turbine = "1.2.0"
 
 [libraries]
 # build-logic classpath
@@ -36,7 +35,6 @@ build-buildkonfig = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-
 # test
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 # compose
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }

@@ -6,7 +6,6 @@ plugins {
 kotlin {
     sourceSets.commonTest.dependencies {
         implementation(project(":core:testing"))
-        implementation(project(":core:data"))
         implementation(libs.coroutines.test)
     }
     sourceSets.commonMain.dependencies {

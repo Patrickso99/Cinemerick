@@ -1,11 +1,9 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.preichert.cinemerick.core.data.SettingsTimeWindowPreferences
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.presentation.TimeWindowController
-import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
@@ -19,6 +17,8 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -35,17 +35,69 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import com.preichert.cinemerick.core.testing.FakeTimeWindowPreferences
 
 class ShowtimesViewModelTest {
 
     private val first = LocalDate(2026, 10, 1)
     private val second = LocalDate(2026, 10, 2)
 
-    private val controller = TimeWindowController(SettingsTimeWindowPreferences(MemorySettings()))
+    private val controller = TimeWindowController(FakeTimeWindowPreferences())
     // Main's clock, so a test can move past the card flush delay with scheduler.advanceUntilIdle().
     private val scheduler = TestCoroutineScheduler()
+
+    @Test
+    fun aFailedCardLookupIsAskedAgainWhenTheCardReturns() = runTest {
+        var calls = 0
+        val viewModel = viewModel(filmDetails = object : FilmDetailsRepository by FakeFilmDetailsRepository {
+            override suspend fun getDatabaseDetails(title: String): Result<FilmDetails?, DataError.Network> =
+                if (calls++ == 0) Result.Failure(DataError.Network.NO_INTERNET) else Result.Success(FilmDetails(synopsis = "Plot"))
+        })
+
+        viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Dune"))
+        scheduler.advanceUntilIdle()
+        assertFalse("Dune" in viewModel.state.value.resolvedCards)
+
+        viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Dune"))
+        scheduler.advanceUntilIdle()
+
+        assertEquals(2, calls)
+        assertTrue("Dune" in viewModel.state.value.resolvedCards)
+    }
+
+    @Test
+    fun copyingThePollSendsTheTextAndAConfirmation() = runTest {
+        val venue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
+        val day = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(30, DateTimeUnit.DAY)
+        val viewModel = viewModel(object : ShowtimesRepository by FakeRepository {
+            override suspend fun getShowings(days: List<LocalDate>, venues: Set<Venue>) =
+                listOf(VenueShowings(venue, Result.Success(listOf(Showing("Mammina", day, LocalTime(21, 0), venue)))))
+        })
+        viewModel.onAction(ShowtimesAction.OnDayToggle(day))
+        viewModel.onAction(ShowtimesAction.OnGenerateClick)
+        val events = mutableListOf<ShowtimesEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.events.toList(events) }
+
+        viewModel.onAction(ShowtimesAction.OnCopyClick)
+
+        val copied = assertIs<ShowtimesEvent.CopyToClipboard>(events[0])
+        assertEquals(viewModel.state.value.pollText, copied.text)
+        assertIs<ShowtimesEvent.ShowSnackbar>(events[1])
+    }
+
+    @Test
+    fun copyingAnEmptyPollSendsNothing() = runTest {
+        val viewModel = viewModel()
+        val events = mutableListOf<ShowtimesEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.events.toList(events) }
+
+        viewModel.onAction(ShowtimesAction.OnCopyClick)
+
+        assertTrue(events.isEmpty())
+    }
 
     @AfterTest
     fun tearDown() {

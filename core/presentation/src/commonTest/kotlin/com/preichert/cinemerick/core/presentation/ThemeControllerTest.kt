@@ -1,19 +1,18 @@
 package com.preichert.cinemerick.core.presentation
 
-import com.preichert.cinemerick.core.testing.MemorySettings
-import com.preichert.cinemerick.core.data.SettingsThemePreferences
 import com.preichert.cinemerick.core.domain.ThemeMode
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import com.preichert.cinemerick.core.testing.FakeThemePreferences
 
 class ThemeControllerTest {
 
     @Test
     fun seedsInitialValueFromPreferences() = runTest {
-        val preferences = SettingsThemePreferences(MemorySettings())
+        val preferences = FakeThemePreferences()
         preferences.setThemeMode(ThemeMode.DARK)
 
         val controller = ThemeController(preferences)
@@ -23,7 +22,7 @@ class ThemeControllerTest {
 
     @Test
     fun setModeUpdatesFlowAndPersists() = runTest {
-        val preferences = SettingsThemePreferences(MemorySettings())
+        val preferences = FakeThemePreferences()
         val controller = ThemeController(preferences)
 
         controller.setMode(ThemeMode.LIGHT)
@@ -34,7 +33,7 @@ class ThemeControllerTest {
 
     @Test
     fun systemIsDefaultMode() = runTest {
-        val preferences = SettingsThemePreferences(MemorySettings())
+        val preferences = FakeThemePreferences()
         val controller = ThemeController(preferences)
 
         assertEquals(ThemeMode.SYSTEM, controller.mode.value)
@@ -42,7 +41,7 @@ class ThemeControllerTest {
 
     @Test
     fun flowEmitsUpdatesAcrossAllModes() = runTest {
-        val preferences = SettingsThemePreferences(MemorySettings())
+        val preferences = FakeThemePreferences()
         val controller = ThemeController(preferences)
 
         val values = mutableListOf<ThemeMode>()

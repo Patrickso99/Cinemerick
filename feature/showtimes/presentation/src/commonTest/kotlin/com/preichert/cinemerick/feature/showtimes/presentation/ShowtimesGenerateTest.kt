@@ -4,11 +4,9 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
-import com.preichert.cinemerick.core.data.SettingsTimeWindowPreferences
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.presentation.TimeWindowController
-import com.preichert.cinemerick.core.testing.MemorySettings
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
@@ -36,6 +34,7 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import com.preichert.cinemerick.core.testing.FakeTimeWindowPreferences
 
 /*
  * Break vectors for generating showtimes, one angle per test:
@@ -45,7 +44,7 @@ class ShowtimesGenerateTest {
 
     private val day = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(30, DateTimeUnit.DAY)
     private val venue = Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto")
-    private val controller = TimeWindowController(SettingsTimeWindowPreferences(MemorySettings()))
+    private val controller = TimeWindowController(FakeTimeWindowPreferences())
     private val scheduler = TestCoroutineScheduler()
 
     @AfterTest
