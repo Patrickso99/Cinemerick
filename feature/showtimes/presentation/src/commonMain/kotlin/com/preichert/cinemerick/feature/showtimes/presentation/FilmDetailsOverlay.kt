@@ -455,7 +455,7 @@ private fun PeopleRow(label: String, people: List<FilmPerson>, onPersonClick: (F
             color = CinemerickTheme.colors.onSurfaceVariant,
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.space3)) {
-            items(people) { person -> PersonAvatar(person, onClick = { onPersonClick(person) }) }
+            items(people, key = { it.id }) { person -> PersonAvatar(person, onClick = { onPersonClick(person) }) }
         }
     }
 }

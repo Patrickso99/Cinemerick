@@ -50,6 +50,7 @@ import com.preichert.cinemerick.core.designsystem.CinemerickIconButton
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.domain.BuildKonfig
+import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
 import com.preichert.cinemerick.core.designsystem.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
@@ -73,6 +74,7 @@ fun ShowtimesScreenContent(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    // LocalClipboard has no common way to build a plain-text entry in Compose 1.12, so the deprecated manager stays.
     @Suppress("DEPRECATION")
     val clipboardManager = LocalClipboardManager.current
 
@@ -299,6 +301,47 @@ private fun ShowtimesScreenDesktopPreview() {
     }
 }
 
+@Preview
+@Composable
+private fun ShowtimesScreenLoadingPreview() {
+    CinemerickTheme {
+        ShowtimesScreen(
+            state = previewState().copy(isLoading = true),
+            onAction = {},
+            onSettingsClick = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ShowtimesScreenEmptyPreview() {
+    CinemerickTheme {
+        ShowtimesScreen(
+            state = previewState().copy(groups = emptyList(), optionsCount = 0, pollText = "", hasGenerated = true),
+            onAction = {},
+            onSettingsClick = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ShowtimesScreenVenueErrorPreview() {
+    CinemerickTheme {
+        ShowtimesScreen(
+            state = previewState().copy(
+                venueErrors = listOf(VenueErrorUi(venueName = "UCI Luxe Marcon", message = UiText.DynamicString("Connection timed out"))),
+            ),
+            onAction = {},
+            onSettingsClick = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
 /**
  * Desktop navigation rail, 84dp: the app mark, Search (the current screen) and Settings at the bottom.
  * Each item is 64x60dp with a label under its icon.
@@ -326,7 +369,7 @@ private fun DesktopNavigationRail(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "C",
+                text = BuildKonfig.APP_NAME.take(1),
                 style = MaterialTheme.typography.titleLarge,
                 color = colors.onPrimary,
             )

@@ -54,8 +54,9 @@ data class DayUi(
     val minTime: String,
     val maxTime: String
 ) {
-    val isMinTimeError: Boolean get() = parseTimeInput(minTime) is ParsedTime.Invalid
-    val isMaxTimeError: Boolean get() = parseTimeInput(maxTime) is ParsedTime.Invalid
+    // Computed once when the day is built, not on every read.
+    val isMinTimeError: Boolean = parseTimeInput(minTime) is ParsedTime.Invalid
+    val isMaxTimeError: Boolean = parseTimeInput(maxTime) is ParsedTime.Invalid
 }
 
 // Immutable so a card whose content did not change is skipped when the list is recomposed.

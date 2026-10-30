@@ -71,6 +71,8 @@ import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_range
+import org.jetbrains.compose.resources.stringResource
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.add_venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_count
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.cinemas_title
@@ -546,7 +548,7 @@ internal fun DayRangeRow(
                 style = MaterialTheme.typography.titleSmall,
                 color = colors.onSurface
             )
-            CinemerickTimeText(text = "${start.toTimeString()} – ${end.toTimeString()}")
+            CinemerickTimeText(text = stringResource(Res.string.time_range, start.toTimeString(), end.toTimeString()))
         }
         CinemerickTimeRangeSlider(
             startMinutes = start,

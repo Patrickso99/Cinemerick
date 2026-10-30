@@ -75,7 +75,9 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.generat
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.no_results
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.options_count
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.results_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.day_heading
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.sold_out
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.venue_error_message
 import kotlinx.datetime.DayOfWeek
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -118,7 +120,15 @@ internal fun LazyListScope.resultsItems(
         }
     }
 
-    items(state.groups, key = { it.title }, contentType = { "film" }) { group ->
+    // Two films can share a title (remakes), so a repeated title gets a counter in its key to stay unique.
+    val seenTitles = mutableMapOf<String, Int>()
+    val groupKeys = state.groups.map { group ->
+        val occurrence = (seenTitles[group.title] ?: 0) + 1
+        seenTitles[group.title] = occurrence
+        if (occurrence == 1) group.title else "${group.title}#$occurrence"
+    }
+    items(state.groups.size, key = { groupKeys[it] }, contentType = { "film" }) { index ->
+        val group = state.groups[index]
         ResultItem(animateItemIfEnabled()) {
             FilmGroupCard(
                 group = group,
@@ -161,7 +171,7 @@ private fun VenueErrorBanner(error: VenueErrorUi) {
                 modifier = Modifier.size(20.dp)
             )
             Text(
-                text = "${error.venueName}: ${error.message.asString()}",
+                text = stringResource(Res.string.venue_error_message, error.venueName, error.message.asString()),
                 color = colors.onErrorContainer,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -398,7 +408,7 @@ private fun DayHeader(dayName: String, date: String, count: Int, first: Boolean)
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$dayName $date",
+            text = stringResource(Res.string.day_heading, dayName, date),
             style = MaterialTheme.typography.titleSmall,
             color = colors.onSurface
         )

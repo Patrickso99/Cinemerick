@@ -109,4 +109,7 @@
     <string name="chain_no_venue">Nessuna sede selezionata</string>
     <string name="copy_poll">Copia sondaggio</string>
     <string name="results_title">Risultati</string>
+    <string name="venue_error_message">%1$s: %2$s</string>
+    <string name="day_heading">%1$s %2$s</string>
+    <string name="time_range">%1$s – %2$s</string>
 </resources>
