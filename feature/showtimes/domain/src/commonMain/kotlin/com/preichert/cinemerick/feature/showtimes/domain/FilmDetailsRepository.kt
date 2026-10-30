@@ -20,14 +20,15 @@ interface FilmDetailsRepository {
     suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails
 
     /**
-     * The external database's details of the film called [title] alone, or null when it has no match or could not be
-     * asked. Nothing is taken from the cinemas, and each film is asked for once per session.
+     * The external database's details of the film called [title] alone. `Success(null)` is a confident "no match", while
+     * a `Failure` means the database could not be asked, so the answer is not known yet. Nothing is taken from the
+     * cinemas, and each film is asked for once per session.
      */
-    suspend fun getDatabaseDetails(title: String): FilmDetails?
+    suspend fun getDatabaseDetails(title: String): Result<FilmDetails?, DataError.Network>
 
     /**
-     * The external database's id of the film called [title], or null when it has no match or could not be asked. Two
-     * titles with the same id are the same film, whatever the cinema called them.
+     * The external database's id of the film called [title]. `Success(null)` is a confident "no match", while a `Failure`
+     * means the database could not be asked. Two titles with the same id are the same film, whatever the cinema called them.
      */
-    suspend fun getMovieId(title: String): Int?
+    suspend fun getMovieId(title: String): Result<Int?, DataError.Network>
 }

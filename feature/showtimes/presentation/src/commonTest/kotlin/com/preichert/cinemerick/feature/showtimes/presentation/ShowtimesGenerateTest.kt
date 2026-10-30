@@ -119,8 +119,8 @@ class ShowtimesGenerateTest {
 
     private object FakeFilmDetailsRepository : FilmDetailsRepository {
         override suspend fun getFilmDetails(title: String, known: FilmDetails, sources: List<DetailsSource>): FilmDetails = known
-        override suspend fun getDatabaseDetails(title: String): FilmDetails? = null
-        override suspend fun getMovieId(title: String): Int? = null
+        override suspend fun getDatabaseDetails(title: String): Result<FilmDetails?, DataError.Network> = Result.Success(null)
+        override suspend fun getMovieId(title: String): Result<Int?, DataError.Network> = Result.Success(null)
     }
 
     private object FakePersonLookup : PersonLookup {

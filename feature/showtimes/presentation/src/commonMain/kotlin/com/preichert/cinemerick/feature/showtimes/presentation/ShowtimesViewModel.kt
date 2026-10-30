@@ -76,12 +76,8 @@ class ShowtimesViewModel(
     private var refreshJob: Job? = null
     private var detailsJob: Job? = null
     private var personJob: Job? = null
-    // Titles whose TMDB details are being looked up for a card, so a card that scrolls back in does not ask again.
-    private val cardLookups = mutableSetOf<String>()
-    // Card lookups answered since the last flush, and the flush that applies them. Both are only touched on the main thread.
-    private val answeredCards = mutableMapOf<String, FilmDetails?>()
-    private var cardFlushJob: Job? = null
     private var movieIdJob: Job? = null
+    private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
 
     private class Fetch(
         val showings: List<Showing>,
@@ -118,7 +114,7 @@ class ShowtimesViewModel(
                 val chain = _state.value.venuePicker?.chain
                 if (chain != null) openVenuePicker(chain)
             }
-            is ShowtimesAction.OnFilmCardVisible -> loadCardDetails(action.title)
+            is ShowtimesAction.OnFilmCardVisible -> cardLoader.load(action.title, resolved = action.title in _state.value.resolvedCards)
             is ShowtimesAction.OnFilmDetailsOpen -> openFilmDetails(action.title)
             ShowtimesAction.OnFilmDetailsDismiss -> dismissFilmDetails()
             is ShowtimesAction.OnPersonOpen -> openPerson(action.person)
@@ -211,7 +207,6 @@ class ShowtimesViewModel(
     )
 
     private companion object {
-        const val CARD_FLUSH_MILLIS = 150L
         const val MOVIE_ID_CONCURRENCY = 4
         val defaultVenues = setOf(
             Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),
@@ -358,20 +353,6 @@ class ShowtimesViewModel(
         }
     }
 
-    // Looked up as each card comes on screen. A failed lookup is not remembered, so the card asks again when it returns.
-    // The answers are applied in batches (see scheduleCardFlush), so a screenful of cards is one state update, not one each.
-    private fun loadCardDetails(title: String) {
-        if (title in _state.value.resolvedCards || title in answeredCards || !cardLookups.add(title)) return
-        viewModelScope.launch {
-            try {
-                answeredCards[title] = filmDetailsRepository.getDatabaseDetails(title)
-                scheduleCardFlush()
-            } finally {
-                cardLookups.remove(title)
-            }
-        }
-    }
-
     // The film database id of each showing's title, so that titles of the same film are grouped together. Resolved once per
     // title (a title that could not be resolved is asked again on the next fetch), then the groups are rebuilt with the ids.
     private fun loadMovieIds(showings: List<Showing>) {
@@ -384,23 +365,17 @@ class ShowtimesViewModel(
                 titles.map { title -> async { semaphore.withPermit { title to filmDetailsRepository.getMovieId(title) } } }.awaitAll()
             }
             _state.update { state ->
-                state.copy(movieIds = state.movieIds + ids.mapNotNull { (title, id) -> id?.let { title to it } }).withResults(lastFetch)
+                state.copy(movieIds = state.movieIds + ids.mapNotNull { (title, result) -> (result as? Result.Success)?.data?.let { title to it } }).withResults(lastFetch)
             }
         }
     }
 
-    private fun scheduleCardFlush() {
-        if (cardFlushJob?.isActive == true) return
-        cardFlushJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(CARD_FLUSH_MILLIS)
-            val answers = answeredCards.toMap()
-            answeredCards.clear()
-            _state.update { state ->
-                state.copy(
-                    cardDetails = state.cardDetails + answers.mapNotNull { (title, details) -> details?.let { title to it } },
-                    resolvedCards = state.resolvedCards + answers.keys,
-                ).withResults(lastFetch)
-            }
+    private fun applyCardDetails(answers: Map<String, FilmDetails?>) {
+        _state.update { state ->
+            state.copy(
+                cardDetails = state.cardDetails + answers.mapNotNull { (title, details) -> details?.let { title to it } },
+                resolvedCards = state.resolvedCards + answers.keys,
+            ).withResults(lastFetch)
         }
     }
 

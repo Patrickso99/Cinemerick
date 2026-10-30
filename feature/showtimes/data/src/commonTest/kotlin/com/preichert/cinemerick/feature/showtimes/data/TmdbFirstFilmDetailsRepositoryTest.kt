@@ -63,11 +63,25 @@ class TmdbFirstFilmDetailsRepositoryTest {
     fun databaseDetailsAreAskedOncePerFilmAndNeverTouchTheCinemas() = runTest {
         val (repository, lookup, showtimes) = repository(found(tmdb))
 
-        assertEquals(tmdb, repository.getDatabaseDetails("Mammina"))
-        assertEquals(tmdb, repository.getDatabaseDetails("Mammina"))
+        assertEquals(found(tmdb), repository.getDatabaseDetails("Mammina"))
+        assertEquals(found(tmdb), repository.getDatabaseDetails("Mammina"))
 
         assertEquals(1, lookup.searched.size)
         assertEquals(emptyList(), showtimes.calls)
+    }
+
+    @Test
+    fun aConfidentNoMatchIsSuccessWithNoDetails() = runTest {
+        val (repository, _, _) = repository(found(null))
+
+        assertEquals(found(null), repository.getDatabaseDetails("Mammina"))
+    }
+
+    @Test
+    fun aFailedLookupIsAFailureSoTheCallerDoesNotRememberIt() = runTest {
+        val (repository, _, _) = repository(failed())
+
+        assertEquals(failed(), repository.getDatabaseDetails("Mammina"))
     }
 
     @Test
