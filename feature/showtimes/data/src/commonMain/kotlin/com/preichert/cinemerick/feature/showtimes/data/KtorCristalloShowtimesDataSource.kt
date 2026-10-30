@@ -11,12 +11,12 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
@@ -25,7 +25,8 @@ private val log = Logger.withTag("CristalloShowtimes")
 
 // Cinema Cristallo Oderzo is a WordPress site: no JSON API, but the page's own day-switch AJAX call also answers a GET.
 class KtorCristalloShowtimesDataSource(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     override val chain = Chain.CRISTALLO
@@ -48,7 +49,7 @@ class KtorCristalloShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val body = response.data.bodyAsText()
-                val showings = withContext(Dispatchers.Default) { parseCristalloShowings(body, venue, day) }
+                val showings = withContext(dispatchers.parsing) { parseCristalloShowings(body, venue, day) }
                 log.d { "$day: ${body.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }
@@ -58,7 +59,7 @@ class KtorCristalloShowtimesDataSource(
     private fun LocalDate.siteFormat() = "${day.toString().padStart(2, '0')}-${month.number.toString().padStart(2, '0')}-$year"
 
     override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
-        httpClient.fetchFilmPage(detailsUrl, ::parseCristalloFilmPage)
+        httpClient.fetchFilmPage(detailsUrl, dispatchers, ::parseCristalloFilmPage)
 
     private companion object {
         const val AJAX_URL = "https://www.cinemacristallo.com/wp-admin/admin-ajax.php"

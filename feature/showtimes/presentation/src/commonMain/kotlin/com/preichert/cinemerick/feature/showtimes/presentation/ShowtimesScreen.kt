@@ -87,12 +87,8 @@ fun ShowtimesScreenContent(
 
     ShowtimesScreen(
         state = state,
-        onAction = { action ->
-            when (action) {
-                ShowtimesAction.OnSettingsClick -> onNavigateToSettings()
-                else -> viewModel.onAction(action)
-            }
-        },
+        onAction = viewModel::onAction,
+        onSettingsClick = onNavigateToSettings,
         snackbarHostState = snackbarHostState
     )
 }
@@ -101,6 +97,7 @@ fun ShowtimesScreenContent(
 fun ShowtimesScreen(
     state: ShowtimesState,
     onAction: (ShowtimesAction) -> Unit,
+    onSettingsClick: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val configuration = currentDeviceConfiguration()
@@ -145,7 +142,7 @@ fun ShowtimesScreen(
             CinemerickAdaptiveLayout(
                 header = {
                     HomeHeader(
-                        onSettingsClick = { onAction(ShowtimesAction.OnSettingsClick) },
+                        onSettingsClick = onSettingsClick,
                         settingsLabel = settingsLabel,
                     )
                 },
@@ -154,7 +151,7 @@ fun ShowtimesScreen(
                     CinemerickIconButton(
                         icon = painterResource(CinemerickIcons.Sliders),
                         contentDescription = settingsLabel,
-                        onClick = { onAction(ShowtimesAction.OnSettingsClick) },
+                        onClick = onSettingsClick,
                     )
                 },
                 filtersContent = {
@@ -174,7 +171,7 @@ fun ShowtimesScreen(
                 desktopRail = {
                     DesktopNavigationRail(
                         settingsLabel = stringResource(Res.string.nav_settings),
-                        onSettingsClick = { onAction(ShowtimesAction.OnSettingsClick) },
+                        onSettingsClick = onSettingsClick,
                     )
                 },
             )
@@ -270,6 +267,7 @@ private fun ShowtimesScreenPreview() {
         ShowtimesScreen(
             state = previewState(),
             onAction = {},
+            onSettingsClick = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }
@@ -282,6 +280,7 @@ private fun ShowtimesScreenDarkPreview() {
         ShowtimesScreen(
             state = previewState(),
             onAction = {},
+            onSettingsClick = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }
@@ -294,6 +293,7 @@ private fun ShowtimesScreenDesktopPreview() {
         ShowtimesScreen(
             state = previewState().let { it.copy(groups = it.groups + it.groups + it.groups) },
             onAction = {},
+            onSettingsClick = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }

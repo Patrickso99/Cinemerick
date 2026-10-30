@@ -8,12 +8,20 @@ import androidx.navigation.navigation
 import com.preichert.cinemerick.feature.settings.presentation.SettingsScreenContent
 import kotlinx.serialization.Serializable
 
-sealed interface SettingsGraphRoutes {
+internal sealed interface SettingsGraphRoutes {
     @Serializable
     data object Graph : SettingsGraphRoutes
 
     @Serializable
     data object SettingsRoute : SettingsGraphRoutes
+}
+
+// Ignore taps during a transition: a second navigation would stack or remove destinations on desktop.
+private fun NavController.isIdle(): Boolean =
+    currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED
+
+fun NavController.navigateToSettings() {
+    if (isIdle()) navigate(SettingsGraphRoutes.SettingsRoute) { launchSingleTop = true }
 }
 
 fun NavGraphBuilder.settingsGraph(
@@ -25,8 +33,8 @@ fun NavGraphBuilder.settingsGraph(
         composable<SettingsGraphRoutes.SettingsRoute> {
             SettingsScreenContent(
                 onNavigateBack = {
-                    // Ignore taps during a transition: a second pop would remove the start destination on desktop
-                    if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED && navController.previousBackStackEntry != null) {
+                    // A second pop would remove the start destination on desktop
+                    if (navController.isIdle() && navController.previousBackStackEntry != null) {
                         navController.popBackStack()
                     }
                 }

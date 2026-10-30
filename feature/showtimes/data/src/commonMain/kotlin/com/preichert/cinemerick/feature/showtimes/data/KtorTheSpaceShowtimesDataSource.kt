@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import io.ktor.client.HttpClient
 import io.ktor.http.HttpHeaders
 import com.preichert.cinemerick.core.data.get
@@ -17,7 +18,8 @@ import kotlinx.datetime.LocalDate
 
 class KtorTheSpaceShowtimesDataSource(
     private val httpClient: HttpClient,
-    private val tokenProvider: TheSpaceTokenProvider
+    private val tokenProvider: TheSpaceTokenProvider,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     override val chain = Chain.THE_SPACE

@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import io.ktor.client.HttpClient
 import com.preichert.cinemerick.core.data.get
 import com.preichert.cinemerick.core.domain.DataError
@@ -15,7 +16,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
 
 class KtorUciShowtimesDataSource(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     override val chain = Chain.UCI

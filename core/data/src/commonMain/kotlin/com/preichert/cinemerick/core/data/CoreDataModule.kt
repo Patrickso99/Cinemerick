@@ -13,6 +13,7 @@ expect val platformCoreDataModule: Module
 
 val coreDataModule = module {
     singleOf(HttpClientFactory::create)
+    single<DispatcherProvider> { DefaultDispatcherProvider() }
     single<ThemePreferences> { SettingsThemePreferences(Settings()) }
     single<LanguagePreferences> { SettingsLanguagePreferences(Settings()) }
     single<AnimationPreferences> { SettingsAnimationPreferences(Settings()) }

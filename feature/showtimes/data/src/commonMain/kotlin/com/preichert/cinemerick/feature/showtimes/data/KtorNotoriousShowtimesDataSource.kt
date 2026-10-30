@@ -13,8 +13,8 @@ import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
@@ -22,7 +22,8 @@ private val log = Logger.withTag("NotoriousShowtimes")
 
 // Notorious has no central API: its pages are server-rendered HTML, one per venue listing one week, and `?week=next` the following one.
 class KtorNotoriousShowtimesDataSource(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     override val chain = Chain.NOTORIOUS
@@ -32,7 +33,7 @@ class KtorNotoriousShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                Result.Success(withContext(Dispatchers.Default) { parseNotoriousVenues(html) })
+                Result.Success(withContext(dispatchers.parsing) { parseNotoriousVenues(html) })
             }
         }
 
@@ -50,14 +51,14 @@ class KtorNotoriousShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = withContext(Dispatchers.Default) { parseNotoriousShowings(html, venue, days) }
+                val showings = withContext(dispatchers.parsing) { parseNotoriousShowings(html, venue, days) }
                 log.d { "$url: ${html.length} chars, ${showings.size} showing(s) for ${days.size} day(s)" }
                 Result.Success(showings)
             }
         }
 
     override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
-        httpClient.fetchFilmPage(detailsUrl, ::parseNotoriousFilmPage)
+        httpClient.fetchFilmPage(detailsUrl, dispatchers, ::parseNotoriousFilmPage)
 
     private companion object {
         const val HOME_URL = "https://www.notoriouscinemas.it"

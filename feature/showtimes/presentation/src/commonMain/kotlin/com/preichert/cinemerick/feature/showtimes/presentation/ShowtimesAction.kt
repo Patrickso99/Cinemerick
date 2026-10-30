@@ -31,5 +31,4 @@ sealed interface ShowtimesAction {
     data object OnFilmDetailsDismiss : ShowtimesAction
     data class OnPersonOpen(val person: FilmPerson) : ShowtimesAction
     data object OnPersonDismiss : ShowtimesAction
-    data object OnSettingsClick : ShowtimesAction
 }

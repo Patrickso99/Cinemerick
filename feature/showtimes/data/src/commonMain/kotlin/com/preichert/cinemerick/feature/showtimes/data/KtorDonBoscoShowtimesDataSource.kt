@@ -10,7 +10,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
-import kotlinx.coroutines.Dispatchers
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
@@ -18,7 +18,8 @@ private val log = Logger.withTag("DonBoscoShowtimes")
 
 // Cinema Don Bosco (San Donà di Piave) lists its whole programme on the home page: one request, whatever the days.
 class KtorDonBoscoShowtimesDataSource(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     override val chain = Chain.DON_BOSCO
@@ -33,7 +34,7 @@ class KtorDonBoscoShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val body = response.data.bodyAsText()
-                val showings = withContext(Dispatchers.Default) { parseDonBoscoShowings(body, venue, days) }
+                val showings = withContext(dispatchers.parsing) { parseDonBoscoShowings(body, venue, days) }
                 log.d { "${body.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }

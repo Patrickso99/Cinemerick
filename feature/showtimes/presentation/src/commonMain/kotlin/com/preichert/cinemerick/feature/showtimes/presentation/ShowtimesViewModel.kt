@@ -59,13 +59,15 @@ class ShowtimesViewModel(
     private val filmDetailsRepository: FilmDetailsRepository,
     private val filterPreferences: FilterPreferences,
     private val timeWindowController: TimeWindowController,
-    private val personLookup: PersonLookup
+    private val personLookup: PersonLookup,
+    private val clock: Clock = Clock.System
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState())
     val state = _state.asStateFlow()
 
-    private val _events = Channel<ShowtimesEvent>()
+    // Events are few and user-triggered, so they are queued until the screen collects them instead of being dropped.
+    private val _events = Channel<ShowtimesEvent>(Channel.UNLIMITED)
     val events = _events.receiveAsFlow()
 
     // Last fetched results, kept so filters apply instantly without refetching.
@@ -121,9 +123,6 @@ class ShowtimesViewModel(
             ShowtimesAction.OnFilmDetailsDismiss -> dismissFilmDetails()
             is ShowtimesAction.OnPersonOpen -> openPerson(action.person)
             ShowtimesAction.OnPersonDismiss -> dismissPerson()
-            ShowtimesAction.OnSettingsClick -> {
-                // Navigation is handled in ShowtimesScreenContent
-            }
         }
     }
 
@@ -249,10 +248,8 @@ class ShowtimesViewModel(
     private fun copy() {
         val text = _state.value.pollText
         if (text.isBlank()) return
-        viewModelScope.launch {
-            _events.send(ShowtimesEvent.CopyToClipboard(text))
-            _events.send(ShowtimesEvent.ShowSnackbar(UiText.Resource(Res.string.copied)))
-        }
+        _events.trySend(ShowtimesEvent.CopyToClipboard(text))
+        _events.trySend(ShowtimesEvent.ShowSnackbar(UiText.Resource(Res.string.copied)))
     }
 
     // A silent run (automatic refresh) skips validation messages; a newer run cancels the one in flight.
@@ -271,7 +268,7 @@ class ShowtimesViewModel(
 
         generateJob?.cancel()
         generateJob = viewModelScope.launch {
-            val startTimeMillis = Clock.System.now().toEpochMilliseconds()
+            val startTimeMillis = clock.now().toEpochMilliseconds()
             _state.update { it.copy(isLoading = true) }
 
             val venues = _state.value.selectedVenues
@@ -289,7 +286,7 @@ class ShowtimesViewModel(
             }
 
             lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, venues, filmQueries, errors)
-            val elapsedTimeMillis = Clock.System.now().toEpochMilliseconds() - startTimeMillis
+            val elapsedTimeMillis = clock.now().toEpochMilliseconds() - startTimeMillis
             log.i { "Fetched ${showings.size} showing(s), ${errors.size} venue error(s) in ${elapsedTimeMillis}ms" }
             _state.update {
                 it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis).withResults(lastFetch)
@@ -437,12 +434,12 @@ class ShowtimesViewModel(
     }
 
     private fun showSnackbar(message: UiText) {
-        viewModelScope.launch { _events.send(ShowtimesEvent.ShowSnackbar(message)) }
+        _events.trySend(ShowtimesEvent.ShowSnackbar(message))
     }
 
     private fun today(): LocalDate = now().date
 
-    private fun now(): LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    private fun now(): LocalDateTime = clock.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
     private fun LocalDate.toDateLabel(): String =
         "${day.toString().padStart(2, '0')}/${month.number.toString().padStart(2, '0')}"

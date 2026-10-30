@@ -12,10 +12,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import com.preichert.cinemerick.core.designsystem.LocalAnimationsEnabled
 import com.preichert.cinemerick.core.designsystem.Motion
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.preichert.cinemerick.feature.settings.presentation.navigation.SettingsGraphRoutes
+import com.preichert.cinemerick.feature.settings.presentation.navigation.navigateToSettings
 import com.preichert.cinemerick.feature.settings.presentation.navigation.settingsGraph
 import com.preichert.cinemerick.feature.showtimes.presentation.navigation.showtimesGraph
 
@@ -45,14 +44,7 @@ fun NavigationRoot(
             if (animationsEnabled) slideOutHorizontally(slide) { it / 4 } + fadeOut(fade) + scaleOut(scale, targetScale = 0.96f) else ExitTransition.None
         }
     ) {
-        showtimesGraph(
-            onNavigateToSettings = {
-                // Ignore taps during a transition to avoid duplicate navigations on desktop
-                if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
-                    navController.navigate(SettingsGraphRoutes.SettingsRoute) { launchSingleTop = true }
-                }
-            }
-        )
+        showtimesGraph(onNavigateToSettings = navController::navigateToSettings)
         settingsGraph(navController = navController)
     }
 }

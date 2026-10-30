@@ -1,6 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
 import co.touchlab.kermit.Logger
+import com.preichert.cinemerick.core.data.DispatcherProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.statement.bodyAsText
 import com.preichert.cinemerick.core.data.getResponse
@@ -13,7 +14,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -27,7 +27,8 @@ abstract class Ktor18TicketsShowtimesDataSource(
     private val httpClient: HttpClient,
     override val chain: Chain,
     private val venue: Venue,
-    private val baseUrl: String
+    private val baseUrl: String,
+    private val dispatchers: DispatcherProvider
 ) : ShowtimesDataSource {
 
     // The site answers 429 to bursts of requests, so only a couple of days are fetched at a time.
@@ -45,14 +46,14 @@ abstract class Ktor18TicketsShowtimesDataSource(
             is Result.Failure -> response
             is Result.Success -> {
                 val html = response.data.bodyAsText()
-                val showings = withContext(Dispatchers.Default) { parseEighteenTicketsShowings(html, venue, day) }
+                val showings = withContext(dispatchers.parsing) { parseEighteenTicketsShowings(html, venue, day) }
                 log.d { "${chain.name} $day: ${html.length} chars, ${showings.size} showing(s)" }
                 Result.Success(showings)
             }
         }
 
     override suspend fun getFilmDetails(detailsUrl: String): Result<FilmDetails, DataError.Network> =
-        httpClient.fetchFilmPage(detailsUrl, ::parseEighteenTicketsFilmPage)
+        httpClient.fetchFilmPage(detailsUrl, dispatchers, ::parseEighteenTicketsFilmPage)
 
     private companion object {
         const val MAX_CONCURRENT_REQUESTS = 2
@@ -63,16 +64,18 @@ abstract class Ktor18TicketsShowtimesDataSource(
     }
 }
 
-class KtorCinergiaShowtimesDataSource(httpClient: HttpClient) : Ktor18TicketsShowtimesDataSource(
+class KtorCinergiaShowtimesDataSource(httpClient: HttpClient, dispatchers: DispatcherProvider) : Ktor18TicketsShowtimesDataSource(
     httpClient,
     Chain.CINERGIA,
     Venue(Chain.CINERGIA, "conegliano", "Conegliano", "Veneto", "https://coneglianocinergia.18tickets.it"),
-    "https://coneglianocinergia.18tickets.it"
+    "https://coneglianocinergia.18tickets.it",
+    dispatchers,
 )
 
-class KtorCinemazeroShowtimesDataSource(httpClient: HttpClient) : Ktor18TicketsShowtimesDataSource(
+class KtorCinemazeroShowtimesDataSource(httpClient: HttpClient, dispatchers: DispatcherProvider) : Ktor18TicketsShowtimesDataSource(
     httpClient,
     Chain.CINEMAZERO,
     Venue(Chain.CINEMAZERO, "pordenone", "Pordenone", "Friuli-Venezia Giulia", "https://cinemazero.it"),
-    "https://multisala.cinemazero.18tickets.it"
+    "https://multisala.cinemazero.18tickets.it",
+    dispatchers,
 )
