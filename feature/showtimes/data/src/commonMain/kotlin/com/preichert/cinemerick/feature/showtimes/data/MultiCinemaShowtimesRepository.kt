@@ -64,6 +64,12 @@ class MultiCinemaShowtimesRepository(
                             is Result.Failure -> log.w { "Failed to fetch showings for ${venue.name}: ${fetchedResult.error}" }
                         }
 
+                        // A failed fetch only surfaces as a venue error when nothing cached can stand in for it.
+                        val failure = (fetchedResult as? Result.Failure)?.error
+                        if (failure != null && cachedShowings.isEmpty()) {
+                            return@async VenueShowings(venue, Result.Failure(failure))
+                        }
+
                         val allShowings = (cachedShowings.values.flatten() +
                                 (fetchedResult as? Result.Success)?.data.orEmpty()).distinctBy { "${it.day}:${it.time}:${it.title}" }
                         VenueShowings(venue, Result.Success(allShowings))

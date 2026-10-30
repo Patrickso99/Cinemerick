@@ -8,19 +8,19 @@ import org.jetbrains.compose.resources.stringResource
 sealed interface UiText {
     data class DynamicString(val value: String) : UiText
 
-    class Resource(
+    data class Resource(
         val id: StringResource,
-        val args: Array<Any> = emptyArray()
+        val args: List<Any> = emptyList()
     ) : UiText
 
     @Composable
     fun asString(): String = when (this) {
         is DynamicString -> value
-        is Resource -> stringResource(id, *args)
+        is Resource -> stringResource(id, *args.toTypedArray())
     }
 
     suspend fun asStringAsync(): String = when (this) {
         is DynamicString -> value
-        is Resource -> getString(id, *args)
+        is Resource -> getString(id, *args.toTypedArray())
     }
 }

@@ -281,31 +281,10 @@ class ShowtimesViewModel(
             results.forEach { venueShowings ->
                 when (val result = venueShowings.result) {
                     is Result.Success -> showings += result.data
-                    is Result.Failure -> {
-                        val errorCode = result.error.let { error ->
-                            when (error) {
-                                com.preichert.cinemerick.core.domain.DataError.Network.BAD_REQUEST -> " (400)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.UNAUTHORIZED -> " (401)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.FORBIDDEN -> " (403)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.NOT_FOUND -> " (404)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.CONFLICT -> " (409)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.TOO_MANY_REQUESTS -> " (429)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.REQUEST_TIMEOUT -> " (408)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.SERVER_ERROR -> " (500)"
-                                com.preichert.cinemerick.core.domain.DataError.Network.SERVICE_UNAVAILABLE -> " (503)"
-                                else -> ""
-                            }
-                        }
-                        val baseUiText = result.error.toUiText()
-                        val message = when (baseUiText) {
-                            is UiText.Resource -> UiText.Resource(baseUiText.id)
-                            is UiText.DynamicString -> UiText.DynamicString(baseUiText.value + errorCode)
-                        }
-                        errors[venueShowings.venue] = VenueErrorUi(
-                            venueName = venueShowings.venue.name,
-                            message = message
-                        )
-                    }
+                    is Result.Failure -> errors[venueShowings.venue] = VenueErrorUi(
+                        venueName = venueShowings.venue.name,
+                        message = result.error.toUiText()
+                    )
                 }
             }
 
