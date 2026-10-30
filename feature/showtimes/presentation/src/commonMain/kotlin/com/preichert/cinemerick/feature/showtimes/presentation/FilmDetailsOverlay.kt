@@ -145,7 +145,6 @@ private fun FilmDetailsSheet(
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         color = colors.surfaceContainer,
         modifier = modifier
-            .fillMaxWidth()
             .widthIn(max = 640.dp)
             .fillMaxHeight()
             .padding(top = 40.dp),

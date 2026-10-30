@@ -25,7 +25,6 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 🧱 **Results grid**: Film cards flow into a multi-column grid on larger screens (a single list on mobile)
 - 📱 **Responsive design**: Adaptive layouts for phone, tablet and desktop, in portrait and landscape
 - 🎥 **Smart movie unification**: Handles accent variations in film titles across cinemas (e.g., "Café" vs "Cafe")
-- 🏷️ **Version in Settings**: Shown as `v1.1.10 (20261016)` (version name and date-based code)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🏗️ **MVI architecture**: Clean separation of state, actions, and events
 - 🔧 **Koin DI**: Lightweight dependency injection across all modules

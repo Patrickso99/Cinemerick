@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -110,7 +111,6 @@ private fun PersonDetailsSheet(
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         color = colors.surfaceContainer,
         modifier = modifier
-            .fillMaxWidth()
             .widthIn(max = 640.dp)
             .fillMaxHeight()
             .padding(top = 40.dp),
@@ -205,24 +205,28 @@ private fun PersonHeader(person: PersonUi, onDismiss: () -> Unit) {
     }
 }
 
-private const val FILMOGRAPHY_COLUMNS = 3
+private val FILMOGRAPHY_MIN_CARD = 120.dp
 
 /**
- * The films in rows of [FILMOGRAPHY_COLUMNS] posters, most recent first. The last row is left short, not stretched. Each
- * card shows its year and the role played when TMDB has one.
+ * The films in rows of as many posters as fit the width, each at least [FILMOGRAPHY_MIN_CARD] wide, most recent first. The
+ * last row is left short, not stretched. Each card shows its year and the role played when TMDB has one.
  */
 @Composable
 private fun FilmographyGrid(label: String, films: List<PersonFilm>) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.space3)) {
-        Text(
-            text = label.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = CinemerickTheme.colors.onSurfaceVariant,
-        )
-        films.chunked(FILMOGRAPHY_COLUMNS).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.space3)) {
-                row.forEach { film -> FilmCard(film, Modifier.weight(1f)) }
-                repeat(FILMOGRAPHY_COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val gap = Spacing.space3
+        val columns = ((maxWidth + gap) / (FILMOGRAPHY_MIN_CARD + gap)).toInt().coerceAtLeast(2)
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.space3)) {
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = CinemerickTheme.colors.onSurfaceVariant,
+            )
+            films.chunked(columns).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                    row.forEach { film -> FilmCard(film, Modifier.weight(1f)) }
+                    repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+                }
             }
         }
     }
