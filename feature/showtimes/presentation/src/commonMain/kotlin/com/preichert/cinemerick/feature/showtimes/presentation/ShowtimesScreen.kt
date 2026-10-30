@@ -301,10 +301,10 @@ private fun ShowtimesScreenDesktopPreview() {
     }
 }
 
-@Preview
+@Preview(heightDp = 2200)
 @Composable
 private fun ShowtimesScreenLoadingPreview() {
-    CinemerickTheme {
+    CinemerickTheme(isDarkTheme = true) {
         ShowtimesScreen(
             state = previewState().copy(isLoading = true),
             onAction = {},
@@ -314,10 +314,10 @@ private fun ShowtimesScreenLoadingPreview() {
     }
 }
 
-@Preview
+@Preview(heightDp = 2200)
 @Composable
 private fun ShowtimesScreenEmptyPreview() {
-    CinemerickTheme {
+    CinemerickTheme(isDarkTheme = true) {
         ShowtimesScreen(
             state = previewState().copy(groups = emptyList(), optionsCount = 0, pollText = "", hasGenerated = true),
             onAction = {},
@@ -327,10 +327,10 @@ private fun ShowtimesScreenEmptyPreview() {
     }
 }
 
-@Preview
+@Preview(heightDp = 2200)
 @Composable
 private fun ShowtimesScreenVenueErrorPreview() {
-    CinemerickTheme {
+    CinemerickTheme(isDarkTheme = true) {
         ShowtimesScreen(
             state = previewState().copy(
                 venueErrors = listOf(VenueErrorUi(venueName = "UCI Luxe Marcon", message = UiText.DynamicString("Connection timed out"))),

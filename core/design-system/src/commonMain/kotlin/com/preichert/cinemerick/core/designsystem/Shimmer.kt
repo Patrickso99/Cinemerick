@@ -13,6 +13,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalInspectionMode
 
 /**
  * Animated placeholder shimmer drawn over the composable's bounds, used for loading skeletons.
@@ -21,12 +22,14 @@ fun Modifier.shimmer(): Modifier = composed {
     val base = MaterialTheme.colorScheme.surfaceContainerHighest
     val highlight = MaterialTheme.colorScheme.surfaceContainerLowest
     val transition = rememberInfiniteTransition(label = "shimmer")
-    val progress by transition.animateFloat(
+    val animatedProgress by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(durationMillis = 1200, easing = LinearEasing), RepeatMode.Restart),
         label = "shimmerProgress"
     )
+    // Infinite animations do not render in the IDE's preview, so previews show the shimmer at rest.
+    val progress = if (LocalInspectionMode.current) 0f else animatedProgress
     drawWithContent {
         val width = size.width.coerceAtLeast(1f)
         val start = -width + progress * 2 * width
