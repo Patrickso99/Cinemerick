@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.lifecycle.SavedStateHandle
 import com.preichert.cinemerick.core.data.SettingsTimeWindowPreferences
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
@@ -53,13 +54,30 @@ class ShowtimesViewModelTest {
 
     private fun viewModel(
         repository: ShowtimesRepository = FakeRepository,
-        filmDetails: FilmDetailsRepository = FakeFilmDetailsRepository
+        filmDetails: FilmDetailsRepository = FakeFilmDetailsRepository,
+        savedStateHandle: SavedStateHandle = SavedStateHandle()
     ): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
-        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonLookup)
+        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonLookup, savedStateHandle = savedStateHandle)
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }
+
+    @Test
+    fun filtersSurviveAProcessDeath() = runTest {
+        val savedStateHandle = SavedStateHandle()
+        viewModel(savedStateHandle = savedStateHandle).onAction(ShowtimesAction.OnFilmFilterChange("Dune"))
+
+        // A new instance, as after the process is restored, starts from the saved filters.
+        assertEquals("Dune", viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter)
+    }
+
+    @Test
+    fun anUnreadableSavedStateStartsFromTheDefaults() = runTest {
+        val savedStateHandle = SavedStateHandle(mapOf("filters" to "not json"))
+
+        assertEquals("", viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter)
+    }
 
     @Test
     fun newDayUsesConfiguredWindow() = runTest {

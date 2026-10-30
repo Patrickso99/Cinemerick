@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import co.touchlab.kermit.Logger
 import androidx.lifecycle.viewModelScope
@@ -40,6 +41,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,7 +53,20 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.time.Clock
+
+// The filters that survive process death. They are saved as JSON, so restoring them does not depend on the platform.
+@Serializable
+private data class SavedFilters(
+    val days: List<SavedDay> = emptyList(),
+    val filmFilter: String = "",
+    val hiddenTags: List<String> = emptyList(),
+)
+
+@Serializable
+private data class SavedDay(val date: String, val isSelected: Boolean, val minTime: String, val maxTime: String)
 
 private val log = Logger.withTag("ShowtimesViewModel")
 
@@ -60,7 +76,8 @@ class ShowtimesViewModel(
     private val filterPreferences: FilterPreferences,
     private val timeWindowController: TimeWindowController,
     private val personLookup: PersonLookup,
-    private val clock: Clock = Clock.System
+    private val clock: Clock = Clock.System,
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(initialState())
@@ -78,6 +95,15 @@ class ShowtimesViewModel(
     private var personJob: Job? = null
     private var movieIdJob: Job? = null
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
+
+    init {
+        // Every filter change is saved, so a restored process starts from the same days, times and tags.
+        viewModelScope.launch {
+            _state.map { it.toSavedFilters() }.distinctUntilChanged().collect { saved ->
+                savedStateHandle[FILTERS_KEY] = Json.encodeToString(SavedFilters.serializer(), saved)
+            }
+        }
+    }
 
     private class Fetch(
         val showings: List<Showing>,
@@ -198,8 +224,28 @@ class ShowtimesViewModel(
         _state.update { it.copy(hiddenTags = tags).withResults(lastFetch) }
     }
 
-    private fun initialState() = freshState(
-        selectedVenues = filterPreferences.getSelectedVenues() ?: defaultVenues
+    private fun initialState(): ShowtimesState {
+        val saved = restoredFilters()
+        return freshState(selectedVenues = filterPreferences.getSelectedVenues() ?: defaultVenues).copy(
+            days = saved.days.mapNotNull { day ->
+                runCatching { LocalDate.parse(day.date) }.getOrNull()?.let { date ->
+                    DayUi(date, day.isSelected, day.minTime, day.maxTime)
+                }
+            },
+            filmFilter = saved.filmFilter,
+            hiddenTags = saved.hiddenTags.toSet(),
+        )
+    }
+
+    // A saved state that cannot be read is ignored: the filters then start from their defaults.
+    private fun restoredFilters(): SavedFilters = runCatching {
+        savedStateHandle.get<String>(FILTERS_KEY)?.let { Json.decodeFromString(SavedFilters.serializer(), it) }
+    }.getOrNull() ?: SavedFilters()
+
+    private fun ShowtimesState.toSavedFilters() = SavedFilters(
+        days = days.map { SavedDay(it.date.toString(), it.isSelected, it.minTime, it.maxTime) },
+        filmFilter = filmFilter,
+        hiddenTags = hiddenTags.sorted(),
     )
 
     private fun freshState(selectedVenues: Set<Venue>) = ShowtimesState(
@@ -207,6 +253,7 @@ class ShowtimesViewModel(
     )
 
     private companion object {
+        const val FILTERS_KEY = "filters"
         const val MOVIE_ID_CONCURRENCY = 4
         val defaultVenues = setOf(
             Venue(Chain.UCI, "uci-cinemas-venezia-marcon", "UCI Luxe Marcon", "Veneto"),

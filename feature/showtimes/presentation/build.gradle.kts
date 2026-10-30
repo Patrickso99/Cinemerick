@@ -19,6 +19,7 @@ kotlin {
         implementation(libs.coil.compose)
         implementation(libs.compose.navigation)
         implementation(libs.serialization.json)
+        implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     }
 }
 
