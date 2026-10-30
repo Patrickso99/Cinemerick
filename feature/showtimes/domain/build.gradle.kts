@@ -7,4 +7,7 @@ kotlin {
         api(project(":core:domain"))
         api(libs.datetime)
     }
+    sourceSets.commonTest.dependencies {
+        implementation(libs.assertk)
+    }
 }

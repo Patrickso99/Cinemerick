@@ -47,7 +47,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.size
 import org.jetbrains.compose.resources.painterResource
 import com.preichert.cinemerick.core.designsystem.resources.Res
+import com.preichert.cinemerick.core.designsystem.resources.cd_clear
 import com.preichert.cinemerick.core.designsystem.resources.ic_close
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 /**
  * Compact time box on the numeric keypad: small [label] above a large value. Digits are kept and a colon is
@@ -151,10 +154,11 @@ fun TimeTextField(
                 if (value.isNotEmpty()) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_close),
-                        contentDescription = "✕",
+                        contentDescription = stringResource(Res.string.cd_clear),
                         tint = scheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(16.dp)
+                            .minimumInteractiveComponentSize()
                             .clickable(role = Role.Button) { onValueChange("") },
                     )
                 }

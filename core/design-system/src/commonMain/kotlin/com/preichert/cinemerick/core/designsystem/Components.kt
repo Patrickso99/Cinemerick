@@ -7,7 +7,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -24,15 +23,25 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderDefaults
@@ -69,10 +78,10 @@ fun CinemerickCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(
+    Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
-        color = CinemerickTheme.colors.surfaceContainer,
+        colors = CardDefaults.cardColors(containerColor = CinemerickTheme.colors.surfaceContainer),
     ) {
         Column(content = content)
     }
@@ -224,10 +233,10 @@ fun CinemerickChainCard(
         selectedCount == 0 -> CinemerickIcons.Plus
         else -> CinemerickIcons.ChevronRight
     }
-    Surface(
+    Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        color = colors.surfaceContainer,
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
     ) {
         Column {
             Row(
@@ -317,22 +326,39 @@ fun CinemerickPrimaryButton(
     icon: Painter? = null,
 ) {
     val colors = CinemerickTheme.colors
-    ButtonShell(
+    val interaction = remember { MutableInteractionSource() }
+    // Disabled keeps the filled look and dims the whole button, as before the M3 base.
+    Button(
         onClick = onClick,
         enabled = enabled,
-        height = 52.dp,
-        container = colors.primary,
-        modifier = modifier,
+        modifier = modifier
+            .height(52.dp)
+            .pressScale(interaction)
+            .alpha(if (enabled) 1f else 0.5f),
+        interactionSource = interaction,
+        shape = CinemerickFullShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = colors.primary,
+            contentColor = colors.onPrimary,
+            disabledContainerColor = colors.primary,
+            disabledContentColor = colors.onPrimary,
+        ),
+        contentPadding = PaddingValues(horizontal = 22.dp),
     ) {
-        when {
-            loading -> CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                strokeWidth = 2.dp,
-                color = colors.onPrimary,
-            )
-            icon != null -> Icon(icon, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(20.dp))
+        Row(
+            horizontalArrangement = spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            when {
+                loading -> CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = colors.onPrimary,
+                )
+                icon != null -> Icon(icon, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(20.dp))
+            }
+            Text(text, style = MaterialTheme.typography.titleSmall, color = colors.onPrimary, maxLines = 1)
         }
-        Text(text, style = MaterialTheme.typography.titleSmall, color = colors.onPrimary, maxLines = 1)
     }
 }
 
@@ -345,13 +371,22 @@ fun CinemerickSecondaryButton(
     enabled: Boolean = true,
 ) {
     val colors = CinemerickTheme.colors
-    ButtonShell(
+    val interaction = remember { MutableInteractionSource() }
+    OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        height = 52.dp,
-        container = Color.Transparent,
+        modifier = modifier
+            .height(52.dp)
+            .pressScale(interaction)
+            .alpha(if (enabled) 1f else 0.5f),
+        interactionSource = interaction,
+        shape = CinemerickFullShape,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = colors.onSurface,
+            disabledContentColor = colors.onSurface,
+        ),
         border = BorderStroke(1.dp, colors.outlineVariant),
-        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 22.dp),
     ) {
         Text(text, style = MaterialTheme.typography.titleSmall, color = colors.onSurface, maxLines = 1)
     }
@@ -366,16 +401,27 @@ fun CinemerickTonalButton(
     icon: Painter? = null,
 ) {
     val colors = CinemerickTheme.colors
-    ButtonShell(
+    val interaction = remember { MutableInteractionSource() }
+    FilledTonalButton(
         onClick = onClick,
-        enabled = true,
-        height = 44.dp,
-        container = colors.primaryContainer,
-        modifier = modifier,
-        horizontalPadding = 16.dp,
+        modifier = modifier
+            .height(44.dp)
+            .pressScale(interaction),
+        interactionSource = interaction,
+        shape = CinemerickFullShape,
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = colors.primaryContainer,
+            contentColor = colors.onPrimaryContainer,
+        ),
+        contentPadding = PaddingValues(horizontal = 16.dp),
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = colors.onPrimaryContainer, maxLines = 1)
-        if (icon != null) Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(18.dp))
+        Row(
+            horizontalArrangement = spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text, style = MaterialTheme.typography.labelLarge, color = colors.onPrimaryContainer, maxLines = 1)
+            if (icon != null) Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(18.dp))
+        }
     }
 }
 
@@ -412,14 +458,13 @@ fun CinemerickIconButton(
     container: Color = CinemerickTheme.colors.surfaceContainerHigh,
     tint: Color = CinemerickTheme.colors.onSurface,
 ) {
-    Box(
+    FilledIconButton(
+        onClick = onClick,
         modifier = modifier
             .size(size)
-            .clip(CircleShape)
-            .background(container)
-            .semantics { this.contentDescription = contentDescription }
-            .clickable(role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
+            .semantics { this.contentDescription = contentDescription },
+        shape = CircleShape,
+        colors = IconButtonDefaults.filledIconButtonColors(containerColor = container, contentColor = tint),
     ) {
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
     }
@@ -588,27 +633,22 @@ fun CinemerickSwitchRow(
 @Composable
 fun CinemerickSwitch(checked: Boolean, modifier: Modifier = Modifier) {
     val colors = CinemerickTheme.colors
-    val animationsEnabled = LocalAnimationsEnabled.current
-    val thumbOffset by animateDpAsState(
-        targetValue = if (checked) 20.dp else 0.dp,
-        animationSpec = tween(Motion.duration(animationsEnabled, Motion.Press)),
-        label = "switchThumb",
+    // onCheckedChange is null: the row owns the pointer, the switch only shows the state.
+    Switch(
+        checked = checked,
+        onCheckedChange = null,
+        modifier = modifier.size(width = 52.dp, height = 32.dp),
+        // Without thumb content M3 draws the unchecked thumb at 16dp; the design keeps 24dp in both states.
+        thumbContent = { Spacer(Modifier.size(24.dp)) },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = colors.onPrimary,
+            checkedTrackColor = colors.primary,
+            checkedBorderColor = Color.Transparent,
+            uncheckedThumbColor = colors.onSurfaceVariant,
+            uncheckedTrackColor = colors.surfaceContainerHigh,
+            uncheckedBorderColor = Color.Transparent,
+        ),
     )
-    Box(
-        modifier = modifier
-            .size(width = 52.dp, height = 32.dp)
-            .clip(CinemerickFullShape)
-            .background(if (checked) colors.primary else colors.surfaceContainerHigh)
-            .padding(4.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .offset(x = thumbOffset)
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(if (checked) colors.onPrimary else colors.onSurfaceVariant),
-        )
-    }
 }
 
 /** Chip-sized text used for the time value on rows: tabular numerals, time style. */

@@ -9,6 +9,9 @@ sealed interface ParsedTime {
 
 private val END_OF_DAY = LocalTime(23, 59)
 
+// Char.isDigit accepts non-ASCII digits, which toIntOrNull then parses too.
+private fun isAsciiDigit(char: Char): Boolean = char in '0'..'9'
+
 /**
  * Parses user time input: blank means "no bound", `H`/`HH` means `HH:00`, `H:MM`/`HH:MM` is
  * taken as is, and `24` or `24:00` means the end of the day (23:59).
@@ -19,12 +22,12 @@ fun parseTimeInput(text: String): ParsedTime {
 
     val parts = trimmed.split(":")
     if (parts.size > 2) return ParsedTime.Invalid
-    val hour = parts[0].toIntOrNull()?.takeIf { parts[0].length in 1..2 && parts[0].all(Char::isDigit) }
+    val hour = parts[0].toIntOrNull()?.takeIf { parts[0].length in 1..2 && parts[0].all(::isAsciiDigit) }
         ?: return ParsedTime.Invalid
     val minute = if (parts.size == 1) {
         0
     } else {
-        parts[1].toIntOrNull()?.takeIf { parts[1].length == 2 && parts[1].all(Char::isDigit) }
+        parts[1].toIntOrNull()?.takeIf { parts[1].length == 2 && parts[1].all(::isAsciiDigit) }
             ?: return ParsedTime.Invalid
     }
 

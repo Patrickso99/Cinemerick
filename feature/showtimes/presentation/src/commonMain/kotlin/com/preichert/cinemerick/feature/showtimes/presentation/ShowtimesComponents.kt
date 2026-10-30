@@ -32,7 +32,10 @@ import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import org.jetbrains.compose.resources.DrawableResource
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /** Display name of a chain, as printed on the chain card and the venue picker. */
 internal fun Chain.displayName(): String = when (this) {
@@ -177,7 +180,7 @@ private fun BadgePreviewLight() {
 @Composable
 private fun MessageCardPreviewLight() {
     LightThemePreview {
-        MessageCard(icon = CinemerickIcons.Film, text = "Generate showtimes to see results")
+        MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint))
     }
 }
 
@@ -187,6 +190,6 @@ private fun MessageCardPreviewLight() {
 @Composable
 private fun MessageCardPreviewDark() {
     DarkThemePreview {
-        MessageCard(icon = CinemerickIcons.Film, text = "Generate showtimes to see results")
+        MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint))
     }
 }

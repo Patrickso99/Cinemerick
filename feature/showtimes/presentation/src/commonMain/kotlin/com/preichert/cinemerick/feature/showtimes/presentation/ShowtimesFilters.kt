@@ -60,6 +60,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
 import com.preichert.cinemerick.feature.showtimes.domain.parseTimeInput
 import com.preichert.cinemerick.core.designsystem.CinemerickCard
 import com.preichert.cinemerick.core.designsystem.CinemerickFilterChip
+import com.preichert.cinemerick.core.designsystem.CinemerickIconButton
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
 import com.preichert.cinemerick.core.designsystem.CinemerickPrimaryButton
 import com.preichert.cinemerick.core.designsystem.CinemerickSecondaryButton
@@ -237,21 +238,13 @@ private fun FilmSearchField(
             )
             if (state.filmFilter.isNotEmpty()) {
                 val clearLabel = stringResource(Res.string.clear)
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .clickable(role = Role.Button) { onAction(ShowtimesAction.OnFilmFilterChange("")) }
-                        .semantics { contentDescription = clearLabel },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(CinemerickIcons.Close),
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                CinemerickIconButton(
+                    icon = painterResource(CinemerickIcons.Close),
+                    contentDescription = clearLabel,
+                    onClick = { onAction(ShowtimesAction.OnFilmFilterChange("")) },
+                    container = Color.Transparent,
+                    tint = colors.onSurfaceVariant,
+                )
             }
         }
     }

@@ -56,17 +56,3 @@ tasks.register("generateIosVersionConfig") {
     }
 }
 
-// Run on every gradle sync
-if (!iosConfigFile.exists() || iosConfigFile.readText() != iosConfigContent) {
-    iosConfigFile.writeText(iosConfigContent)
-}
-
-// Run on every build
-tasks.matching { it.name == "build" || it.name == "preBuild" }.configureEach {
-    dependsOn("generateIosVersionConfig")
-}
-tasks.withType<KotlinCompilationTask<*>>().configureEach {
-    if (!name.contains("ios", ignoreCase = true)) {
-        dependsOn("generateIosVersionConfig")
-    }
-}

@@ -8,6 +8,7 @@ kotlin {
         implementation(project(":core:testing"))
         implementation(project(":core:data"))
         implementation(libs.coroutines.test)
+        implementation(libs.assertk)
     }
     sourceSets.commonMain.dependencies {
         implementation(project(":core:domain"))
