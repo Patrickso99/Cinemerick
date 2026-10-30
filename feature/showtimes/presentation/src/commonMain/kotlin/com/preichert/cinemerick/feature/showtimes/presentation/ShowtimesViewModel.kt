@@ -91,10 +91,10 @@ class ShowtimesViewModel(
     private var lastFetch: Fetch? = null
     private var generateJob: Job? = null
     private var refreshJob: Job? = null
-    private var detailsJob: Job? = null
-    private var personJob: Job? = null
     private var movieIdJob: Job? = null
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
+    private val filmDetails = FilmDetailsLoader(viewModelScope, filmDetailsRepository) { change -> _state.update { change(it) } }
+    private val persons = PersonDetailsLoader(viewModelScope, personLookup) { change -> _state.update { change(it) } }
 
     init {
         // Every filter change is saved, so a restored process starts from the same days, times and tags.
@@ -141,10 +141,10 @@ class ShowtimesViewModel(
                 if (chain != null) openVenuePicker(chain)
             }
             is ShowtimesAction.OnFilmCardVisible -> cardLoader.load(action.title, resolved = action.title in _state.value.resolvedCards)
-            is ShowtimesAction.OnFilmDetailsOpen -> openFilmDetails(action.title)
-            ShowtimesAction.OnFilmDetailsDismiss -> dismissFilmDetails()
-            is ShowtimesAction.OnPersonOpen -> openPerson(action.person)
-            ShowtimesAction.OnPersonDismiss -> dismissPerson()
+            is ShowtimesAction.OnFilmDetailsOpen -> _state.value.groups.firstOrNull { it.title == action.title }?.let(filmDetails::open)
+            ShowtimesAction.OnFilmDetailsDismiss -> filmDetails.dismiss()
+            is ShowtimesAction.OnPersonOpen -> persons.open(action.person)
+            ShowtimesAction.OnPersonDismiss -> persons.dismiss()
         }
     }
 
@@ -386,20 +386,6 @@ class ShowtimesViewModel(
         )
     }
 
-    // Opens in a loading state, without the cinemas' text that the film database's would replace, then shows what the
-    // repository resolves: the database's details, or what the cinemas publish when it does not know the film.
-    private fun openFilmDetails(title: String) {
-        val group = _state.value.groups.firstOrNull { it.title == title } ?: return
-        detailsJob?.cancel()
-        _state.update { it.copy(filmDetails = FilmDetailsUi(title, FilmDetails(), isLoading = true, posterUrl = group.tmdb?.posterUrl ?: group.posterUrl)) }
-        detailsJob = viewModelScope.launch {
-            val details = filmDetailsRepository.getFilmDetails(title, group.details, group.detailsSources)
-            _state.update { state ->
-                if (state.filmDetails?.title == title) state.copy(filmDetails = FilmDetailsUi(title, details, posterUrl = details.posterUrl ?: group.posterUrl)) else state
-            }
-        }
-    }
-
     // The film database id of each showing's title, so that titles of the same film are grouped together. Resolved once per
     // title (a title that could not be resolved is asked again on the next fetch), then the groups are rebuilt with the ids.
     private fun loadMovieIds(showings: List<Showing>) {
@@ -424,35 +410,6 @@ class ShowtimesViewModel(
                 resolvedCards = state.resolvedCards + answers.keys,
             ).withResults(lastFetch)
         }
-    }
-
-    private fun dismissFilmDetails() {
-        detailsJob?.cancel()
-        _state.update { it.copy(filmDetails = null) }
-    }
-
-    // Shows what the person page has, and the photo the cast row already had, while TMDB answers. A failed lookup leaves
-    // the page with the name and the photo only.
-    private fun openPerson(person: FilmPerson) {
-        personJob?.cancel()
-        _state.update { it.copy(personDetails = PersonUi(person, isLoading = true)) }
-        personJob = viewModelScope.launch {
-            val details = when (val result = personLookup.find(person.id)) {
-                is Result.Success -> result.data
-                is Result.Failure -> {
-                    log.w { "Person lookup failed for ${person.id}: ${result.error}" }
-                    null
-                }
-            }
-            _state.update { state ->
-                if (state.personDetails?.person == person) state.copy(personDetails = PersonUi(person, details)) else state
-            }
-        }
-    }
-
-    private fun dismissPerson() {
-        personJob?.cancel()
-        _state.update { it.copy(personDetails = null) }
     }
 
     private fun showSnackbar(message: UiText) {
