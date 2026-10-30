@@ -67,6 +67,7 @@ class ShowtimesViewModel(
     private val _events = Channel<ShowtimesEvent>(Channel.UNLIMITED)
     val events = _events.receiveAsFlow()
 
+    private val days = DaysController(timeWindowController, ::today) { change -> _state.update { change(it) } }
     private val venuePicker = VenuePickerController(viewModelScope, showtimesRepository, filterPreferences) { change -> _state.update { change(it) } }
     private val results = ResultsController(viewModelScope, showtimesRepository, filmDetailsRepository, clock, ::now, { _state.value }, { change -> _state.update { change(it) } }, ::showSnackbar)
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
@@ -84,15 +85,15 @@ class ShowtimesViewModel(
 
     fun onAction(action: ShowtimesAction) {
         when (action) {
-            is ShowtimesAction.OnDayToggle -> { toggleDay(action.date); refresh() }
-            is ShowtimesAction.OnDatesConfirm -> { confirmDates(action.dates); refresh() }
-            ShowtimesAction.OnCalendarOpen -> _state.update { it.copy(calendar = CalendarUi(minDate = today())) }
-            ShowtimesAction.OnCalendarDismiss -> _state.update { it.copy(calendar = null) }
-            ShowtimesAction.OnSelectToday -> { selectDays(listOf(today())); refresh() }
-            ShowtimesAction.OnSelectTomorrow -> { selectDays(listOf(tomorrow(today()))); refresh() }
-            ShowtimesAction.OnSelectWeekend -> { selectDays(upcomingWeekend(today())); refresh() }
-            is ShowtimesAction.OnMinTimeChange -> { updateDay(action.date) { it.copy(minTime = action.value) }; refresh() }
-            is ShowtimesAction.OnMaxTimeChange -> { updateDay(action.date) { it.copy(maxTime = action.value) }; refresh() }
+            is ShowtimesAction.OnDayToggle -> { days.toggle(action.date); refresh() }
+            is ShowtimesAction.OnDatesConfirm -> { days.confirm(action.dates); refresh() }
+            ShowtimesAction.OnCalendarOpen -> days.openCalendar()
+            ShowtimesAction.OnCalendarDismiss -> days.dismissCalendar()
+            ShowtimesAction.OnSelectToday -> { days.select(listOf(today())); refresh() }
+            ShowtimesAction.OnSelectTomorrow -> { days.select(listOf(tomorrow(today()))); refresh() }
+            ShowtimesAction.OnSelectWeekend -> { days.select(upcomingWeekend(today())); refresh() }
+            is ShowtimesAction.OnMinTimeChange -> { days.setMinTime(action.date, action.value); refresh() }
+            is ShowtimesAction.OnMaxTimeChange -> { days.setMaxTime(action.date, action.value); refresh() }
             is ShowtimesAction.OnFilmFilterChange -> _state.update { it.copy(filmFilter = action.value) }
             is ShowtimesAction.OnVenueToggle -> { venuePicker.toggle(action.venue); refresh() }
             is ShowtimesAction.OnVenuePickerOpen -> venuePicker.open(action.chain)
@@ -112,29 +113,6 @@ class ShowtimesViewModel(
             ShowtimesAction.OnFilmDetailsDismiss -> filmDetails.dismiss()
             is ShowtimesAction.OnPersonOpen -> persons.open(action.person)
             ShowtimesAction.OnPersonDismiss -> persons.dismiss()
-        }
-    }
-
-    // Keeps the time ranges of dates that stay selected.
-    private fun selectDays(dates: List<LocalDate>) {
-        _state.update { state ->
-            state.copy(days = dates.map { date -> state.days.firstOrNull { it.date == date } ?: newDay(date) })
-        }
-    }
-
-    private fun confirmDates(dates: Set<LocalDate>) {
-        selectDays(dates.sorted())
-        _state.update { it.copy(calendar = null) }
-    }
-
-    private fun toggleDay(date: LocalDate) {
-        _state.update { state ->
-            val days = if (state.days.any { it.date == date }) {
-                state.days.filterNot { it.date == date }
-            } else {
-                (state.days + newDay(date)).sortedBy { it.date }
-            }
-            state.copy(days = days)
         }
     }
 
@@ -184,22 +162,6 @@ class ShowtimesViewModel(
             Venue(Chain.THE_SPACE, "1009", "Silea", "Veneto"),
             Venue(Chain.NOTORIOUS, "fiumeveneto", "Fiume Veneto", "Friuli", "https://www.notoriouscinemas.it/fiumeveneto/index.php")
         )
-    }
-
-    private fun newDay(date: LocalDate): DayUi {
-        val window = timeWindowController.window.value
-        return DayUi(
-            date = date,
-            isSelected = true,
-            minTime = window.minMinutes.toTimeInput(),
-            maxTime = window.maxMinutes.toTimeInput()
-        )
-    }
-
-    private fun updateDay(date: LocalDate, transform: (DayUi) -> DayUi) {
-        _state.update { state ->
-            state.copy(days = state.days.map { if (it.date == date) transform(it) else it })
-        }
     }
 
     // Ignored while loading: the in-flight generate() would write its results back afterwards.
