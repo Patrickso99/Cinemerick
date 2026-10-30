@@ -25,12 +25,13 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 🧱 **Results grid**: Film cards flow into a multi-column grid on larger screens (a single list on mobile)
 - 📱 **Responsive design**: Adaptive layouts for phone, tablet and desktop, in portrait and landscape
 - 🎥 **Smart movie unification**: Handles accent variations in film titles across cinemas (e.g., "Café" vs "Cafe")
-- 🏷️ **Version in Settings**: Shown as `v1.1.9 (20261016)` (version name and date-based code)
+- 🏷️ **Version in Settings**: Shown as `v1.1.10 (20261016)` (version name and date-based code)
 - 🪵 **Logging**: Kermit logs network failures and fetch results on every platform
 - 🏗️ **MVI architecture**: Clean separation of state, actions, and events
 - 🔧 **Koin DI**: Lightweight dependency injection across all modules
-- 🔐 **Error resilience**: Debounce and retry logic for transient failures (HTTP 429 rate limits, 500 errors); one cinema failure doesn't hide results from others
-- ⚡ **Short-lived cache**: Showtimes are cached for 5 minutes per venue and day
+- 🔐 **Error resilience**: Server errors (HTTP 5xx) are retried twice with exponential backoff; one cinema failure doesn't hide results from others
+- ⚡ **Short-lived cache**: Showtimes are cached for 5 minutes per venue and day, safe to fill from concurrent requests
+- 💾 **Remembered filters**: Days, time ranges, film filter and hidden format tags are restored after the app is restarted, and the selected venues are kept between launches
 
 ## Platform Support
 
@@ -46,14 +47,14 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 
 | Module | Responsibility |
 |--------|----------------|
-| `:core:domain` | Result types, errors, preference interfaces, `BuildKonfig` |
-| `:core:data` | HTTP client, retry queue, settings preferences |
+| `:core:domain` | Result types, errors, preference interfaces, `BuildKonfig` (name, version, git hash) |
+| `:core:data` | HTTP client with server-error retries, settings preferences, `TmdbConfig` (TMDB token) |
 | `:core:presentation` | `UiText`, controllers (theme, language, animations, time window) |
-| `:core:design-system` | Theme, typography, shapes, adaptive layouts, components |
-| `:core:testing` | Test helpers |
+| `:core:design-system` | Theme, typography, shapes, adaptive layouts, components, `DeviceConfiguration` |
+| `:core:testing` | Test helpers: in-memory settings and preference fakes |
 | `:feature:showtimes:domain` | Models, repository interfaces, filtering and formatting |
 | `:feature:showtimes:data` | Cinema data sources, HTML parsers, TMDB lookup, cache, merging |
-| `:feature:showtimes:presentation` | MVI ViewModel, showtimes screen, pickers, film details |
+| `:feature:showtimes:presentation` | MVI ViewModel, its controllers (results, days, venues, film and person details, card lookups, saved filters), showtimes screen, pickers |
 | `:feature:settings:presentation` | Settings screen and its ViewModel |
 
 ### Build Plugins
@@ -63,14 +64,15 @@ Shared Gradle setup lives in `:build-logic:convention`, under the `com.preichert
 | Plugin | Adds |
 |--------|------|
 | `android.application` | Android app config, version from `AppInfo` |
-| `cmp.application` | Compose Multiplatform app: Android, desktop and iOS targets |
+| `cmp.application` | Compose Multiplatform app: Android, desktop and iOS targets, `generateIosVersionConfig` |
 | `kmp.library` | Kotlin Multiplatform library with all targets |
-| `cmp.library` | `kmp.library` plus Compose Multiplatform |
+| `cmp.library` | `kmp.library` plus Compose Multiplatform, compose resources and the stability config |
 | `cmp.feature` | `cmp.library` plus Koin Compose and ViewModel |
 | `koin` | Koin core |
 | `ktor` | Ktor client with a platform engine |
 | `serialization` | kotlinx.serialization JSON |
-| `buildkonfig` | `BuildKonfig` in `:core:domain` (version, git hash, TMDB token) |
+| `buildkonfig` | `BuildKonfig` in `:core:domain` (version, git hash) |
+| `tmdb.buildkonfig` | `TmdbConfig` in `:core:data` (TMDB token from `local.properties`, else `TMDB_TOKEN`) |
 
 ## Tech Stack
 
@@ -148,9 +150,9 @@ Release APK (unsigned):
 ./gradlew :androidApp:assembleRelease
 ```
 
-Output: `androidApp/build/outputs/apk/release/cinemerick-v1.1.9-{VERSION_CODE}.apk`
+Output: `androidApp/build/outputs/apk/release/cinemerick-v1.1.10-{VERSION_CODE}.apk`
 
-> **APK Naming**: All generated APKs follow the convention `cinemerick-vX.X.X-{versionCode}[-debug].apk`, where the version code is auto-generated as `yyyyMMdd` (e.g., `20261016`). Example: `cinemerick-v1.1.9-20261016.apk`.
+> **APK Naming**: All generated APKs follow the convention `cinemerick-vX.X.X-{versionCode}[-debug].apk`, where the version code is auto-generated as `yyyyMMdd` (e.g., `20261016`). Example: `cinemerick-v1.1.10-20261016.apk`.
 
 #### iOS
 
@@ -185,10 +187,10 @@ Desktop packages cannot be cross-compiled, so a lane run on the wrong OS fails w
 #### Tests
 
 ```bash
-./gradlew :core:domain:allTests :core:data:allTests :core:presentation:allTests
-./gradlew :feature:showtimes:domain:allTests :feature:showtimes:data:allTests :feature:showtimes:presentation:allTests
-./gradlew :feature:settings:presentation:allTests
+./gradlew desktopTest testAndroidHostTest
 ```
+
+The shared tests run on the desktop JVM and on the Android host JVM. The `Tests` workflow (`.github/workflows/tests.yml`) runs the same two tasks on every pull request and on `master`. The iOS simulator tests need macOS: `./gradlew allTests` runs them there.
 
 The HTML parsers have their own tests in `:feature:showtimes:data`.
 
@@ -244,17 +246,18 @@ Cinemerick/
 ├── app/                              # Shared entry points (Desktop, iOS, Android library)
 ├── core/
 │   ├── domain/                       # Result types, errors, preferences, BuildKonfig
-│   ├── data/                         # HTTP client, SafeCall, retry queue, settings preferences
+│   ├── data/                         # HTTP client, SafeCall, settings preferences, TMDB token config
 │   ├── presentation/                 # UI utilities, controllers, DeviceConfiguration
 │   ├── design-system/                # Theme, colors, typography, shapes, layouts, components
-│   └── testing/                      # Shared test helpers
+│   └── testing/                      # Shared test helpers and in-memory preference fakes
 ├── feature/
 │   ├── showtimes/
 │   │   ├── domain/                   # Business logic, models, filtering
 │   │   ├── data/                     # APIs, DTOs, parsers, TMDB lookup, merging, cache
-│   │   └── presentation/             # ViewModel, Screen, venue and date pickers
+│   │   └── presentation/             # ViewModel and its controllers, Screen, venue and date pickers
 │   └── settings/
 │       └── presentation/             # Settings screen, ViewModel, navigation
+├── compose_stability.conf            # Compose stability of the domain types
 ├── iosApp/                           # Xcode project and project.yml
 ├── build-logic/convention/           # Gradle convention plugins
 ├── design/                           # Cinema logos and app icon generator
@@ -286,9 +289,8 @@ Other Film (Friday 20:00 - Cinema 1)
 The app implements robust error handling for network resilience:
 
 - **Graceful degradation**: If one cinema API fails, results from the other cinemas are still displayed with an error message showing which cinema had issues. Users always get partial results when possible.
-- **Debounce & Retry**: Automatic retry logic with exponential backoff for transient failures:
-  - HTTP 429 (Rate Limited): Requests are debounced and retried after the server's retry-after delay
-  - HTTP 500 (Server Error): Automatic retry with exponential backoff for temporary server issues
+- **Retry**: The HTTP client retries server errors (HTTP 5xx) twice, with exponential backoff. Rate limits (HTTP 429) and timeouts are not retried: that cinema shows an error for the search.
+- **Debounce**: A filter change refreshes the results after 500 ms, so rapid changes cause at most one fetch, and only for the days or cinemas not fetched yet.
 - **User experience**: Failed requests don't block the entire operation; the app continues fetching from working sources and surfaces errors in the UI
 
 ## Contributing
