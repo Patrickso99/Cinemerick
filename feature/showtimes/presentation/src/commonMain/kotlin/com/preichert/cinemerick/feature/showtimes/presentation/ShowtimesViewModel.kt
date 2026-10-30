@@ -67,6 +67,7 @@ class ShowtimesViewModel(
     private val _events = Channel<ShowtimesEvent>(Channel.UNLIMITED)
     val events = _events.receiveAsFlow()
 
+    private val venuePicker = VenuePickerController(viewModelScope, showtimesRepository, filterPreferences) { change -> _state.update { change(it) } }
     private val results = ResultsController(viewModelScope, showtimesRepository, filmDetailsRepository, clock, ::now, { _state.value }, { change -> _state.update { change(it) } }, ::showSnackbar)
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
     private val filmDetails = FilmDetailsLoader(viewModelScope, filmDetailsRepository) { change -> _state.update { change(it) } }
@@ -93,12 +94,10 @@ class ShowtimesViewModel(
             is ShowtimesAction.OnMinTimeChange -> { updateDay(action.date) { it.copy(minTime = action.value) }; refresh() }
             is ShowtimesAction.OnMaxTimeChange -> { updateDay(action.date) { it.copy(maxTime = action.value) }; refresh() }
             is ShowtimesAction.OnFilmFilterChange -> _state.update { it.copy(filmFilter = action.value) }
-            is ShowtimesAction.OnVenueToggle -> { toggleVenue(action.venue); refresh() }
-            is ShowtimesAction.OnVenuePickerOpen -> openVenuePicker(action.chain)
-            ShowtimesAction.OnVenuePickerDismiss -> _state.update { it.copy(venuePicker = null) }
-            is ShowtimesAction.OnVenueSearchChange -> _state.update { state ->
-                state.copy(venuePicker = state.venuePicker?.copy(query = action.query))
-            }
+            is ShowtimesAction.OnVenueToggle -> { venuePicker.toggle(action.venue); refresh() }
+            is ShowtimesAction.OnVenuePickerOpen -> venuePicker.open(action.chain)
+            ShowtimesAction.OnVenuePickerDismiss -> venuePicker.dismiss()
+            is ShowtimesAction.OnVenueSearchChange -> venuePicker.search(action.query)
             is ShowtimesAction.OnFormatToggle -> toggleFormat(action.tag)
             ShowtimesAction.OnFormatsReset -> setHiddenTags(emptySet())
             ShowtimesAction.OnGenerateClick -> results.generate(silent = false)
@@ -106,7 +105,7 @@ class ShowtimesViewModel(
             ShowtimesAction.OnClearClick -> clear()
             ShowtimesAction.OnVenuesReload -> {
                 val chain = _state.value.venuePicker?.chain
-                if (chain != null) openVenuePicker(chain)
+                if (chain != null) venuePicker.open(chain)
             }
             is ShowtimesAction.OnFilmCardVisible -> cardLoader.load(action.title, resolved = action.title in _state.value.resolvedCards)
             is ShowtimesAction.OnFilmDetailsOpen -> _state.value.groups.firstOrNull { it.title == action.title }?.let(filmDetails::open)
@@ -136,31 +135,6 @@ class ShowtimesViewModel(
                 (state.days + newDay(date)).sortedBy { it.date }
             }
             state.copy(days = days)
-        }
-    }
-
-    private fun toggleVenue(venue: Venue) {
-        _state.update { state ->
-            val venues = if (venue in state.selectedVenues) state.selectedVenues - venue else state.selectedVenues + venue
-            filterPreferences.setSelectedVenues(venues)
-            state.copy(selectedVenues = venues)
-        }
-    }
-
-
-    private fun openVenuePicker(chain: Chain) {
-        _state.update { it.copy(venuePicker = VenuePickerUi(chain = chain)) }
-        viewModelScope.launch {
-            val catalog = showtimesRepository.getVenues()
-            val chainVenues = catalog[chain]
-            val catalogUi = when (chainVenues) {
-                is Result.Success -> VenueCatalogUi.Loaded(chainVenues.data)
-                is Result.Failure -> VenueCatalogUi.Error(chainVenues.error.toUiText())
-                null -> VenueCatalogUi.Error(UiText.Resource(Res.string.venues_load_error))
-            }
-            _state.update { state ->
-                state.copy(venuePicker = state.venuePicker?.copy(catalog = catalogUi))
-            }
         }
     }
 
