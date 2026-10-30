@@ -44,8 +44,10 @@ data class ShowtimesState(
 }
 
 /** Calendar dialog state: present while the dialog is open. */
+@Immutable
 data class CalendarUi(val minDate: LocalDate)
 
+@Immutable
 data class DayUi(
     val date: LocalDate,
     val isSelected: Boolean = false,
@@ -71,6 +73,7 @@ data class FilmGroupUi(
 )
 
 /** Film details overlay: present while it is open. [isLoading] while the film is still being looked up. */
+@Stable
 data class FilmDetailsUi(
     val title: String,
     val details: FilmDetails,
@@ -79,6 +82,7 @@ data class FilmDetailsUi(
 )
 
 /** Person details overlay: present while it is open. [details] is null when TMDB has no such person (or is unreachable). */
+@Stable
 data class PersonUi(
     val person: FilmPerson,
     val details: PersonDetails? = null,
@@ -96,6 +100,7 @@ data class ShowingUi(
     val soldOut: Boolean = false
 )
 
+@Stable
 data class VenueErrorUi(
     val venueName: String,
     val message: UiText
@@ -107,6 +112,7 @@ sealed interface VenueCatalogUi {
     data class Error(val message: UiText) : VenueCatalogUi
 }
 
+@Stable
 data class VenuePickerUi(
     val chain: Chain,
     val query: String = "",

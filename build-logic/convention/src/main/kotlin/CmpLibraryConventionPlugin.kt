@@ -4,6 +4,7 @@ import com.preichert.cinemerick.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 class CmpLibraryConventionPlugin : Plugin<Project> {
@@ -14,6 +15,10 @@ class CmpLibraryConventionPlugin : Plugin<Project> {
                 apply(ConventionPlugin.KMP_LIBRARY)
                 apply(libs.plugins.kotlin.compose)
                 apply(libs.plugins.compose.multiplatform)
+            }
+
+            extensions.configure<ComposeCompilerGradlePluginExtension> {
+                stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("compose_stability.conf"))
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
