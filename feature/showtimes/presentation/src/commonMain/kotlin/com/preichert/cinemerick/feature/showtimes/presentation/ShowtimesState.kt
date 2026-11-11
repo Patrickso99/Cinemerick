@@ -6,6 +6,7 @@ import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
+import com.preichert.cinemerick.feature.showtimes.domain.FilmImage
 import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
 import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
 import com.preichert.cinemerick.feature.showtimes.domain.ParsedTime
@@ -18,8 +19,12 @@ import kotlinx.datetime.LocalDate
 data class ShowtimesState(
     val days: List<DayUi> = emptyList(),
     val calendar: CalendarUi? = null,
+    // First day of the month the inline calendar of wide layouts shows; null is the current month.
+    val inlineCalendarMonth: LocalDate? = null,
     val filmFilter: String = "",
     val selectedVenues: Set<Venue> = emptySet(),
+    // The chain cards that are open, on phone layouts.
+    val expandedChains: Set<Chain> = emptySet(),
     val isLoading: Boolean = false,
     val hasGenerated: Boolean = false,
     val groups: List<FilmGroupUi> = emptyList(),
@@ -33,6 +38,8 @@ data class ShowtimesState(
     val venuePicker: VenuePickerUi? = null,
     val filmDetails: FilmDetailsUi? = null,
     val personDetails: PersonUi? = null,
+    // The poster shown full size: present while it is open.
+    val enlargedPoster: PosterUi? = null,
     // TMDB details of the films whose cards have been on screen, by film title.
     val cardDetails: Map<String, FilmDetails> = emptyMap(),
     // The film database id of each showing's title: showings with the same id are grouped as one film.
@@ -43,9 +50,24 @@ data class ShowtimesState(
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }
 
-/** Calendar dialog state: present while the dialog is open. */
+/**
+ * Calendar dialog state: present while the dialog is open. [draft] holds the days picked in the dialog, which replace
+ * the selected days only when the dialog is confirmed. [shownMonth] is the first day of the month on screen.
+ */
 @Immutable
-data class CalendarUi(val minDate: LocalDate)
+data class CalendarUi(
+    val minDate: LocalDate,
+    val draft: Set<LocalDate> = emptySet(),
+    val shownMonth: LocalDate = minDate.firstOfMonth()
+) {
+    val sortedDraft: List<LocalDate> = draft.sorted()
+}
+
+internal fun LocalDate.firstOfMonth(): LocalDate = LocalDate(year, month, 1)
+
+/** A film poster shown full size. */
+@Immutable
+data class PosterUi(val title: String, val url: String)
 
 @Immutable
 data class DayUi(
@@ -79,7 +101,10 @@ data class FilmDetailsUi(
     val title: String,
     val details: FilmDetails,
     val isLoading: Boolean = false,
-    val posterUrl: String? = null
+    val posterUrl: String? = null,
+    val isSynopsisExpanded: Boolean = false,
+    // The gallery image shown full size, if one is open.
+    val openedImage: FilmImage? = null
 )
 
 /** Person details overlay: present while it is open. [details] is null when TMDB has no such person (or is unreachable). */
@@ -87,7 +112,8 @@ data class FilmDetailsUi(
 data class PersonUi(
     val person: FilmPerson,
     val details: PersonDetails? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isBiographyExpanded: Boolean = false
 )
 
 @Immutable
@@ -113,12 +139,21 @@ sealed interface VenueCatalogUi {
     data class Error(val message: UiText) : VenueCatalogUi
 }
 
+/**
+ * Venue picker state: present while the picker is open. [draft] holds the venues ticked in the picker (of every chain),
+ * which replace the selected venues only when the picker is confirmed.
+ */
 @Stable
 data class VenuePickerUi(
     val chain: Chain,
     val query: String = "",
-    val catalog: VenueCatalogUi = VenueCatalogUi.Loading
-)
+    val catalog: VenueCatalogUi = VenueCatalogUi.Loading,
+    val draft: Set<Venue> = emptySet()
+) {
+    // Computed once when the picker state is built, not on every read.
+    val visibleVenues: List<Venue> = (catalog as? VenueCatalogUi.Loaded)?.let { filteredVenues(it.venues, query) }.orEmpty()
+    val selectedCount: Int = draft.count { it.chain == chain }
+}
 
 fun filteredVenues(venues: List<Venue>, query: String): List<Venue> {
     if (query.isBlank()) return venues

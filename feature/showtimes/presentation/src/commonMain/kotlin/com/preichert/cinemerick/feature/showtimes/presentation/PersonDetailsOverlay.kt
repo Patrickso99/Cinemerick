@@ -26,13 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,12 +66,13 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PersonDetailsOverlay(
     person: PersonUi,
     onDismiss: () -> Unit,
+    onBiographyExpand: () -> Unit = {},
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        PersonDetailsLayer(person = person, onDismiss = onDismiss)
+        PersonDetailsLayer(person = person, onDismiss = onDismiss, onBiographyExpand = onBiographyExpand)
     }
 }
 
@@ -82,6 +81,7 @@ internal fun PersonDetailsOverlay(
 internal fun PersonDetailsLayer(
     person: PersonUi,
     onDismiss: () -> Unit,
+    onBiographyExpand: () -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -93,6 +93,7 @@ internal fun PersonDetailsLayer(
         PersonDetailsSheet(
             person = person,
             onDismiss = onDismiss,
+            onBiographyExpand = onBiographyExpand,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -102,6 +103,7 @@ internal fun PersonDetailsLayer(
 private fun PersonDetailsSheet(
     person: PersonUi,
     onDismiss: () -> Unit,
+    onBiographyExpand: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = CinemerickTheme.colors
@@ -142,7 +144,7 @@ private fun PersonDetailsSheet(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = colors.onSurfaceVariant,
                             )
-                            Synopsis(biography)
+                            Synopsis(text = biography, expanded = person.isBiographyExpanded, onExpand = onBiographyExpand)
                         }
                     }
                     if (details.films.isNotEmpty()) FilmographyGrid(stringResource(Res.string.person_filmography), details.films)
@@ -303,4 +305,10 @@ private fun PersonDetailsPreviewLoadingLight() {
 @Composable
 private fun PersonDetailsPreviewNoneDark() {
     DarkThemePreview { PersonDetailsLayer(person = PersonUi(FilmPerson(2, "Senza Dettagli")), onDismiss = {}) }
+}
+
+@Preview
+@Composable
+private fun PersonDetailsPreviewBiographyExpandedLight() {
+    LightThemePreview { PersonDetailsLayer(person = previewPerson.copy(isBiographyExpanded = true), onDismiss = {}) }
 }

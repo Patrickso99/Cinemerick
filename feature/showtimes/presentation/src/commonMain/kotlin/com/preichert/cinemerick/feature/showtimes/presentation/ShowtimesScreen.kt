@@ -1,5 +1,10 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.runtime.getValue
+import kotlin.time.Clock
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +39,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -67,7 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ShowtimesScreenContent(
+fun ShowtimesRoot(
     onNavigateToSettings: () -> Unit,
     viewModel: ShowtimesViewModel = koinViewModel()
 ) {
@@ -103,6 +107,10 @@ fun ShowtimesScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val configuration = currentDeviceConfiguration()
+    val today: LocalDate = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val onFilmVisible: (String) -> Unit = { onAction(ShowtimesAction.OnFilmCardVisible(it)) }
+    val onFilmDetailsClick: (String) -> Unit = { onAction(ShowtimesAction.OnFilmDetailsOpen(it)) }
+    val onPosterClick: (String, String) -> Unit = { title, url -> onAction(ShowtimesAction.OnPosterEnlarge(title, url)) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -111,19 +119,23 @@ fun ShowtimesScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             state.calendar?.let { calendar ->
                 DatePickerDialog(
-                    initialDates = state.days.mapTo(mutableSetOf()) { it.date },
-                    minDate = calendar.minDate,
-                    onConfirm = { onAction(ShowtimesAction.OnDatesConfirm(it)) },
+                    calendar = calendar,
+                    onDayToggle = { onAction(ShowtimesAction.OnCalendarDayToggle(it)) },
+                    onMonthChange = { onAction(ShowtimesAction.OnCalendarMonthChange(it)) },
+                    onClear = { onAction(ShowtimesAction.OnCalendarClear) },
+                    onConfirm = { onAction(ShowtimesAction.OnDatesConfirm) },
                     onDismiss = { onAction(ShowtimesAction.OnCalendarDismiss) }
                 )
             }
             state.venuePicker?.let { picker ->
                 VenuePickerSheet(
                     picker = picker,
-                    selectedVenues = state.selectedVenues,
                     onDismiss = { onAction(ShowtimesAction.OnVenuePickerDismiss) },
                     onSearchChange = { onAction(ShowtimesAction.OnVenueSearchChange(it)) },
-                    onVenueToggle = { onAction(ShowtimesAction.OnVenueToggle(it)) },
+                    onVenueToggle = { onAction(ShowtimesAction.OnVenueDraftToggle(it)) },
+                    onSelectAll = { onAction(ShowtimesAction.OnVenueDraftSelectAll) },
+                    onDeselectAll = { onAction(ShowtimesAction.OnVenueDraftDeselectAll) },
+                    onConfirm = { onAction(ShowtimesAction.OnVenuePickerConfirm) },
                     onReload = { onAction(ShowtimesAction.OnVenuesReload) }
                 )
             }
@@ -132,18 +144,26 @@ fun ShowtimesScreen(
                     film = film,
                     onDismiss = { onAction(ShowtimesAction.OnFilmDetailsDismiss) },
                     onPersonClick = { onAction(ShowtimesAction.OnPersonOpen(it)) },
+                    onSynopsisExpand = { onAction(ShowtimesAction.OnSynopsisExpand) },
+                    onImageOpen = { onAction(ShowtimesAction.OnFilmImageOpen(it)) },
+                    onImageDismiss = { onAction(ShowtimesAction.OnFilmImageDismiss) },
                 )
             }
             state.personDetails?.let { person ->
                 PersonDetailsOverlay(
                     person = person,
-                    onDismiss = { onAction(ShowtimesAction.OnPersonDismiss) }
+                    onDismiss = { onAction(ShowtimesAction.OnPersonDismiss) },
+                    onBiographyExpand = { onAction(ShowtimesAction.OnBiographyExpand) }
                 )
+            }
+            state.enlargedPoster?.let { poster ->
+                EnlargedPosterDialog(poster = poster, onDismiss = { onAction(ShowtimesAction.OnPosterDismiss) })
             }
             val settingsLabel = stringResource(Res.string.open_settings)
             CinemerickAdaptiveLayout(
                 header = {
                     HomeHeader(
+                        isWideScreen = configuration.isWideScreen,
                         onSettingsClick = onSettingsClick,
                         settingsLabel = settingsLabel,
                     )
@@ -157,19 +177,37 @@ fun ShowtimesScreen(
                     )
                 },
                 filtersContent = {
-                    FiltersSection(
-                        state = state,
-                        onAction = onAction
-                    )
+                    FiltersContent(state = state, today = today, isWideScreen = configuration.isWideScreen, onAction = onAction)
                 },
                 resultsContent = {
                     ResultsSection(
-                        state = state,
-                        onAction = onAction,
-                        configuration = configuration
+                        venueErrors = state.venueErrors,
+                        isLoading = state.isLoading,
+                        hasGenerated = state.hasGenerated,
+                        groups = state.groups,
+                        showSummary = state.pollText.isNotEmpty(),
+                        optionsCount = state.optionsCount,
+                        elapsedTimeMillis = state.elapsedTimeMillis,
+                        isMobile = configuration.isMobile,
+                        onFilmVisible = onFilmVisible,
+                        onFilmDetailsClick = onFilmDetailsClick,
+                        onPosterClick = onPosterClick
                     )
                 },
-                mobileResultsItems = { resultsItems(state, onAction) },
+                mobileResultsItems = {
+                    resultsItems(
+                        venueErrors = state.venueErrors,
+                        isLoading = state.isLoading,
+                        hasGenerated = state.hasGenerated,
+                        groups = state.groups,
+                        showSummary = state.pollText.isNotEmpty(),
+                        optionsCount = state.optionsCount,
+                        elapsedTimeMillis = state.elapsedTimeMillis,
+                        onFilmVisible = onFilmVisible,
+                        onFilmDetailsClick = onFilmDetailsClick,
+                        onPosterClick = onPosterClick
+                    )
+                },
                 desktopRail = {
                     DesktopNavigationRail(
                         settingsLabel = stringResource(Res.string.nav_settings),
@@ -193,11 +231,75 @@ fun ShowtimesScreen(
     }
 }
 
+/**
+ * Filter sections in the order of docs/design: cinemas, days, time window, formats, film filter. This is where the
+ * screen turns what each section reports into an action: the sections themselves only know their own values.
+ */
+@Composable
+private fun ColumnScope.FiltersContent(
+    state: ShowtimesState,
+    today: LocalDate,
+    isWideScreen: Boolean,
+    onAction: (ShowtimesAction) -> Unit
+) {
+    CinemasSection(
+        selectedVenues = state.selectedVenues,
+        expandedChains = state.expandedChains,
+        isWideScreen = isWideScreen,
+        onChainExpandToggle = { onAction(ShowtimesAction.OnChainExpandToggle(it)) },
+        onVenuePickerOpen = { onAction(ShowtimesAction.OnVenuePickerOpen(it)) },
+        onVenueRemove = { onAction(ShowtimesAction.OnVenueToggle(it)) }
+    )
+
+    DaysSection(
+        days = state.days,
+        today = today,
+        isWideScreen = isWideScreen,
+        calendarMonth = state.inlineCalendarMonth ?: today.firstOfMonth(),
+        onCalendarOpen = { onAction(ShowtimesAction.OnCalendarOpen) },
+        onTodayClick = { onAction(ShowtimesAction.OnSelectToday) },
+        onTomorrowClick = { onAction(ShowtimesAction.OnSelectTomorrow) },
+        onWeekendClick = { onAction(ShowtimesAction.OnSelectWeekend) },
+        onDayToggle = { onAction(ShowtimesAction.OnDayToggle(it)) },
+        onMonthChange = { onAction(ShowtimesAction.OnCalendarMonthChange(it)) }
+    )
+
+    TimeWindowSection(
+        days = state.days,
+        onRangeChange = { date, minTime, maxTime ->
+            onAction(ShowtimesAction.OnMinTimeChange(date, minTime))
+            onAction(ShowtimesAction.OnMaxTimeChange(date, maxTime))
+        }
+    )
+
+    if (state.hasGenerated && state.availableTags.isNotEmpty()) {
+        FormatsSection(
+            availableTags = state.availableTags,
+            hiddenTags = state.hiddenTags,
+            onFormatToggle = { onAction(ShowtimesAction.OnFormatToggle(it)) },
+            onShowAllClick = { onAction(ShowtimesAction.OnFormatsReset) }
+        )
+    }
+
+    FilmSearchField(
+        value = state.filmFilter,
+        onValueChange = { onAction(ShowtimesAction.OnFilmFilterChange(it)) },
+        onSearch = { onAction(ShowtimesAction.OnGenerateClick) }
+    )
+
+    SearchActionBar(
+        canClear = state.canClear,
+        isLoading = state.isLoading,
+        onClearClick = { onAction(ShowtimesAction.OnClearClick) },
+        onSearchClick = { onAction(ShowtimesAction.OnGenerateClick) }
+    )
+}
+
 /** Large header of the home screen: app name and tagline, with the settings button. Version lives in Settings. */
 @Composable
-private fun HomeHeader(onSettingsClick: () -> Unit, settingsLabel: String) {
+private fun HomeHeader(isWideScreen: Boolean, onSettingsClick: () -> Unit, settingsLabel: String) {
     val colors = CinemerickTheme.colors
-    if (currentDeviceConfiguration().isWideScreen) {
+    if (isWideScreen) {
         // Two-pane layouts: the title alone, as in docs/design (Large). The settings button is in the rail.
         Text(
             text = BuildKonfig.APP_NAME,

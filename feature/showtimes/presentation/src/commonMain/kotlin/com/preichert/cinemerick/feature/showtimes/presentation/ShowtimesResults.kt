@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,11 +34,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,7 +65,6 @@ import com.preichert.cinemerick.core.designsystem.animateItemIfEnabled
 import com.preichert.cinemerick.core.designsystem.bounceClickable
 import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.core.designsystem.staggeredAppear
-import com.preichert.cinemerick.core.designsystem.DeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.buy_ticket
@@ -88,53 +87,62 @@ private val MIN_GRID_CARD_WIDTH = 340.dp
 
 // Phone portrait: one lazy item per card, so only the visible film cards are composed.
 internal fun LazyListScope.resultsItems(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+    venueErrors: List<VenueErrorUi>,
+    isLoading: Boolean,
+    hasGenerated: Boolean,
+    groups: List<FilmGroupUi>,
+    showSummary: Boolean,
+    optionsCount: Int,
+    elapsedTimeMillis: Long?,
+    onFilmVisible: (String) -> Unit,
+    onFilmDetailsClick: (String) -> Unit,
+    onPosterClick: (title: String, url: String) -> Unit
 ) {
-    state.venueErrors.forEachIndexed { index, error ->
+    venueErrors.forEachIndexed { index, error ->
         item(key = "error-$index", contentType = "error") {
             ResultItem(animateItemIfEnabled()) { VenueErrorBanner(error) }
         }
     }
 
-    if (state.isLoading) {
+    if (isLoading) {
         items(3, key = { "skeleton-$it" }, contentType = { "skeleton" }) {
             ResultItem { SkeletonCard() }
         }
         return
     }
 
-    if (!state.hasGenerated) {
+    if (!hasGenerated) {
         item(key = "hint", contentType = "message") {
             ResultItem(animateItemIfEnabled()) { MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint)) }
         }
-    } else if (state.groups.isEmpty()) {
+    } else if (groups.isEmpty()) {
         item(key = "empty", contentType = "message") {
             ResultItem(animateItemIfEnabled()) { MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.no_results)) }
         }
     }
 
-    if (state.pollText.isNotEmpty()) {
+    if (showSummary) {
         item(key = "copy", contentType = "copy") {
-            ResultItem(animateItemIfEnabled()) { ResultsSummary(state, onCopy = null) }
+            ResultItem(animateItemIfEnabled()) { ResultsSummary(optionsCount = optionsCount, elapsedTimeMillis = elapsedTimeMillis, onCopy = null) }
         }
     }
 
     // Two films can share a title (remakes), so a repeated title gets a counter in its key to stay unique.
     val seenTitles = mutableMapOf<String, Int>()
-    val groupKeys = state.groups.map { group ->
+    val groupKeys = groups.map { group ->
         val occurrence = (seenTitles[group.title] ?: 0) + 1
         seenTitles[group.title] = occurrence
         if (occurrence == 1) group.title else "${group.title}#$occurrence"
     }
-    items(state.groups.size, key = { groupKeys[it] }, contentType = { "film" }) { index ->
-        val group = state.groups[index]
+    items(groups.size, key = { groupKeys[it] }, contentType = { "film" }) { index ->
+        val group = groups[index]
         ResultItem(animateItemIfEnabled()) {
             FilmGroupCard(
                 group = group,
                 large = false,
-                onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
-                onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+                onVisible = { onFilmVisible(group.title) },
+                onDetailsClick = { onFilmDetailsClick(group.title) },
+                onPosterClick = { url -> onPosterClick(group.title, url) }
             )
         }
     }
@@ -184,9 +192,9 @@ private fun VenueErrorBanner(error: VenueErrorUi) {
  * header; on phones Copy poll is the floating action instead, so the caller passes null.
  */
 @Composable
-private fun ResultsSummary(state: ShowtimesState, onCopy: (() -> Unit)?) {
+private fun ResultsSummary(optionsCount: Int, elapsedTimeMillis: Long?, onCopy: (() -> Unit)?) {
     val colors = CinemerickTheme.colors
-    val elapsed = state.elapsedTimeMillis?.let { millis -> "${millis / 1000}.${(millis % 1000).toString().padStart(3, '0')}s" }
+    val elapsed = elapsedTimeMillis?.let { millis -> "${millis / 1000}.${(millis % 1000).toString().padStart(3, '0')}s" }
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -199,7 +207,7 @@ private fun ResultsSummary(state: ShowtimesState, onCopy: (() -> Unit)?) {
                 color = colors.onSurface
             )
             Text(
-                text = listOfNotNull(stringResource(Res.string.options_count, state.optionsCount), elapsed).joinToString(" · "),
+                text = listOfNotNull(stringResource(Res.string.options_count, optionsCount), elapsed).joinToString(" · "),
                 style = MaterialTheme.typography.labelLarge,
                 color = colors.onSurfaceVariant
             )
@@ -216,35 +224,44 @@ private fun ResultsSummary(state: ShowtimesState, onCopy: (() -> Unit)?) {
 
 @Composable
 internal fun ColumnScope.ResultsSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit,
-    configuration: DeviceConfiguration
+    venueErrors: List<VenueErrorUi>,
+    isLoading: Boolean,
+    hasGenerated: Boolean,
+    groups: List<FilmGroupUi>,
+    showSummary: Boolean,
+    optionsCount: Int,
+    elapsedTimeMillis: Long?,
+    isMobile: Boolean,
+    onFilmVisible: (String) -> Unit,
+    onFilmDetailsClick: (String) -> Unit,
+    onPosterClick: (title: String, url: String) -> Unit
 ) {
-    state.venueErrors.forEach { error -> VenueErrorBanner(error) }
+    venueErrors.forEach { error -> VenueErrorBanner(error) }
 
-    if (state.isLoading) {
+    if (isLoading) {
         repeat(3) { SkeletonCard() }
         return
     }
 
-    if (!state.hasGenerated) {
+    if (!hasGenerated) {
         MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.generate_hint))
-    } else if (state.groups.isEmpty()) {
+    } else if (groups.isEmpty()) {
         MessageCard(icon = CinemerickIcons.Film, text = stringResource(Res.string.no_results))
     }
 
-    if (state.pollText.isNotEmpty()) {
-        ResultsSummary(state, onCopy = null)
+    if (showSummary) {
+        ResultsSummary(optionsCount = optionsCount, elapsedTimeMillis = elapsedTimeMillis, onCopy = null)
     }
 
-    if (configuration.isMobile) {
-        state.groups.forEachIndexed { index, group ->
+    if (isMobile) {
+        groups.forEachIndexed { index, group ->
             AnimatedFilmGroupCard(
                 group,
                 large = false,
                 index = index,
-                onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
-                onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+                onVisible = { onFilmVisible(group.title) },
+                onDetailsClick = { onFilmDetailsClick(group.title) },
+                onPosterClick = { url -> onPosterClick(group.title, url) }
             )
         }
     } else {
@@ -260,14 +277,15 @@ internal fun ColumnScope.ResultsSection(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(Spacing.space3)
                     ) {
-                        state.groups.forEachIndexed { index, group ->
+                        groups.forEachIndexed { index, group ->
                             if (index % columns == colIndex) {
                                 AnimatedFilmGroupCard(
                                     group = group,
                                     large = true,
                                     index = index,
-                                    onVisible = { onAction(ShowtimesAction.OnFilmCardVisible(group.title)) },
-                                    onDetailsClick = { onAction(ShowtimesAction.OnFilmDetailsOpen(group.title)) }
+                                    onVisible = { onFilmVisible(group.title) },
+                                    onDetailsClick = { onFilmDetailsClick(group.title) },
+                                    onPosterClick = { url -> onPosterClick(group.title, url) }
                                 )
                             }
                         }
@@ -285,12 +303,13 @@ internal fun AnimatedFilmGroupCard(
     modifier: Modifier = Modifier,
     index: Int = 0,
     onVisible: () -> Unit = {},
-    onDetailsClick: () -> Unit = {}
+    onDetailsClick: () -> Unit = {},
+    onPosterClick: (url: String) -> Unit = {}
 ) {
     // Keyed on the group so a refreshed result list replays the cascade
     key(group) {
         Box(modifier = modifier.staggeredAppear(index)) {
-            FilmGroupCard(group, large = large, onVisible = onVisible, onDetailsClick = onDetailsClick)
+            FilmGroupCard(group, large = large, onVisible = onVisible, onDetailsClick = onDetailsClick, onPosterClick = onPosterClick)
         }
     }
 }
@@ -301,7 +320,13 @@ internal fun AnimatedFilmGroupCard(
  * comes on screen, so its TMDB facts can be looked up as the list scrolls.
  */
 @Composable
-internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onVisible: () -> Unit = {}, onDetailsClick: () -> Unit = {}) {
+internal fun FilmGroupCard(
+    group: FilmGroupUi,
+    large: Boolean,
+    onVisible: () -> Unit = {},
+    onDetailsClick: () -> Unit = {},
+    onPosterClick: (url: String) -> Unit = {}
+) {
     val colors = CinemerickTheme.colors
     LaunchedEffect(group.title) { onVisible() }
     SelectionContainer {
@@ -323,10 +348,11 @@ internal fun FilmGroupCard(group: FilmGroupUi, large: Boolean, onVisible: () -> 
                 // a placeholder, so the poster appears once rather than being swapped.
                 if (group.posterPending) {
                     PosterPlaceholder(width = 104.dp)
-                } else (group.tmdb?.posterUrl ?: group.posterUrl)?.let {
+                } else (group.tmdb?.posterUrl ?: group.posterUrl)?.let { url ->
                     PosterImage(
-                        url = it,
+                        url = url,
                         contentDescription = group.title,
+                        onClick = { onPosterClick(url) },
                         width = 104.dp
                     )
                 }
@@ -432,9 +458,9 @@ internal fun PosterPlaceholder(width: Dp) {
     )
 }
 
+/** A poster in its frame. A tap asks to see it full size through [onClick]; see [EnlargedPosterDialog]. */
 @Composable
-internal fun PosterImage(url: String, contentDescription: String, width: Dp = 104.dp) {
-    var isEnlarged by remember { mutableStateOf(false) }
+internal fun PosterImage(url: String, contentDescription: String, onClick: () -> Unit, width: Dp = 104.dp) {
     // The shimmer stays under the image while it loads and is gone once the image (or its error) is on screen.
     var isLoading by remember(url) { mutableStateOf(true) }
 
@@ -443,7 +469,7 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 10
             .width(width)
             .aspectRatio(2f / 3f)
             .clip(MaterialTheme.shapes.medium)
-            .bounceClickable { isEnlarged = true }
+            .bounceClickable(onClick = onClick)
     ) {
         AsyncImage(
             model = url,
@@ -454,21 +480,23 @@ internal fun PosterImage(url: String, contentDescription: String, width: Dp = 10
         )
         if (isLoading) Box(modifier = Modifier.matchParentSize().shimmer())
     }
+}
 
-    if (isEnlarged) {
-        Dialog(onDismissRequest = { isEnlarged = false }) {
-            AsyncImage(
-                model = url,
-                contentDescription = contentDescription,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .widthIn(max = 480.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-                    .clip(MaterialTheme.shapes.medium)
-                    .bounceClickable { isEnlarged = false }
-            )
-        }
+/** A poster at full size. A tap on it, or outside it, closes it. */
+@Composable
+internal fun EnlargedPosterDialog(poster: PosterUi, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        AsyncImage(
+            model = poster.url,
+            contentDescription = poster.title,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .aspectRatio(2f / 3f)
+                .clip(MaterialTheme.shapes.medium)
+                .bounceClickable(onClick = onDismiss)
+        )
     }
 }
 

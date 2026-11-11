@@ -112,7 +112,8 @@ internal object PreviewData {
 
     fun venueCatalogLoading() = VenuePickerUi(
         chain = Chain.THE_SPACE,
-        catalog = VenueCatalogUi.Loading
+        catalog = VenueCatalogUi.Loading,
+        draft = setOf(sileaVenue)
     )
 
     fun venueCatalogLoaded() = VenuePickerUi(
@@ -123,7 +124,8 @@ internal object PreviewData {
                 Venue(Chain.THE_SPACE, "1005", "Pordenone", "Friuli-Venezia Giulia"),
                 Venue(Chain.THE_SPACE, "1014", "Udine", "Friuli-Venezia Giulia")
             )
-        )
+        ),
+        draft = setOf(sileaVenue)
     )
 
     fun venueCatalogEmpty() = VenuePickerUi(

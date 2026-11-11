@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,10 +32,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,13 +98,23 @@ internal fun FilmDetailsOverlay(
     film: FilmDetailsUi,
     onDismiss: () -> Unit,
     onPersonClick: (FilmPerson) -> Unit = {},
+    onSynopsisExpand: () -> Unit = {},
+    onImageOpen: (FilmImage) -> Unit = {},
+    onImageDismiss: () -> Unit = {},
 ) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        FilmDetailsLayer(film = film, onDismiss = onDismiss, onPersonClick = onPersonClick)
+        FilmDetailsLayer(
+            film = film,
+            onDismiss = onDismiss,
+            onPersonClick = onPersonClick,
+            onSynopsisExpand = onSynopsisExpand,
+            onImageOpen = onImageOpen,
+        )
     }
+    film.openedImage?.let { image -> GalleryImageDialog(image = image, onDismiss = onImageDismiss) }
 }
 
 /** Scrim plus the sheet. Used by the dialog and by the previews. A tap on the scrim closes the sheet. */
@@ -113,6 +123,8 @@ internal fun FilmDetailsLayer(
     film: FilmDetailsUi,
     onDismiss: () -> Unit,
     onPersonClick: (FilmPerson) -> Unit = {},
+    onSynopsisExpand: () -> Unit = {},
+    onImageOpen: (FilmImage) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -125,6 +137,8 @@ internal fun FilmDetailsLayer(
             film = film,
             onDismiss = onDismiss,
             onPersonClick = onPersonClick,
+            onSynopsisExpand = onSynopsisExpand,
+            onImageOpen = onImageOpen,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -135,6 +149,8 @@ private fun FilmDetailsSheet(
     film: FilmDetailsUi,
     onDismiss: () -> Unit,
     onPersonClick: (FilmPerson) -> Unit,
+    onSynopsisExpand: () -> Unit,
+    onImageOpen: (FilmImage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -172,7 +188,7 @@ private fun FilmDetailsSheet(
                     )
                 }
                 details.genre?.let { GenreTags(it) }
-                details.synopsis?.let { Synopsis(it) }
+                details.synopsis?.let { Synopsis(text = it, expanded = film.isSynopsisExpanded, onExpand = onSynopsisExpand) }
                 details.saga?.let { DetailField(stringResource(Res.string.details_saga), it) }
                 details.originalTitleFor(film.title)?.let { DetailField(stringResource(Res.string.details_original_title), it) }
                 details.originalLanguage?.let { code ->
@@ -201,7 +217,7 @@ private fun FilmDetailsSheet(
                 } else {
                     details.cast?.let { DetailField(stringResource(Res.string.details_cast), it) }
                 }
-                if (details.gallery.isNotEmpty()) GalleryField(stringResource(Res.string.details_gallery), details.gallery)
+                if (details.gallery.isNotEmpty()) GalleryField(stringResource(Res.string.details_gallery), details.gallery, onImageClick = onImageOpen)
                 if (film.isLoading) {
                     Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
@@ -368,10 +384,12 @@ private fun GenreTags(genres: String) {
     }
 }
 
-/** Synopsis, three lines; "Read more" appears only when the text is longer and opens the rest. */
+/**
+ * Synopsis, three lines; "Read more" appears only when the text is longer and asks for the rest through [onExpand].
+ * Whether the text overflows is only known once it is laid out, so that part stays here.
+ */
 @Composable
-internal fun Synopsis(text: String) {
-    var expanded by remember(text) { mutableStateOf(false) }
+internal fun Synopsis(text: String, expanded: Boolean, onExpand: () -> Unit) {
     var overflows by remember(text) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
         Text(
@@ -389,7 +407,7 @@ internal fun Synopsis(text: String) {
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .defaultMinSize(minHeight = 48.dp)
-                    .clickable(role = Role.Button) { expanded = true }
+                    .clickable(role = Role.Button, onClick = onExpand)
                     .padding(vertical = 14.dp),
             )
         }
@@ -398,9 +416,8 @@ internal fun Synopsis(text: String) {
 
 /** Gallery as a horizontal carousel of 172x98 frames; a frame that fails to load is left out. */
 @Composable
-private fun GalleryField(label: String, images: List<FilmImage>) {
+private fun GalleryField(label: String, images: List<FilmImage>, onImageClick: (FilmImage) -> Unit) {
     var failed by remember(images) { mutableStateOf(emptySet<String>()) }
-    var opened by remember(images) { mutableStateOf<FilmImage?>(null) }
     val shown = images.filter { it.thumbUrl !in failed }
     if (shown.isEmpty()) return
 
@@ -421,26 +438,29 @@ private fun GalleryField(label: String, images: List<FilmImage>) {
                         .size(width = 172.dp, height = 98.dp)
                         .clip(MaterialTheme.shapes.medium)
                         .background(CinemerickTheme.colors.surfaceContainerHigh)
-                        .clickable { opened = image }
+                        .clickable { onImageClick(image) }
                 )
             }
         }
     }
 
-    opened?.let { image ->
-        val close = stringResource(Res.string.details_gallery_close)
-        Dialog(onDismissRequest = { opened = null }) {
-            AsyncImage(
-                model = image.fullUrl,
-                contentDescription = close,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
-                    .clip(MaterialTheme.shapes.medium)
-                    .clickable { opened = null }
-            )
-        }
+}
+
+/** A gallery image at full size. A tap on it, or outside it, closes it. */
+@Composable
+private fun GalleryImageDialog(image: FilmImage, onDismiss: () -> Unit) {
+    val close = stringResource(Res.string.details_gallery_close)
+    Dialog(onDismissRequest = onDismiss) {
+        AsyncImage(
+            model = image.fullUrl,
+            contentDescription = close,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(MaterialTheme.shapes.medium)
+                .clickable(onClick = onDismiss)
+        )
     }
 }
 
@@ -571,6 +591,12 @@ private fun FilmDetailsPreviewLight() {
 @Composable
 private fun FilmDetailsPreviewDark() {
     DarkThemePreview { FilmDetailsLayer(film = previewFilm, onDismiss = {}) }
+}
+
+@Preview
+@Composable
+private fun FilmDetailsPreviewSynopsisExpandedLight() {
+    LightThemePreview { FilmDetailsLayer(film = previewFilm.copy(isSynopsisExpanded = true), onDismiss = {}) }
 }
 
 @Preview

@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.runtime.getValue
+import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import com.preichert.cinemerick.core.designsystem.Motion
@@ -11,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -32,10 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,7 +66,6 @@ import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
-import com.preichert.cinemerick.core.designsystem.currentDeviceConfiguration
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_range
@@ -94,43 +91,21 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_wi
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.time_window_title
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.number
-import kotlin.time.Clock
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal fun LocalDate.shortDate(): String =
     "${day.toString().padStart(2, '0')}/${month.number.toString().padStart(2, '0')}"
 
-/** Filter sections in the order of docs/design: cinemas, days, time window, formats, film filter. */
-@Composable
-internal fun ColumnScope.FiltersSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
-) {
-    CinemasSection(state = state, onAction = onAction)
-
-    DaysSection(state = state, onAction = onAction)
-
-    TimeWindowSection(state = state, onAction = onAction)
-
-    if (state.hasGenerated && state.availableTags.isNotEmpty()) {
-        FormatsSection(state = state, onAction = onAction)
-    }
-
-    FilmSearchField(state = state, onAction = onAction)
-
-    SearchActionBar(state = state, onAction = onAction)
-}
-
 /** Clear and Search, docked directly under the film search field (not floating). One primary action: Search. */
 @Composable
 internal fun SearchActionBar(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit,
+    canClear: Boolean,
+    isLoading: Boolean,
+    onClearClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -140,14 +115,14 @@ internal fun SearchActionBar(
     ) {
         CinemerickSecondaryButton(
             text = stringResource(Res.string.clear),
-            onClick = { onAction(ShowtimesAction.OnClearClick) },
-            enabled = state.canClear,
+            onClick = onClearClick,
+            enabled = canClear,
         )
         CinemerickPrimaryButton(
             text = stringResource(Res.string.search_showtimes),
-            onClick = { onAction(ShowtimesAction.OnGenerateClick) },
-            enabled = !state.isLoading,
-            loading = state.isLoading,
+            onClick = onSearchClick,
+            enabled = !isLoading,
+            loading = isLoading,
             icon = painterResource(CinemerickIcons.Search),
             modifier = Modifier.weight(1f),
         )
@@ -178,10 +153,12 @@ private fun SectionHeader(title: String, trailing: @Composable RowScope.() -> Un
     }
 }
 
+/** The film filter. [onSearch] is the keyboard's search key. */
 @Composable
-private fun FilmSearchField(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+internal fun FilmSearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSearch: () -> Unit
 ) {
     val focusManager: FocusManager = LocalFocusManager.current
     val colors = CinemerickTheme.colors
@@ -213,8 +190,8 @@ private fun FilmSearchField(
                 modifier = Modifier.size(22.dp)
             )
             BasicTextField(
-                value = state.filmFilter,
-                onValueChange = { onAction(ShowtimesAction.OnFilmFilterChange(it)) },
+                value = value,
+                onValueChange = onValueChange,
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = colors.onSurface,
@@ -224,10 +201,10 @@ private fun FilmSearchField(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = {
                     focusManager.clearFocus()
-                    onAction(ShowtimesAction.OnGenerateClick)
+                    onSearch()
                 }),
                 decorationBox = { innerField ->
-                    if (state.filmFilter.isEmpty()) {
+                    if (value.isEmpty()) {
                         Text(
                             text = stringResource(Res.string.film_filter),
                             style = MaterialTheme.typography.bodyLarge,
@@ -238,12 +215,12 @@ private fun FilmSearchField(
                     innerField()
                 }
             )
-            if (state.filmFilter.isNotEmpty()) {
+            if (value.isNotEmpty()) {
                 val clearLabel = stringResource(Res.string.clear)
                 CinemerickIconButton(
                     icon = painterResource(CinemerickIcons.Close),
                     contentDescription = clearLabel,
-                    onClick = { onAction(ShowtimesAction.OnFilmFilterChange("")) },
+                    onClick = { onValueChange("") },
                     container = Color.Transparent,
                     tint = colors.onSurfaceVariant,
                 )
@@ -255,18 +232,20 @@ private fun FilmSearchField(
 /**
  * One card per cinema chain, all eight, in the order of [Chain]. A card shows the chain badge, the selected
  * venues as a count, and expands in place to the selected venues plus "Add venue". Tap anywhere on the header to
- * expand. An empty chain shows a plus that opens the venue picker straight away.
+ * expand. An empty chain shows a plus that opens the venue picker straight away. On wide layouts the chains are chips.
  */
 @Composable
-private fun CinemasSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+internal fun CinemasSection(
+    selectedVenues: Set<Venue>,
+    expandedChains: Set<Chain>,
+    isWideScreen: Boolean,
+    onChainExpandToggle: (Chain) -> Unit,
+    onVenuePickerOpen: (Chain) -> Unit,
+    onVenueRemove: (Venue) -> Unit
 ) {
     val addVenue = stringResource(Res.string.add_venue)
     val noVenue = stringResource(Res.string.chain_no_venue)
     val colors = CinemerickTheme.colors
-    // Which chains are open. Kept here, not in the card, so it survives scrolling and recomposition.
-    var expanded by remember { mutableStateOf(setOf<Chain>()) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -274,16 +253,16 @@ private fun CinemasSection(
     ) {
         SectionHeader(title = stringResource(Res.string.cinemas_title)) {
             Text(
-                text = stringResource(Res.string.cinemas_count, state.selectedVenues.size),
+                text = stringResource(Res.string.cinemas_count, selectedVenues.size),
                 style = MaterialTheme.typography.labelMedium,
                 color = colors.primary
             )
         }
-        if (currentDeviceConfiguration().isWideScreen) {
-            WideChainChips(state = state, onAction = onAction)
+        if (isWideScreen) {
+            WideChainChips(selectedVenues = selectedVenues, onChainClick = onVenuePickerOpen)
         } else Chain.entries.forEach { chain ->
             val (container, onContainer) = chain.badgeColors()
-            val venuesOfChain = state.selectedVenues.filter { it.chain == chain }
+            val venuesOfChain = selectedVenues.filter { it.chain == chain }
             CinemerickChainCard(
                 name = chain.displayName(),
                 subtitle = if (venuesOfChain.isEmpty()) noVenue else venuesOfChain.joinToString { it.name },
@@ -291,11 +270,9 @@ private fun CinemasSection(
                 badgeContainer = container,
                 badgeContent = onContainer,
                 selectedCount = venuesOfChain.size,
-                expanded = chain in expanded,
-                onToggle = {
-                    expanded = if (chain in expanded) expanded - chain else expanded + chain
-                },
-                onQuickAdd = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) },
+                expanded = chain in expandedChains,
+                onToggle = { onChainExpandToggle(chain) },
+                onQuickAdd = { onVenuePickerOpen(chain) },
             ) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
@@ -305,14 +282,14 @@ private fun CinemasSection(
                         CinemerickFilterChip(
                             label = venue.name,
                             selected = true,
-                            onClick = { onAction(ShowtimesAction.OnVenueToggle(venue)) },
+                            onClick = { onVenueRemove(venue) },
                         )
                     }
                     CinemerickFilterChip(
                         label = addVenue,
                         selected = false,
                         leadingIcon = CinemerickIcons.Plus,
-                        onClick = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) },
+                        onClick = { onVenuePickerOpen(chain) },
                     )
                 }
             }
@@ -322,10 +299,12 @@ private fun CinemasSection(
 
 @Composable
 internal fun FormatsSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+    availableTags: List<String>,
+    hiddenTags: Set<String>,
+    onFormatToggle: (String) -> Unit,
+    onShowAllClick: () -> Unit
 ) {
-    val visibleCount = state.availableTags.count { it !in state.hiddenTags }
+    val visibleCount = availableTags.count { it !in hiddenTags }
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2)
@@ -336,7 +315,7 @@ internal fun FormatsSection(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (state.hiddenTags.isNotEmpty()) {
+            if (hiddenTags.isNotEmpty()) {
                 Spacer(Modifier.width(Spacing.space2))
                 Text(
                     text = stringResource(Res.string.formats_show_all),
@@ -344,7 +323,7 @@ internal fun FormatsSection(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .clickable(role = Role.Button) { onAction(ShowtimesAction.OnFormatsReset) }
+                        .clickable(role = Role.Button, onClick = onShowAllClick)
                         .padding(horizontal = Spacing.space2, vertical = 12.dp)
                 )
             }
@@ -353,11 +332,11 @@ internal fun FormatsSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
             verticalArrangement = Arrangement.spacedBy(Spacing.space2)
         ) {
-            state.availableTags.forEach { tag ->
+            availableTags.forEach { tag ->
                 CinemerickFilterChip(
                     label = tag,
-                    selected = tag !in state.hiddenTags,
-                    onClick = { onAction(ShowtimesAction.OnFormatToggle(tag)) },
+                    selected = tag !in hiddenTags,
+                    onClick = { onFormatToggle(tag) },
                 )
             }
         }
@@ -367,16 +346,27 @@ internal fun FormatsSection(
 private const val DAY_STRIP_LENGTH = 6
 private val DAY_TILE_WIDTH = 64.dp
 
+/**
+ * The days to search: quick picks, then a strip of day tiles on phones or the month grid on wide layouts.
+ * [calendarMonth] is the first day of the month that grid shows.
+ */
 @Composable
-private fun DaysSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+internal fun DaysSection(
+    days: List<DayUi>,
+    today: LocalDate,
+    isWideScreen: Boolean,
+    calendarMonth: LocalDate,
+    onCalendarOpen: () -> Unit,
+    onTodayClick: () -> Unit,
+    onTomorrowClick: () -> Unit,
+    onWeekendClick: () -> Unit,
+    onDayToggle: (LocalDate) -> Unit,
+    onMonthChange: (LocalDate) -> Unit
 ) {
-    val today: LocalDate = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     // Today and the following days, plus any chosen day outside that window so every selection stays visible.
-    val stripDates = remember(today, state.days) {
+    val stripDates = remember(today, days) {
         val upcoming: List<LocalDate> = (0 until DAY_STRIP_LENGTH).map { offset -> today.plus(DatePeriod(days = offset)) }
-        val chosen: List<LocalDate> = state.days.filter { it.isSelected }.map { it.date }
+        val chosen: List<LocalDate> = days.filter { it.isSelected }.map { it.date }
         (upcoming + chosen).distinct().sorted()
     }
     Column(
@@ -387,7 +377,7 @@ private fun DaysSection(
             Row(
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.small)
-                    .clickable(role = Role.Button) { onAction(ShowtimesAction.OnCalendarOpen) }
+                    .clickable(role = Role.Button, onClick = onCalendarOpen)
                     .defaultMinSize(minHeight = 48.dp)
                     .padding(horizontal = Spacing.space2),
                 verticalAlignment = Alignment.CenterVertically,
@@ -408,17 +398,19 @@ private fun DaysSection(
         }
         // Quick picks: actions, not toggles, so they carry no selected state.
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.space2)) {
-            CinemerickFilterChip(label = stringResource(Res.string.quick_today), selected = false, onClick = { onAction(ShowtimesAction.OnSelectToday) })
-            CinemerickFilterChip(label = stringResource(Res.string.quick_tomorrow), selected = false, onClick = { onAction(ShowtimesAction.OnSelectTomorrow) })
-            CinemerickFilterChip(label = stringResource(Res.string.quick_weekend), selected = false, onClick = { onAction(ShowtimesAction.OnSelectWeekend) })
+            CinemerickFilterChip(label = stringResource(Res.string.quick_today), selected = false, onClick = onTodayClick)
+            CinemerickFilterChip(label = stringResource(Res.string.quick_tomorrow), selected = false, onClick = onTomorrowClick)
+            CinemerickFilterChip(label = stringResource(Res.string.quick_weekend), selected = false, onClick = onWeekendClick)
         }
-        if (currentDeviceConfiguration().isWideScreen) {
+        if (isWideScreen) {
             // Two-pane layouts: the month grid inline, as in docs/design (Large, desktop). Past days are disabled.
             CinemerickCard(modifier = Modifier.fillMaxWidth()) {
                 MultiDateCalendar(
-                    selected = state.days.filter { it.isSelected }.mapTo(mutableSetOf()) { it.date },
+                    selected = days.filter { it.isSelected }.mapTo(mutableSetOf()) { it.date },
                     minDate = today,
-                    onToggle = { onAction(ShowtimesAction.OnDayToggle(it)) },
+                    shownMonth = calendarMonth,
+                    onToggle = onDayToggle,
+                    onMonthChange = onMonthChange,
                     modifier = Modifier.padding(Spacing.space3),
                 )
             }
@@ -427,9 +419,9 @@ private fun DaysSection(
                 items(stripDates, key = { it.toString() }) { date ->
                     DayTile(
                         date = date,
-                        selected = state.days.any { it.date == date && it.isSelected },
+                        selected = days.any { it.date == date && it.isSelected },
                         isToday = date == today,
-                        onClick = { onAction(ShowtimesAction.OnDayToggle(date)) },
+                        onClick = { onDayToggle(date) },
                         modifier = animateItemIfEnabled()
                     )
                 }
@@ -490,12 +482,13 @@ private const val SLIDER_STEP_MINUTES = 15
 // "24:00" is stored as the day's last minute (23:59), so it is read back as the end of the slider.
 private const val LAST_MINUTE_OF_DAY = 23 * 60 + 59
 
+/** One time range per selected day. [onRangeChange] gets the day and its new start and end, as "HH:mm". */
 @Composable
-private fun TimeWindowSection(
-    state: ShowtimesState,
-    onAction: (ShowtimesAction) -> Unit
+internal fun TimeWindowSection(
+    days: List<DayUi>,
+    onRangeChange: (date: LocalDate, minTime: String, maxTime: String) -> Unit
 ) {
-    val selectedDays = state.days.filter { it.isSelected }
+    val selectedDays = days.filter { it.isSelected }
     if (selectedDays.isEmpty()) return
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -517,7 +510,7 @@ private fun TimeWindowSection(
             verticalArrangement = Arrangement.spacedBy(Spacing.space3)
         ) {
             selectedDays.forEach { day ->
-                DayRangeRow(day = day, onAction = onAction)
+                DayRangeRow(day = day, onRangeChange = { minTime, maxTime -> onRangeChange(day.date, minTime, maxTime) })
             }
         }
     }
@@ -526,7 +519,7 @@ private fun TimeWindowSection(
 @Composable
 internal fun DayRangeRow(
     day: DayUi,
-    onAction: (ShowtimesAction) -> Unit
+    onRangeChange: (minTime: String, maxTime: String) -> Unit
 ) {
     val colors = CinemerickTheme.colors
     // A blank bound means "no limit", so it sits at the edge of the day until the user moves the thumb.
@@ -553,10 +546,7 @@ internal fun DayRangeRow(
         CinemerickTimeRangeSlider(
             startMinutes = start,
             endMinutes = end,
-            onChange = { newStart, newEnd ->
-                onAction(ShowtimesAction.OnMinTimeChange(day.date, newStart.toTimeString()))
-                onAction(ShowtimesAction.OnMaxTimeChange(day.date, newEnd.toTimeString()))
-            },
+            onChange = { newStart, newEnd -> onRangeChange(newStart.toTimeString(), newEnd.toTimeString()) },
         )
     }
 }
@@ -584,9 +574,9 @@ private fun DayTilePreviewLight() {
 private fun DayRangeRowPreviewLight() {
     LightThemePreview {
         Column {
-            DayRangeRow(day = PreviewData.dayUiSelected(), onAction = {})
+            DayRangeRow(day = PreviewData.dayUiSelected(), onRangeChange = { _, _ -> })
             Spacer(modifier = Modifier.height(Spacing.space4))
-            DayRangeRow(day = PreviewData.dayUiWithTimeError(), onAction = {})
+            DayRangeRow(day = PreviewData.dayUiWithTimeError(), onRangeChange = { _, _ -> })
         }
     }
 }
@@ -609,9 +599,9 @@ private fun DayTilePreviewDark() {
 private fun DayRangeRowPreviewDark() {
     DarkThemePreview {
         Column {
-            DayRangeRow(day = PreviewData.dayUiSelected(), onAction = {})
+            DayRangeRow(day = PreviewData.dayUiSelected(), onRangeChange = { _, _ -> })
             Spacer(modifier = Modifier.height(Spacing.space4))
-            DayRangeRow(day = PreviewData.dayUiWithTimeError(), onAction = {})
+            DayRangeRow(day = PreviewData.dayUiWithTimeError(), onRangeChange = { _, _ -> })
         }
     }
 }
@@ -621,18 +611,18 @@ private fun DayRangeRowPreviewDark() {
  * name and count. Tapping any chip opens the venue picker for that cinema.
  */
 @Composable
-private fun WideChainChips(state: ShowtimesState, onAction: (ShowtimesAction) -> Unit) {
+private fun WideChainChips(selectedVenues: Set<Venue>, onChainClick: (Chain) -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2),
     ) {
         Chain.entries.forEach { chain ->
-            val count = state.selectedVenues.count { it.chain == chain }
+            val count = selectedVenues.count { it.chain == chain }
             CinemerickFilterChip(
                 label = if (count > 0) "${chain.displayName()} $count" else chain.displayName(),
                 selected = count > 0,
                 leadingDot = chain.badgeColors().first,
-                onClick = { onAction(ShowtimesAction.OnVenuePickerOpen(chain)) },
+                onClick = { onChainClick(chain) },
             )
         }
     }

@@ -165,37 +165,47 @@ class ShowtimesViewModelTest {
         assertEquals("18:00", viewModel.day(second).minTime)
     }
 
+    // The calendar only takes days from today on, so these tests use days in the future.
+    private val later = Clock.System.todayIn(TimeZone.currentSystemDefault()).plus(40, DateTimeUnit.DAY)
+    private val later2 = later.plus(1, DateTimeUnit.DAY)
+    private val later3 = later.plus(2, DateTimeUnit.DAY)
+
     @Test
     fun confirmKeepsTimeRangeOfRetainedDays() = runTest {
         val viewModel = viewModel()
-        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
-        viewModel.onAction(ShowtimesAction.OnMinTimeChange(first, "15:00"))
+        viewModel.onAction(ShowtimesAction.OnDayToggle(later))
+        viewModel.onAction(ShowtimesAction.OnMinTimeChange(later, "15:00"))
 
         controller.setMin(18 * 60)
-        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(second, first)))
+        viewModel.onAction(ShowtimesAction.OnCalendarOpen)
+        viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later2))
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
-        assertEquals("15:00", viewModel.day(first).minTime)
-        assertEquals("18:00", viewModel.day(second).minTime)
+        assertEquals("15:00", viewModel.day(later).minTime)
+        assertEquals("18:00", viewModel.day(later2).minTime)
     }
 
     @Test
     fun confirmDropsRemovedDaysAndSortsByDate() = runTest {
-        val third = LocalDate(2026, 10, 3)
         val viewModel = viewModel()
-        viewModel.onAction(ShowtimesAction.OnDayToggle(first))
-        viewModel.onAction(ShowtimesAction.OnDayToggle(second))
+        viewModel.onAction(ShowtimesAction.OnDayToggle(later))
+        viewModel.onAction(ShowtimesAction.OnDayToggle(later2))
 
-        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(third, second)))
+        viewModel.onAction(ShowtimesAction.OnCalendarOpen)
+        viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later3))
+        viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later))
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
-        assertEquals(listOf(second, third), viewModel.state.value.days.map { it.date })
+        assertEquals(listOf(later2, later3), viewModel.state.value.days.map { it.date })
     }
 
     @Test
     fun confirmClosesCalendar() = runTest {
         val viewModel = viewModel()
         viewModel.onAction(ShowtimesAction.OnCalendarOpen)
+        viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later))
 
-        viewModel.onAction(ShowtimesAction.OnDatesConfirm(setOf(first)))
+        viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
         assertNull(viewModel.state.value.calendar)
     }

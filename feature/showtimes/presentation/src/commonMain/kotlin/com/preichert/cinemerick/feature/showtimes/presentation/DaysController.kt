@@ -13,8 +13,39 @@ internal class DaysController(
     private val today: () -> LocalDate,
     private val update: StateUpdate,
 ) {
+    // The dialog starts from the days already chosen, on the current month.
     fun openCalendar() {
-        update { it.copy(calendar = CalendarUi(minDate = today())) }
+        val minDate = today()
+        update { state ->
+            state.copy(calendar = CalendarUi(minDate = minDate, draft = state.days.mapTo(mutableSetOf()) { it.date }))
+        }
+    }
+
+    // A day before the first selectable one is ignored: the calendar shows it disabled.
+    fun toggleDraft(date: LocalDate) {
+        updateCalendar { calendar ->
+            when {
+                date in calendar.draft -> calendar.copy(draft = calendar.draft - date)
+                date < calendar.minDate -> calendar
+                else -> calendar.copy(draft = calendar.draft + date)
+            }
+        }
+    }
+
+    fun clearDraft() {
+        updateCalendar { it.copy(draft = emptySet()) }
+    }
+
+    // The month on screen: of the dialog while it is open, otherwise of the inline calendar. Never before the current month.
+    fun showMonth(month: LocalDate) {
+        update { state ->
+            val calendar = state.calendar
+            if (calendar != null) {
+                state.copy(calendar = calendar.copy(shownMonth = maxOf(month.firstOfMonth(), calendar.minDate.firstOfMonth())))
+            } else {
+                state.copy(inlineCalendarMonth = maxOf(month.firstOfMonth(), today().firstOfMonth()))
+            }
+        }
     }
 
     fun dismissCalendar() {
@@ -28,9 +59,18 @@ internal class DaysController(
         }
     }
 
-    fun confirm(dates: Set<LocalDate>) {
-        select(dates.sorted())
-        update { it.copy(calendar = null) }
+    // Replaces the days with the ones picked in the dialog. Returns false when the dialog is not open.
+    fun confirm(): Boolean {
+        var confirmed = false
+        update { state ->
+            val calendar = state.calendar ?: return@update state
+            confirmed = true
+            state.copy(
+                days = calendar.sortedDraft.map { date -> state.days.firstOrNull { it.date == date } ?: newDay(date) },
+                calendar = null
+            )
+        }
+        return confirmed
     }
 
     fun toggle(date: LocalDate) {
@@ -60,6 +100,10 @@ internal class DaysController(
             minTime = window.minMinutes.toTimeInput(),
             maxTime = window.maxMinutes.toTimeInput()
         )
+    }
+
+    private fun updateCalendar(transform: (CalendarUi) -> CalendarUi) {
+        update { state -> state.copy(calendar = state.calendar?.let(transform)) }
     }
 
     private fun updateDay(date: LocalDate, transform: (DayUi) -> DayUi) {

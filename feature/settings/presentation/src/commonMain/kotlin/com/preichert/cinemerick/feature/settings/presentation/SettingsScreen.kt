@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.settings.presentation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
@@ -22,8 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -88,7 +87,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SettingsScreenContent(
+fun SettingsRoot(
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
@@ -130,8 +129,8 @@ fun SettingsScreen(
                 SettingsGroup(label = stringResource(Res.string.app_theme_title)) {
                     ThemeModeControl(
                         selectedMode = state.themeMode,
-                        systemDark = systemDark,
-                        onAction = onAction,
+                        onAutoSelect = { onAction(SettingsAction.OnAutoToggled(true, systemDark)) },
+                        onModeSelect = { onAction(SettingsAction.OnThemeModeSelected(it)) },
                     )
                 }
                 SettingsGroup(label = stringResource(Res.string.animations_title)) {
@@ -146,7 +145,8 @@ fun SettingsScreen(
                     TimeWindowSection(
                         minMinutes = state.defaultMinMinutes,
                         maxMinutes = state.defaultMaxMinutes,
-                        onAction = onAction,
+                        onMinChange = { onAction(SettingsAction.OnDefaultMinTimeChanged(it)) },
+                        onMaxChange = { onAction(SettingsAction.OnDefaultMaxTimeChanged(it)) },
                     )
                 }
                 SettingsGroup(label = stringResource(Res.string.language_title)) {
@@ -210,8 +210,8 @@ private fun SettingsGroup(label: String, content: @Composable () -> Unit) {
 @Composable
 private fun ThemeModeControl(
     selectedMode: ThemeMode,
-    systemDark: Boolean,
-    onAction: (SettingsAction) -> Unit,
+    onAutoSelect: () -> Unit,
+    onModeSelect: (ThemeMode) -> Unit,
 ) {
     val colors = CinemerickTheme.colors
     val selectedIndex = when (selectedMode) {
@@ -221,9 +221,9 @@ private fun ThemeModeControl(
     }
     val select: (Int) -> Unit = { index ->
         when (index) {
-            0 -> onAction(SettingsAction.OnAutoToggled(true, systemDark))
-            1 -> onAction(SettingsAction.OnThemeModeSelected(ThemeMode.LIGHT))
-            else -> onAction(SettingsAction.OnThemeModeSelected(ThemeMode.DARK))
+            0 -> onAutoSelect()
+            1 -> onModeSelect(ThemeMode.LIGHT)
+            else -> onModeSelect(ThemeMode.DARK)
         }
     }
     Column(
@@ -382,7 +382,8 @@ private fun LanguageControl(selected: AppLanguage, onSelect: (AppLanguage) -> Un
 private fun TimeWindowSection(
     minMinutes: Int,
     maxMinutes: Int?,
-    onAction: (SettingsAction) -> Unit,
+    onMinChange: (Int) -> Unit,
+    onMaxChange: (Int?) -> Unit,
 ) {
     val noLimit = stringResource(Res.string.time_window_no_limit)
     Column(modifier = Modifier.padding(horizontal = 4.dp)) {
@@ -408,11 +409,11 @@ private fun TimeWindowSection(
             onChange = { newMin, newEnd ->
                 val newMax = newEnd.takeIf { it < TIME_WINDOW_MAX_MINUTES }
                 if (maxMinutes != null && newMin > maxMinutes) {
-                    onAction(SettingsAction.OnDefaultMaxTimeChanged(newMax))
-                    onAction(SettingsAction.OnDefaultMinTimeChanged(newMin))
+                    onMaxChange(newMax)
+                    onMinChange(newMin)
                 } else {
-                    onAction(SettingsAction.OnDefaultMinTimeChanged(newMin))
-                    onAction(SettingsAction.OnDefaultMaxTimeChanged(newMax))
+                    onMinChange(newMin)
+                    onMaxChange(newMax)
                 }
             },
             modifier = Modifier.padding(horizontal = 4.dp),

@@ -22,8 +22,24 @@ internal class VenuePickerController(
     private val filterPreferences: FilterPreferences,
     private val update: StateUpdate,
 ) {
+    // The picker starts from the venues already selected.
     fun open(chain: Chain) {
-        update { it.copy(venuePicker = VenuePickerUi(chain = chain)) }
+        update { it.copy(venuePicker = VenuePickerUi(chain = chain, draft = it.selectedVenues)) }
+        loadCatalog(chain)
+    }
+
+    // Asks for the venues again after a failure, keeping the search and what was ticked so far.
+    fun reload() {
+        var chain: Chain? = null
+        update { state ->
+            val picker = state.venuePicker ?: return@update state
+            chain = picker.chain
+            state.copy(venuePicker = picker.copy(catalog = VenueCatalogUi.Loading))
+        }
+        chain?.let(::loadCatalog)
+    }
+
+    private fun loadCatalog(chain: Chain) {
         scope.launch {
             val catalog = showtimesRepository.getVenues()
             val chainVenues = catalog[chain]
@@ -32,14 +48,43 @@ internal class VenuePickerController(
                 is Result.Failure -> VenueCatalogUi.Error(chainVenues.error.toUiText())
                 null -> VenueCatalogUi.Error(UiText.Resource(Res.string.venues_load_error))
             }
+            // A picker that was closed, or opened on another chain, in the meantime is left alone.
             update { state ->
-                state.copy(venuePicker = state.venuePicker?.copy(catalog = catalogUi))
+                state.copy(venuePicker = state.venuePicker?.let { if (it.chain == chain) it.copy(catalog = catalogUi) else it })
             }
         }
     }
 
     fun search(query: String) {
-        update { state -> state.copy(venuePicker = state.venuePicker?.copy(query = query)) }
+        updatePicker { it.copy(query = query) }
+    }
+
+    fun toggleDraft(venue: Venue) {
+        updatePicker { it.copy(draft = if (venue in it.draft) it.draft - venue else it.draft + venue) }
+    }
+
+    // "Select all" and "Deselect all" act on the venues the search leaves on screen.
+    fun selectAllVisible() {
+        updatePicker { it.copy(draft = it.draft + it.visibleVenues) }
+    }
+
+    fun deselectAllVisible() {
+        updatePicker { it.copy(draft = it.draft - it.visibleVenues.toSet()) }
+    }
+
+    // Makes the ticked venues the selection and closes the picker. Returns true when the selection changed.
+    fun confirm(): Boolean {
+        var changed = false
+        update { state ->
+            val picker = state.venuePicker ?: return@update state
+            changed = picker.draft != state.selectedVenues
+            state.copy(selectedVenues = picker.draft, venuePicker = null)
+        }
+        return changed
+    }
+
+    fun saveSelection(venues: Set<Venue>) {
+        filterPreferences.setSelectedVenues(venues)
     }
 
     fun dismiss() {
@@ -52,5 +97,9 @@ internal class VenuePickerController(
             filterPreferences.setSelectedVenues(venues)
             state.copy(selectedVenues = venues)
         }
+    }
+
+    private fun updatePicker(transform: (VenuePickerUi) -> VenuePickerUi) {
+        update { state -> state.copy(venuePicker = state.venuePicker?.let(transform)) }
     }
 }

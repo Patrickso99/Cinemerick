@@ -29,10 +29,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,17 +66,17 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun VenuePickerSheet(
     picker: VenuePickerUi,
-    selectedVenues: Set<Venue>,
     onDismiss: () -> Unit,
     onSearchChange: (String) -> Unit,
     onVenueToggle: (Venue) -> Unit,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    onConfirm: () -> Unit,
     onReload: () -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
-    var localQuery by remember { mutableStateOf("") }
-    var localSelected by remember { mutableStateOf(selectedVenues) }
     val (badgeColor, badgeContent) = picker.chain.badgeColors()
-    val selectedCount = localSelected.count { it.chain == picker.chain }
+    val selectedCount = picker.selectedCount
     val colors = MaterialTheme.colorScheme
 
     CinemerickBottomSheet(onDismissRequest = onDismiss) {
@@ -156,8 +152,8 @@ internal fun VenuePickerSheet(
                     modifier = Modifier.size(22.dp)
                 )
                 BasicTextField(
-                    value = localQuery,
-                    onValueChange = { localQuery = it },
+                    value = picker.query,
+                    onValueChange = onSearchChange,
                     modifier = Modifier.weight(1f),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = colors.onSurface,
@@ -168,7 +164,7 @@ internal fun VenuePickerSheet(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                     decorationBox = { innerField ->
-                        if (localQuery.isEmpty()) {
+                        if (picker.query.isEmpty()) {
                             Text(
                                 text = stringResource(Res.string.search_venue),
                                 style = MaterialTheme.typography.bodyLarge,
@@ -193,9 +189,7 @@ internal fun VenuePickerSheet(
                     }
                 }
                 is VenueCatalogUi.Loaded -> {
-                    val filtered = remember(catalog.venues, localQuery) {
-                        filteredVenues(catalog.venues, localQuery)
-                    }
+                    val filtered = picker.visibleVenues
                     if (filtered.isEmpty()) {
                         Text(
                             text = stringResource(Res.string.no_venues_found),
@@ -221,7 +215,7 @@ internal fun VenuePickerSheet(
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (selectedCount > 0) {
-                                    TextButton(onClick = { localSelected = localSelected - filtered.toSet() }) {
+                                    TextButton(onClick = onDeselectAll) {
                                         Text(
                                             text = stringResource(Res.string.deselect_all),
                                             style = MaterialTheme.typography.bodyMedium,
@@ -230,7 +224,7 @@ internal fun VenuePickerSheet(
                                         )
                                     }
                                 }
-                                TextButton(onClick = { localSelected = localSelected + filtered }) {
+                                TextButton(onClick = onSelectAll) {
                                     Text(
                                         text = stringResource(Res.string.select_all),
                                         style = MaterialTheme.typography.bodyMedium,
@@ -249,14 +243,8 @@ internal fun VenuePickerSheet(
                                 VenueRow(
                                     modifier = Modifier.animateItem(),
                                     venue = venue,
-                                    selected = venue in localSelected,
-                                    onClick = {
-                                        localSelected = if (venue in localSelected) {
-                                            localSelected - venue
-                                        } else {
-                                            localSelected + venue
-                                        }
-                                    }
+                                    selected = venue in picker.draft,
+                                    onClick = { onVenueToggle(venue) }
                                 )
                             }
                         }
@@ -284,14 +272,7 @@ internal fun VenuePickerSheet(
 
             CinemerickPrimaryButton(
                 text = stringResource(Res.string.done_with_count, selectedCount),
-                onClick = {
-                    onSearchChange(localQuery)
-                    val venuesToAdd = localSelected - selectedVenues
-                    val venuesToRemove = selectedVenues - localSelected
-                    venuesToAdd.forEach { onVenueToggle(it) }
-                    venuesToRemove.forEach { onVenueToggle(it) }
-                    onDismiss()
-                },
+                onClick = onConfirm,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Spacing.space4),
@@ -350,22 +331,49 @@ private fun VenueRow(modifier: Modifier, venue: Venue, selected: Boolean, onClic
     }
 }
 
+@Composable
+private fun PreviewVenuePickerSheet(picker: VenuePickerUi) {
+    VenuePickerSheet(
+        picker = picker,
+        onDismiss = {},
+        onSearchChange = {},
+        onVenueToggle = {},
+        onSelectAll = {},
+        onDeselectAll = {},
+        onConfirm = {},
+    )
+}
+
 // Previews - Light theme
 
 @Preview
 @Composable
 private fun VenuePickerSheetLoadingPreviewLight() {
-    LightThemePreview {
-        VenuePickerSheet(picker = PreviewData.venueCatalogLoading(), selectedVenues = setOf(PreviewData.sileaVenue), onDismiss = {}, onSearchChange = {}, onVenueToggle = {})
-    }
+    LightThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogLoading()) }
 }
 
 @Preview
 @Composable
 private fun VenuePickerSheetLoadedPreviewLight() {
-    LightThemePreview {
-        VenuePickerSheet(picker = PreviewData.venueCatalogLoaded(), selectedVenues = setOf(PreviewData.sileaVenue), onDismiss = {}, onSearchChange = {}, onVenueToggle = {})
-    }
+    LightThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogLoaded()) }
+}
+
+@Preview
+@Composable
+private fun VenuePickerSheetNoneSelectedPreviewLight() {
+    LightThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogLoaded().copy(draft = emptySet())) }
+}
+
+@Preview
+@Composable
+private fun VenuePickerSheetNoMatchPreviewLight() {
+    LightThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogEmpty()) }
+}
+
+@Preview
+@Composable
+private fun VenuePickerSheetErrorPreviewLight() {
+    LightThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogError()) }
 }
 
 // Previews - Dark theme
@@ -373,15 +381,17 @@ private fun VenuePickerSheetLoadedPreviewLight() {
 @Preview
 @Composable
 private fun VenuePickerSheetLoadingPreviewDark() {
-    DarkThemePreview {
-        VenuePickerSheet(picker = PreviewData.venueCatalogLoading(), selectedVenues = setOf(PreviewData.sileaVenue), onDismiss = {}, onSearchChange = {}, onVenueToggle = {})
-    }
+    DarkThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogLoading()) }
 }
 
 @Preview
 @Composable
 private fun VenuePickerSheetLoadedPreviewDark() {
-    DarkThemePreview {
-        VenuePickerSheet(picker = PreviewData.venueCatalogLoaded(), selectedVenues = setOf(PreviewData.sileaVenue), onDismiss = {}, onSearchChange = {}, onVenueToggle = {})
-    }
+    DarkThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogLoaded()) }
+}
+
+@Preview
+@Composable
+private fun VenuePickerSheetErrorPreviewDark() {
+    DarkThemePreview { PreviewVenuePickerSheet(PreviewData.venueCatalogError()) }
 }

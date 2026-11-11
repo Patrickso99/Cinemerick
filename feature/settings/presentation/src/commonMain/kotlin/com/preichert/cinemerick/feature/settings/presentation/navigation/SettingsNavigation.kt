@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.preichert.cinemerick.feature.settings.presentation.SettingsScreenContent
+import com.preichert.cinemerick.feature.settings.presentation.SettingsRoot
 import kotlinx.serialization.Serializable
 
 internal sealed interface SettingsGraphRoutes {
@@ -31,7 +31,7 @@ fun NavGraphBuilder.settingsGraph(
         startDestination = SettingsGraphRoutes.SettingsRoute
     ) {
         composable<SettingsGraphRoutes.SettingsRoute> {
-            SettingsScreenContent(
+            SettingsRoot(
                 onNavigateBack = {
                     // A second pop would remove the start destination on desktop
                     if (navController.isIdle() && navController.previousBackStackEntry != null) {

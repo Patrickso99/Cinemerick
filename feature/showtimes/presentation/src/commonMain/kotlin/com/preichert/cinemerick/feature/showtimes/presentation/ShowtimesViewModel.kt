@@ -62,7 +62,10 @@ class ShowtimesViewModel(
     fun onAction(action: ShowtimesAction) {
         when (action) {
             is ShowtimesAction.OnDayToggle -> { days.toggle(action.date); refresh() }
-            is ShowtimesAction.OnDatesConfirm -> { days.confirm(action.dates); refresh() }
+            ShowtimesAction.OnDatesConfirm -> if (days.confirm()) refresh()
+            is ShowtimesAction.OnCalendarDayToggle -> days.toggleDraft(action.date)
+            ShowtimesAction.OnCalendarClear -> days.clearDraft()
+            is ShowtimesAction.OnCalendarMonthChange -> days.showMonth(action.month)
             ShowtimesAction.OnCalendarOpen -> days.openCalendar()
             ShowtimesAction.OnCalendarDismiss -> days.dismissCalendar()
             ShowtimesAction.OnSelectToday -> { days.select(listOf(today())); refresh() }
@@ -75,24 +78,47 @@ class ShowtimesViewModel(
             is ShowtimesAction.OnVenuePickerOpen -> venuePicker.open(action.chain)
             ShowtimesAction.OnVenuePickerDismiss -> venuePicker.dismiss()
             is ShowtimesAction.OnVenueSearchChange -> venuePicker.search(action.query)
+            is ShowtimesAction.OnVenueDraftToggle -> venuePicker.toggleDraft(action.venue)
+            ShowtimesAction.OnVenueDraftSelectAll -> venuePicker.selectAllVisible()
+            ShowtimesAction.OnVenueDraftDeselectAll -> venuePicker.deselectAllVisible()
+            ShowtimesAction.OnVenuePickerConfirm -> confirmVenues()
+            is ShowtimesAction.OnChainExpandToggle -> toggleChain(action.chain)
             is ShowtimesAction.OnFormatToggle -> toggleFormat(action.tag)
             ShowtimesAction.OnFormatsReset -> setHiddenTags(emptySet())
             ShowtimesAction.OnGenerateClick -> results.generate(silent = false)
             ShowtimesAction.OnCopyClick -> copy()
             ShowtimesAction.OnClearClick -> clear()
-            ShowtimesAction.OnVenuesReload -> {
-                val chain = _state.value.venuePicker?.chain
-                if (chain != null) venuePicker.open(chain)
-            }
+            ShowtimesAction.OnVenuesReload -> venuePicker.reload()
             is ShowtimesAction.OnFilmCardVisible -> cardLoader.load(action.title, resolved = action.title in _state.value.resolvedCards)
             is ShowtimesAction.OnFilmDetailsOpen -> _state.value.groups.firstOrNull { it.title == action.title }?.let(filmDetails::open)
             ShowtimesAction.OnFilmDetailsDismiss -> filmDetails.dismiss()
+            ShowtimesAction.OnSynopsisExpand -> updateFilmDetails { it.copy(isSynopsisExpanded = true) }
+            is ShowtimesAction.OnFilmImageOpen -> updateFilmDetails { it.copy(openedImage = action.image) }
+            ShowtimesAction.OnFilmImageDismiss -> updateFilmDetails { it.copy(openedImage = null) }
+            is ShowtimesAction.OnPosterEnlarge -> _state.update { it.copy(enlargedPoster = PosterUi(action.title, action.url)) }
+            ShowtimesAction.OnPosterDismiss -> _state.update { it.copy(enlargedPoster = null) }
             is ShowtimesAction.OnPersonOpen -> persons.open(action.person)
             ShowtimesAction.OnPersonDismiss -> persons.dismiss()
+            ShowtimesAction.OnBiographyExpand -> _state.update { it.copy(personDetails = it.personDetails?.copy(isBiographyExpanded = true)) }
         }
     }
 
     private fun refresh() = results.refresh()
+
+    // The selection is saved and the results refreshed only when the picker changed it.
+    private fun confirmVenues() {
+        if (!venuePicker.confirm()) return
+        venuePicker.saveSelection(_state.value.selectedVenues)
+        refresh()
+    }
+
+    private fun toggleChain(chain: Chain) {
+        _state.update { it.copy(expandedChains = if (chain in it.expandedChains) it.expandedChains - chain else it.expandedChains + chain) }
+    }
+
+    private fun updateFilmDetails(transform: (FilmDetailsUi) -> FilmDetailsUi) {
+        _state.update { it.copy(filmDetails = it.filmDetails?.let(transform)) }
+    }
 
     private fun toggleFormat(tag: String) {
         val hidden = _state.value.hiddenTags

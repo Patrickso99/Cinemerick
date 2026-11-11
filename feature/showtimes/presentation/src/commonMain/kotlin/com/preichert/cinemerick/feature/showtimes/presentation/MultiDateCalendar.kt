@@ -20,10 +20,7 @@ import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,24 +49,27 @@ import org.jetbrains.compose.resources.stringResource
 private val MAX_CALENDAR_WIDTH = 320.dp
 
 /**
- * Month calendar with multiple selection. Dates before [minDate] are disabled.
+ * Month calendar with multiple selection. Dates before [minDate] are disabled. [shownMonth] is the first day of the
+ * month on screen; the arrows ask for the month before or after through [onMonthChange].
  * Material3's DatePicker only supports a single date or a contiguous range, hence this grid.
  */
 @Composable
 fun MultiDateCalendar(
     selected: Set<LocalDate>,
     minDate: LocalDate,
+    shownMonth: LocalDate,
     onToggle: (LocalDate) -> Unit,
+    onMonthChange: (LocalDate) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var firstOfMonth by remember { mutableStateOf(LocalDate(minDate.year, minDate.month, 1)) }
-    val minMonth = remember(minDate) { LocalDate(minDate.year, minDate.month, 1) }
+    val firstOfMonth = shownMonth
+    val minMonth = remember(minDate) { minDate.firstOfMonth() }
 
     Column(modifier = modifier.fillMaxWidth().widthIn(max = MAX_CALENDAR_WIDTH), verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val prevSource = remember { MutableInteractionSource() }
             IconButton(
-                onClick = { firstOfMonth = firstOfMonth.plus(-1, DateTimeUnit.MONTH) },
+                onClick = { onMonthChange(firstOfMonth.plus(-1, DateTimeUnit.MONTH)) },
                 enabled = firstOfMonth > minMonth,
                 interactionSource = prevSource,
                 modifier = Modifier.pressScale(prevSource)
@@ -89,7 +89,7 @@ fun MultiDateCalendar(
             )
             val nextSource = remember { MutableInteractionSource() }
             IconButton(
-                onClick = { firstOfMonth = firstOfMonth.plus(1, DateTimeUnit.MONTH) },
+                onClick = { onMonthChange(firstOfMonth.plus(1, DateTimeUnit.MONTH)) },
                 interactionSource = nextSource,
                 modifier = Modifier.pressScale(nextSource)
             ) {
@@ -173,7 +173,9 @@ private fun MultiDateCalendarPreviewLight() {
         MultiDateCalendar(
             selected = setOf(LocalDate(2026, 10, 1), LocalDate(2026, 10, 2), LocalDate(2026, 10, 3)),
             minDate = LocalDate(2026, 10, 1),
+            shownMonth = LocalDate(2026, 10, 1),
             onToggle = {},
+            onMonthChange = {},
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -188,7 +190,9 @@ private fun MultiDateCalendarPreviewDark() {
         MultiDateCalendar(
             selected = setOf(LocalDate(2026, 10, 1), LocalDate(2026, 10, 2), LocalDate(2026, 10, 3)),
             minDate = LocalDate(2026, 10, 1),
+            shownMonth = LocalDate(2026, 10, 1),
             onToggle = {},
+            onMonthChange = {},
             modifier = Modifier.padding(16.dp)
         )
     }

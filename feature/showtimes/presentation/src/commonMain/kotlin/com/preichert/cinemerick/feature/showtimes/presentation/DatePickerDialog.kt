@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,17 +31,20 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Multi-day calendar in a bottom sheet, as in docs/design (Phone, 06): the month grid, the chosen days as chips
- * (tap a chip to remove it), and Clear and Done. Dismissing the sheet keeps the days as they were before it opened.
+ * (tap a chip to remove it), and Clear and Done. Dismissing the sheet keeps the days as they were before it opened:
+ * the days picked here are a draft in [calendar] until Done.
  */
 @Composable
 internal fun DatePickerDialog(
-    initialDates: Set<LocalDate>,
-    minDate: LocalDate,
-    onConfirm: (Set<LocalDate>) -> Unit,
+    calendar: CalendarUi,
+    onDayToggle: (LocalDate) -> Unit,
+    onMonthChange: (LocalDate) -> Unit,
+    onClear: () -> Unit,
+    onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var draft by remember { mutableStateOf(initialDates) }
-    val sortedDraft = draft.sorted()
+    val draft = calendar.draft
+    val sortedDraft = calendar.sortedDraft
 
     CinemerickBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -69,8 +68,10 @@ internal fun DatePickerDialog(
 
             MultiDateCalendar(
                 selected = draft,
-                minDate = minDate,
-                onToggle = { date -> draft = if (date in draft) draft - date else draft + date },
+                minDate = calendar.minDate,
+                shownMonth = calendar.shownMonth,
+                onToggle = onDayToggle,
+                onMonthChange = onMonthChange,
             )
 
             if (sortedDraft.isNotEmpty()) {
@@ -83,7 +84,7 @@ internal fun DatePickerDialog(
                             label = "${date.chipDayName()} ${date.day}",
                             selected = true,
                             leadingIcon = CinemerickIcons.Close,
-                            onClick = { draft = draft - date },
+                            onClick = { onDayToggle(date) },
                         )
                     }
                 }
@@ -96,12 +97,12 @@ internal fun DatePickerDialog(
             ) {
                 CinemerickSecondaryButton(
                     text = stringResource(Res.string.clear),
-                    onClick = { draft = emptySet() },
+                    onClick = onClear,
                     enabled = draft.isNotEmpty(),
                 )
                 CinemerickPrimaryButton(
                     text = stringResource(Res.string.calendar_done_count, draft.size),
-                    onClick = { onConfirm(draft) },
+                    onClick = onConfirm,
                     enabled = draft.isNotEmpty(),
                     modifier = Modifier.weight(1f),
                 )
@@ -110,19 +111,34 @@ internal fun DatePickerDialog(
     }
 }
 
+private val previewCalendar = CalendarUi(
+    minDate = LocalDate(2026, 10, 16),
+    draft = setOf(LocalDate(2026, 10, 17), LocalDate(2026, 10, 18)),
+)
+
+@Composable
+private fun PreviewDatePickerDialog(calendar: CalendarUi) {
+    DatePickerDialog(calendar = calendar, onDayToggle = {}, onMonthChange = {}, onClear = {}, onConfirm = {}, onDismiss = {})
+}
+
 // Previews - Light theme
 
 @Preview
 @Composable
 private fun DatePickerDialogPreviewLight() {
-    LightThemePreview {
-        DatePickerDialog(
-            initialDates = setOf(LocalDate(2026, 10, 17), LocalDate(2026, 10, 18)),
-            minDate = LocalDate(2026, 10, 16),
-            onConfirm = {},
-            onDismiss = {},
-        )
-    }
+    LightThemePreview { PreviewDatePickerDialog(previewCalendar) }
+}
+
+@Preview
+@Composable
+private fun DatePickerDialogEmptyPreviewLight() {
+    LightThemePreview { PreviewDatePickerDialog(previewCalendar.copy(draft = emptySet())) }
+}
+
+@Preview
+@Composable
+private fun DatePickerDialogNextMonthPreviewLight() {
+    LightThemePreview { PreviewDatePickerDialog(previewCalendar.copy(shownMonth = LocalDate(2026, 11, 1))) }
 }
 
 // Previews - Dark theme
@@ -130,12 +146,11 @@ private fun DatePickerDialogPreviewLight() {
 @Preview
 @Composable
 private fun DatePickerDialogPreviewDark() {
-    DarkThemePreview {
-        DatePickerDialog(
-            initialDates = setOf(LocalDate(2026, 10, 17), LocalDate(2026, 10, 18)),
-            minDate = LocalDate(2026, 10, 16),
-            onConfirm = {},
-            onDismiss = {},
-        )
-    }
+    DarkThemePreview { PreviewDatePickerDialog(previewCalendar) }
+}
+
+@Preview
+@Composable
+private fun DatePickerDialogEmptyPreviewDark() {
+    DarkThemePreview { PreviewDatePickerDialog(previewCalendar.copy(draft = emptySet())) }
 }
