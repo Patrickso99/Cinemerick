@@ -4,19 +4,20 @@ import com.preichert.cinemerick.core.presentation.resources.Res
 import com.preichert.cinemerick.core.presentation.resources.error_unknown
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEqualTo
 
 class UiTextTest {
 
     @Test
     fun aDynamicStringIsItsOwnText() = runTest {
-        assertEquals("Connection lost", UiText.DynamicString("Connection lost").asStringAsync())
+        assertThat(UiText.DynamicString("Connection lost").asStringAsync()).isEqualTo("Connection lost")
     }
 
     @Test
     fun resourcesCompareByIdAndArguments() {
-        assertEquals(UiText.Resource(Res.string.error_unknown, listOf("x")), UiText.Resource(Res.string.error_unknown, listOf("x")))
-        assertNotEquals(UiText.Resource(Res.string.error_unknown, listOf("x")), UiText.Resource(Res.string.error_unknown, listOf("y")))
+        assertThat(UiText.Resource(Res.string.error_unknown, listOf("x"))).isEqualTo(UiText.Resource(Res.string.error_unknown, listOf("x")))
+        assertThat(UiText.Resource(Res.string.error_unknown, listOf("y"))).isNotEqualTo(UiText.Resource(Res.string.error_unknown, listOf("x")))
     }
 }

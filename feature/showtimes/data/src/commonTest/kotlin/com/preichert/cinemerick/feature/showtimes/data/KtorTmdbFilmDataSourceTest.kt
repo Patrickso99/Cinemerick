@@ -16,11 +16,13 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
+import assertk.assertions.isNotEmpty
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 
 class KtorTmdbFilmDataSourceTest {
 
@@ -44,8 +46,12 @@ class KtorTmdbFilmDataSourceTest {
 
     private fun ok(body: String) = HttpStatusCode.OK to body
 
-    private fun detailsOf(result: Result<FilmDetails?, DataError.Network>): FilmDetails =
-        assertNotNull(assertIs<Result.Success<FilmDetails?>>(result).data)
+    private fun detailsOf(result: Result<FilmDetails?, DataError.Network>): FilmDetails {
+        assertThat(result).isInstanceOf<Result.Success<FilmDetails?>>()
+        val details = (result as Result.Success).data
+        assertThat(details).isNotNull()
+        return details!!
+    }
 
     private fun route(request: HttpRequestData, movie: String = MOVIE_JSON) =
         if (request.url.encodedPath.endsWith("/search/movie")) ok(SEARCH_JSON) else ok(movie)
@@ -55,41 +61,41 @@ class KtorTmdbFilmDataSourceTest {
         val result = lookup { route(it) }.find("Star Wars")
 
         val details = detailsOf(result)
-        assertEquals("La principessa Leia viene catturata.", details.synopsis)
-        assertEquals("George Lucas", details.director)
-        assertEquals(121, details.runtimeMinutes)
+        assertThat(details.synopsis).isEqualTo("La principessa Leia viene catturata.")
+        assertThat(details.director).isEqualTo("George Lucas")
+        assertThat(details.runtimeMinutes).isEqualTo(121)
 
-        assertEquals(2, requests.size)
+        assertThat(requests.size).isEqualTo(2)
         val search = requests[0].url
-        assertEquals("/3/search/movie", search.encodedPath)
-        assertEquals("Star Wars", search.parameters["query"])
-        assertEquals("it-IT", search.parameters["language"])
-        assertEquals("IT", search.parameters["region"])
-        assertEquals("false", search.parameters["include_adult"])
+        assertThat(search.encodedPath).isEqualTo("/3/search/movie")
+        assertThat(search.parameters["query"]).isEqualTo("Star Wars")
+        assertThat(search.parameters["language"]).isEqualTo("it-IT")
+        assertThat(search.parameters["region"]).isEqualTo("IT")
+        assertThat(search.parameters["include_adult"]).isEqualTo("false")
 
         val detail = requests[1].url
-        assertEquals("/3/movie/11", detail.encodedPath)
-        assertEquals("it-IT", detail.parameters["language"])
-        assertEquals("credits,videos,release_dates,images", detail.parameters["append_to_response"])
-        assertEquals("it", detail.parameters["include_video_language"])
-        assertEquals("it,en,null", detail.parameters["include_image_language"])
+        assertThat(detail.encodedPath).isEqualTo("/3/movie/11")
+        assertThat(detail.parameters["language"]).isEqualTo("it-IT")
+        assertThat(detail.parameters["append_to_response"]).isEqualTo("credits,videos,release_dates,images")
+        assertThat(detail.parameters["include_video_language"]).isEqualTo("it")
+        assertThat(detail.parameters["include_image_language"]).isEqualTo("it,en,null")
     }
 
     @Test
     fun everyRequestIsInItalianWhateverTheLanguageOfTheApp() = runTest {
         lookup { route(it) }.find("Star Wars")
 
-        assertEquals(listOf("it-IT", "it-IT"), requests.map { it.url.parameters["language"] })
+        assertThat(requests.map { it.url.parameters["language"] }).isEqualTo(listOf("it-IT", "it-IT"))
         // Videos too: only Italian ones are asked for.
-        assertEquals(listOf("it"), requests.mapNotNull { it.url.parameters["include_video_language"] })
+        assertThat(requests.mapNotNull { it.url.parameters["include_video_language"] }).isEqualTo(listOf("it"))
     }
 
     @Test
     fun everyRequestCarriesTheBearerToken() = runTest {
         lookup { route(it) }.find("Star Wars")
 
-        assertTrue(requests.isNotEmpty())
-        requests.forEach { assertEquals("Bearer secret-token", it.headers[HttpHeaders.Authorization]) }
+        assertThat(requests).isNotEmpty()
+        requests.forEach { assertThat(it.headers[HttpHeaders.Authorization]).isEqualTo("Bearer secret-token") }
     }
 
     @Test
@@ -98,33 +104,33 @@ class KtorTmdbFilmDataSourceTest {
 
         val details = detailsOf(lookup { route(it, movie = noOverview) }.find("Star Wars"))
 
-        assertNull(details.synopsis)
-        assertEquals("George Lucas", details.director)
-        assertEquals(2, requests.size)
+        assertThat(details.synopsis).isNull()
+        assertThat(details.director).isEqualTo("George Lucas")
+        assertThat(requests.size).isEqualTo(2)
     }
 
     @Test
     fun blankTokenSendsNothingAndFindsNothing() = runTest {
         val result = lookup(token = "  ") { route(it) }.find("Star Wars")
 
-        assertEquals(Result.Success(null), result)
-        assertTrue(requests.isEmpty())
+        assertThat(result).isEqualTo(Result.Success(null))
+        assertThat(requests).isEmpty()
     }
 
     @Test
     fun blankTitleSendsNothing() = runTest {
         val result = lookup { route(it) }.find("   ")
 
-        assertEquals(Result.Success(null), result)
-        assertTrue(requests.isEmpty())
+        assertThat(result).isEqualTo(Result.Success(null))
+        assertThat(requests).isEmpty()
     }
 
     @Test
     fun aRejectedSearchIsAFailure() = runTest {
         val result = lookup { HttpStatusCode.Unauthorized to "" }.find("Star Wars")
 
-        assertEquals(Result.Failure(DataError.Network.UNAUTHORIZED), result)
-        assertEquals(1, requests.size)
+        assertThat(result).isEqualTo(Result.Failure(DataError.Network.UNAUTHORIZED))
+        assertThat(requests.size).isEqualTo(1)
     }
 
     @Test
@@ -135,8 +141,8 @@ class KtorTmdbFilmDataSourceTest {
 
         val details = detailsOf(lookup.find("Star Wars"))
 
-        assertEquals("George Lucas", details.director)
-        assertEquals(listOf("/3/movie/11"), requests.map { it.url.encodedPath })
+        assertThat(details.director).isEqualTo("George Lucas")
+        assertThat(requests.map { it.url.encodedPath }).isEqualTo(listOf("/3/movie/11"))
     }
 
     @Test
@@ -144,13 +150,13 @@ class KtorTmdbFilmDataSourceTest {
         val clock = FakeClock()
         val store = SettingsTmdbMatchDataSource(MemorySettings(), clock)
         val lookup = lookup(store = store) { ok("""{"results":[]}""") }
-        assertNull(lookup.find("Mammina").let { (it as Result.Success).data })
-        assertNull(lookup.find("Mammina").let { (it as Result.Success).data })
-        assertEquals(1, requests.size)
+        assertThat(lookup.find("Mammina").let { (it as Result.Success).data }).isNull()
+        assertThat(lookup.find("Mammina").let { (it as Result.Success).data }).isNull()
+        assertThat(requests.size).isEqualTo(1)
 
         clock.millis = 8L * 24 * 60 * 60 * 1000
         lookup.find("Mammina")
-        assertEquals(2, requests.size)
+        assertThat(requests.size).isEqualTo(2)
     }
 
     @Test
@@ -160,11 +166,11 @@ class KtorTmdbFilmDataSourceTest {
             if (it.url.encodedPath.endsWith("/search/movie") && searchFails) HttpStatusCode.Unauthorized to ""
             else if (it.url.encodedPath.endsWith("/search/movie")) ok(SEARCH_JSON) else ok(MOVIE_JSON)
         }
-        assertEquals(Result.Failure(DataError.Network.UNAUTHORIZED), lookup.find("Star Wars"))
+        assertThat(lookup.find("Star Wars")).isEqualTo(Result.Failure(DataError.Network.UNAUTHORIZED))
 
         searchFails = false
-        assertEquals("George Lucas", detailsOf(lookup.find("Star Wars")).director)
-        assertEquals(3, requests.size)
+        assertThat(detailsOf(lookup.find("Star Wars")).director).isEqualTo("George Lucas")
+        assertThat(requests.size).isEqualTo(3)
     }
 
     @Test
@@ -173,7 +179,7 @@ class KtorTmdbFilmDataSourceTest {
             if (it.url.encodedPath.endsWith("/search/movie")) ok(SEARCH_JSON) else HttpStatusCode.NotFound to ""
         }.find("Star Wars")
 
-        assertEquals(Result.Failure(DataError.Network.NOT_FOUND), result)
-        assertEquals(2, requests.size)
+        assertThat(result).isEqualTo(Result.Failure(DataError.Network.NOT_FOUND))
+        assertThat(requests.size).isEqualTo(2)
     }
 }

@@ -7,7 +7,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 
 class FilterPersistenceTest {
 
@@ -29,9 +31,9 @@ class FilterPersistenceTest {
 
         val restored = FilterPersistence(savedStateHandle).restore(ShowtimesState())
 
-        assertEquals(listOf(DayUi(day, isSelected = true, minTime = "18:30", maxTime = "23:00")), restored.days)
-        assertEquals("Dune", restored.filmFilter)
-        assertEquals(setOf("3D"), restored.hiddenTags)
+        assertThat(restored.days).isEqualTo(listOf(DayUi(day, isSelected = true, minTime = "18:30", maxTime = "23:00")))
+        assertThat(restored.filmFilter).isEqualTo("Dune")
+        assertThat(restored.hiddenTags).isEqualTo(setOf("3D"))
     }
 
     @Test
@@ -40,6 +42,6 @@ class FilterPersistenceTest {
             mapOf("filters" to """{"days":[{"date":"not-a-date","isSelected":true,"minTime":"20:00","maxTime":"23:00"}]}""")
         )
 
-        assertEquals(emptyList(), FilterPersistence(savedStateHandle).restore(ShowtimesState()).days)
+        assertThat(FilterPersistence(savedStateHandle).restore(ShowtimesState()).days).isEmpty()
     }
 }

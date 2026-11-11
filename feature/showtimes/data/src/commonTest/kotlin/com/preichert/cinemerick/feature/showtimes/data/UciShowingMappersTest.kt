@@ -6,9 +6,10 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
 
 class UciShowingMappersTest {
 
@@ -34,29 +35,26 @@ class UciShowingMappersTest {
             performance("21:45", "/movies/mammina/acquista/5125/9491/404492")
         ).toShowings(venue, day)
 
-        assertEquals(
-            listOf(
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf(
                 "https://ucicinemas.it/movies/mammina/acquista/5125/9491/404491",
                 "https://ucicinemas.it/movies/mammina/acquista/5125/9491/404492"
-            ),
-            showings.map { it.ticketUrl }
-        )
+            ))
     }
 
     @Test
     fun missingOrBlankCartLinkGivesNoPurchaseUrl() {
         val showings = programming(performance("19:30", null), performance("21:45", "  ")).toShowings(venue, day)
 
-        assertEquals(2, showings.size)
-        assertNull(showings[0].ticketUrl)
-        assertNull(showings[1].ticketUrl)
+        assertThat(showings.size).isEqualTo(2)
+        assertThat(showings[0].ticketUrl).isNull()
+        assertThat(showings[1].ticketUrl).isNull()
     }
 
     @Test
     fun performancesAreNeverSoldOut() {
         val showings = programming(performance("19:30", "/a"), performance("21:45", null)).toShowings(venue, day)
 
-        assertFalse(showings.any { it.soldOut })
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
@@ -76,32 +74,29 @@ class UciShowingMappersTest {
     fun movieDetailsAreReadFromTheProgramming() {
         val showing = json.decodeFromString<UciProgrammingDto>(realPayload).toShowings(venue, day).single()
 
-        assertEquals(
-            FilmDetails(
+        assertThat(showing.details).isEqualTo(FilmDetails(
                 synopsis = "Un viaggio terrificante nel mondo di Bela & sua madre.\nSi ricorda che il film inizia subito.",
                 genre = "Horror, Thriller",
                 rating = "14+"
-            ),
-            showing.details
-        )
+            ))
     }
 
     @Test
     fun trailerLinkIsKeptWhenPublished() {
         val payload = realPayload.replace("\"trailer_link\":null", "\"trailer_link\":\"https://youtu.be/abc\"")
 
-        assertEquals("https://youtu.be/abc", json.decodeFromString<UciProgrammingDto>(payload).toShowings(venue, day).single().details?.trailerUrl)
+        assertThat(json.decodeFromString<UciProgrammingDto>(payload).toShowings(venue, day).single().details?.trailerUrl).isEqualTo("https://youtu.be/abc")
     }
 
     @Test
     fun movieWithoutAnyDetailGivesNoDetails() {
-        assertNull(programming(performance("19:30", null)).toShowings(venue, day).single().details)
+        assertThat(programming(performance("19:30", null)).toShowings(venue, day).single().details).isNull()
     }
 
     @Test
     fun missingOrNullDetailFieldsDoNotBreakParsing() {
         val payload = """{"data":[{"title":"Mammina","description":null,"rating":null,"genres":[],"screens":[{"2D":[{"performances":[{"day":"2026-10-12","actual_start_at":"19:50"}]}]}]}]}"""
 
-        assertNull(json.decodeFromString<UciProgrammingDto>(payload).toShowings(venue, day).single().details)
+        assertThat(json.decodeFromString<UciProgrammingDto>(payload).toShowings(venue, day).single().details).isNull()
     }
 }

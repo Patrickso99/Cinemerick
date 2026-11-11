@@ -3,7 +3,8 @@ package com.preichert.cinemerick.core.data
 import com.preichert.cinemerick.core.domain.ThemeMode
 import com.preichert.cinemerick.core.testing.MemorySettings
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 
 class SettingsThemePreferencesTest {
 
@@ -11,7 +12,7 @@ class SettingsThemePreferencesTest {
     fun followsSystemByDefault() {
         val preferences = SettingsThemePreferences(MemorySettings())
 
-        assertEquals(ThemeMode.SYSTEM, preferences.themeMode())
+        assertThat(preferences.themeMode()).isEqualTo(ThemeMode.SYSTEM)
     }
 
     @Test
@@ -19,12 +20,12 @@ class SettingsThemePreferencesTest {
         val preferences = SettingsThemePreferences(MemorySettings())
 
         preferences.setThemeMode(ThemeMode.LIGHT)
-        assertEquals(ThemeMode.LIGHT, preferences.themeMode())
+        assertThat(preferences.themeMode()).isEqualTo(ThemeMode.LIGHT)
 
         preferences.setThemeMode(ThemeMode.DARK)
-        assertEquals(ThemeMode.DARK, preferences.themeMode())
+        assertThat(preferences.themeMode()).isEqualTo(ThemeMode.DARK)
 
         preferences.setThemeMode(ThemeMode.SYSTEM)
-        assertEquals(ThemeMode.SYSTEM, preferences.themeMode())
+        assertThat(preferences.themeMode()).isEqualTo(ThemeMode.SYSTEM)
     }
 }

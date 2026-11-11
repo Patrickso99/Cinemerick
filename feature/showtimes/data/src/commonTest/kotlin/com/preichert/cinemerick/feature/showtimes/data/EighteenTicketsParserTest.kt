@@ -5,8 +5,10 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
 
 class EighteenTicketsParserTest {
 
@@ -37,8 +39,8 @@ class EighteenTicketsParserTest {
 
         val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
 
-        assertEquals(listOf("Digger"), showings.map { it.title })
-        assertEquals(listOf("VO"), showings.map { it.format })
+        assertThat(showings.map { it.title }).isEqualTo(listOf("Digger"))
+        assertThat(showings.map { it.format }).isEqualTo(listOf("VO"))
     }
 
     @Test
@@ -47,12 +49,12 @@ class EighteenTicketsParserTest {
 
         val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
 
-        assertEquals(listOf("Verity", "Verity", "Digger"), showings.map { it.title })
-        assertEquals(listOf(LocalTime(18, 30), LocalTime(21, 0), LocalTime(9, 5)), showings.map { it.time })
-        assertEquals(listOf(null, null, "VO"), showings.map { it.format })
-        assertEquals("https://cdn.18tickets.net/p/1.jpg", showings.first().posterUrl)
-        assertEquals(setOf(venueCinergia), showings.map { it.venue }.toSet())
-        assertFalse(showings.any { it.soldOut })
+        assertThat(showings.map { it.title }).isEqualTo(listOf("Verity", "Verity", "Digger"))
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(18, 30), LocalTime(21, 0), LocalTime(9, 5)))
+        assertThat(showings.map { it.format }).isEqualTo(listOf(null, null, "VO"))
+        assertThat(showings.first().posterUrl).isEqualTo("https://cdn.18tickets.net/p/1.jpg")
+        assertThat(showings.map { it.venue }.toSet()).isEqualTo(setOf(venueCinergia))
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     @Test
@@ -60,12 +62,12 @@ class EighteenTicketsParserTest {
         val html = film(1, "VERITY", "01/10/2026", "18:30")
         val script = "\$(\"#movie-list\").html('" + html.replace("'", "\\'").replace("\n", "\\n").replace("</", "<\\/") + "');"
 
-        assertEquals(listOf(LocalTime(18, 30)), parseEighteenTicketsShowings(script, venueCinergia, day).map { it.time })
+        assertThat(parseEighteenTicketsShowings(script, venueCinergia, day).map { it.time }).isEqualTo(listOf(LocalTime(18, 30)))
     }
 
     @Test
     fun ignoresScheduleForAnotherDay() {
-        assertEquals(emptyList(), parseEighteenTicketsShowings(film(1, "VERITY", "02/10/2026", "18:30"), venueCinergia, day))
+        assertThat(parseEighteenTicketsShowings(film(1, "VERITY", "02/10/2026", "18:30"), venueCinergia, day)).isEmpty()
     }
 
     @Test
@@ -74,14 +76,11 @@ class EighteenTicketsParserTest {
 
         val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
 
-        assertEquals(
-            listOf(
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf(
                 "https://x/film/1/s0#theater-init",
                 "https://x/film/1/s1#theater-init",
                 "https://x/film/2/s0#theater-init"
-            ),
-            showings.map { it.ticketUrl }
-        )
+            ))
     }
 
     @Test
@@ -89,10 +88,7 @@ class EighteenTicketsParserTest {
         val html = film(1, "VERITY", "01/10/2026", "18:30", "21:00")
         val script = "\$(\"#movie-list\").html('" + html.replace("'", "\\'").replace("\n", "\\n").replace("</", "<\\/") + "');"
 
-        assertEquals(
-            listOf("https://x/film/1/s0#theater-init", "https://x/film/1/s1#theater-init"),
-            parseEighteenTicketsShowings(script, venueCinergia, day).map { it.ticketUrl }
-        )
+        assertThat(parseEighteenTicketsShowings(script, venueCinergia, day).map { it.ticketUrl }).isEqualTo(listOf("https://x/film/1/s0#theater-init", "https://x/film/1/s1#theater-init"))
     }
 
     @Test
@@ -102,18 +98,15 @@ class EighteenTicketsParserTest {
 
         val showings = parseEighteenTicketsShowings(withoutHref + withAnchor, venueCinergia, day)
 
-        assertEquals(listOf<String?>(null, null), showings.map { it.ticketUrl })
-        assertEquals(listOf(LocalTime(18, 30), LocalTime(21, 0)), showings.map { it.time })
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf<String?>(null, null))
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(18, 30), LocalTime(21, 0)))
     }
 
     @Test
     fun linksEachFilmToItsFilmPageWithoutTheDateQuery() {
         val html = film(91221, "VERITY", "01/10/2026", "18:30") + film(2, "DIGGER", "01/10/2026", "21:00")
 
-        assertEquals(
-            listOf<String?>("https://x.18tickets.it/film/91221", "https://x.18tickets.it/film/2"),
-            parseEighteenTicketsShowings(html, venueCinergia, day).map { it.detailsUrl }
-        )
+        assertThat(parseEighteenTicketsShowings(html, venueCinergia, day).map { it.detailsUrl }).isEqualTo(listOf<String?>("https://x.18tickets.it/film/91221", "https://x.18tickets.it/film/2"))
     }
 
     @Test
@@ -124,9 +117,6 @@ class EighteenTicketsParserTest {
 
         val showings = parseEighteenTicketsShowings(html, venueCinergia, day)
 
-        assertEquals(
-            mapOf("The Social" to "https://x.18tickets.it/film/1", "Una Storia" to "https://x.18tickets.it/film/2"),
-            showings.associate { it.title to it.detailsUrl }
-        )
+        assertThat(showings.associate { it.title to it.detailsUrl }).isEqualTo(mapOf("The Social" to "https://x.18tickets.it/film/1", "Una Storia" to "https://x.18tickets.it/film/2"))
     }
 }

@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 
 class DaysControllerTest {
 
@@ -24,12 +26,12 @@ class DaysControllerTest {
         val days = controller(state)
 
         days.toggle(first)
-        assertEquals(listOf(first), state.value.days.map { it.date })
-        assertEquals("20:00", state.value.days.single().minTime)
-        assertEquals("23:00", state.value.days.single().maxTime)
+        assertThat(state.value.days.map { it.date }).isEqualTo(listOf(first))
+        assertThat(state.value.days.single().minTime).isEqualTo("20:00")
+        assertThat(state.value.days.single().maxTime).isEqualTo("23:00")
 
         days.toggle(first)
-        assertEquals(emptyList(), state.value.days)
+        assertThat(state.value.days).isEmpty()
     }
 
     @Test
@@ -40,8 +42,8 @@ class DaysControllerTest {
 
         days.setMinTime(first, "18:30")
 
-        assertEquals("18:30", state.value.days.first { it.date == first }.minTime)
-        assertEquals("20:00", state.value.days.first { it.date == second }.minTime)
+        assertThat(state.value.days.first { it.date == first }.minTime).isEqualTo("18:30")
+        assertThat(state.value.days.first { it.date == second }.minTime).isEqualTo("20:00")
     }
 
     @Test
@@ -53,6 +55,6 @@ class DaysControllerTest {
 
         days.select(listOf(first, second))
 
-        assertEquals("21:00", state.value.days.first { it.date == first }.maxTime)
+        assertThat(state.value.days.first { it.date == first }.maxTime).isEqualTo("21:00")
     }
 }

@@ -1,11 +1,11 @@
 package com.preichert.cinemerick.core.presentation
 
 import com.preichert.cinemerick.core.domain.ThemeMode
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import app.cash.turbine.test
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import com.preichert.cinemerick.core.testing.FakeThemePreferences
 
 class ThemeControllerTest {
@@ -17,7 +17,7 @@ class ThemeControllerTest {
 
         val controller = ThemeController(preferences)
 
-        assertEquals(ThemeMode.DARK, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.DARK)
     }
 
     @Test
@@ -27,8 +27,8 @@ class ThemeControllerTest {
 
         controller.setMode(ThemeMode.LIGHT)
 
-        assertEquals(ThemeMode.LIGHT, controller.mode.value)
-        assertEquals(ThemeMode.LIGHT, preferences.themeMode())
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.LIGHT)
+        assertThat(preferences.themeMode()).isEqualTo(ThemeMode.LIGHT)
     }
 
     @Test
@@ -36,7 +36,7 @@ class ThemeControllerTest {
         val preferences = FakeThemePreferences()
         val controller = ThemeController(preferences)
 
-        assertEquals(ThemeMode.SYSTEM, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.SYSTEM)
     }
 
     @Test
@@ -44,20 +44,14 @@ class ThemeControllerTest {
         val preferences = FakeThemePreferences()
         val controller = ThemeController(preferences)
 
-        val values = mutableListOf<ThemeMode>()
-        val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            controller.mode.collect { values.add(it) }
+        controller.mode.test {
+            assertThat(awaitItem()).isEqualTo(ThemeMode.SYSTEM)
+            controller.setMode(ThemeMode.LIGHT)
+            assertThat(awaitItem()).isEqualTo(ThemeMode.LIGHT)
+            controller.setMode(ThemeMode.DARK)
+            assertThat(awaitItem()).isEqualTo(ThemeMode.DARK)
+            controller.setMode(ThemeMode.SYSTEM)
+            assertThat(awaitItem()).isEqualTo(ThemeMode.SYSTEM)
         }
-
-        controller.setMode(ThemeMode.LIGHT)
-        controller.setMode(ThemeMode.DARK)
-        controller.setMode(ThemeMode.SYSTEM)
-
-        job.cancel()
-
-        assertEquals(
-            listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.SYSTEM),
-            values
-        )
     }
 }

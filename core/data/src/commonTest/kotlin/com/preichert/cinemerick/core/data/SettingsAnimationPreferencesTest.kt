@@ -2,7 +2,9 @@ package com.preichert.cinemerick.core.data
 
 import com.preichert.cinemerick.core.testing.MemorySettings
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 
 class SettingsAnimationPreferencesTest {
 
@@ -10,7 +12,7 @@ class SettingsAnimationPreferencesTest {
     fun enabledByDefault() {
         val preferences = SettingsAnimationPreferences(MemorySettings())
 
-        assertEquals(true, preferences.animationsEnabled())
+        assertThat(preferences.animationsEnabled()).isTrue()
     }
 
     @Test
@@ -18,9 +20,9 @@ class SettingsAnimationPreferencesTest {
         val preferences = SettingsAnimationPreferences(MemorySettings())
 
         preferences.setAnimationsEnabled(false)
-        assertEquals(false, preferences.animationsEnabled())
+        assertThat(preferences.animationsEnabled()).isFalse()
 
         preferences.setAnimationsEnabled(true)
-        assertEquals(true, preferences.animationsEnabled())
+        assertThat(preferences.animationsEnabled()).isTrue()
     }
 }

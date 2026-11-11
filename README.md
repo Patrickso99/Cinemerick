@@ -189,9 +189,9 @@ Desktop packages cannot be cross-compiled, so a lane run on the wrong OS fails w
 ./gradlew desktopTest testAndroidHostTest
 ```
 
-The shared tests run on the desktop JVM and on the Android host JVM. The `Tests` workflow (`.github/workflows/tests.yml`) runs the same two tasks on every pull request and on `master`. The iOS simulator tests need macOS: `./gradlew allTests` runs them there.
+The shared tests run on the desktop JVM and on the Android host JVM. The iOS simulator tests need macOS: `./gradlew iosSimulatorArm64Test` runs them there (`./gradlew allTests` runs every target). No GitHub workflow runs the tests: run them locally before pushing.
 
-The HTML parsers have their own tests in `:feature:showtimes:data`.
+Tests use `kotlin.test` with AssertK for assertions and Turbine for flows; all of them live in `commonTest`, so the same file runs on every target. The HTML parsers have their own tests in `:feature:showtimes:data`.
 
 ## Design System
 

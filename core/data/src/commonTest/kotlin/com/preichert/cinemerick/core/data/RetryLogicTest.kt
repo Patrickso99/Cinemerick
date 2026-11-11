@@ -3,7 +3,9 @@ package com.preichert.cinemerick.core.data
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 
 class RetryLogicTest {
 
@@ -16,7 +18,7 @@ class RetryLogicTest {
         // This is a simplified verification of the retry logic
 
         val error = DataError.Network.TOO_MANY_REQUESTS
-        assertEquals(true, error.isRetryable())
+        assertThat(error.isRetryable()).isTrue()
     }
 
     @Test
@@ -39,11 +41,11 @@ class RetryLogicTest {
         )
 
         retryable.forEach { error ->
-            assertEquals(true, error.isRetryable(), "Expected $error to be retryable")
+            assertThat(error.isRetryable(), name = "error=$error").isTrue()
         }
 
         nonRetryable.forEach { error ->
-            assertEquals(false, error.isRetryable(), "Expected $error to NOT be retryable")
+            assertThat(error.isRetryable(), name = "error=$error").isFalse()
         }
     }
 

@@ -16,5 +16,9 @@ internal fun Project.configureKotlinMultiplatform() {
             implementation(libs.turbine)
             implementation(libs.coroutines.test)
         }
+        // UnconfinedTestDispatcher, Dispatchers.setMain and advanceUntilIdle are still marked experimental.
+        sourceSets.matching { it.name.endsWith("Test") }.configureEach {
+            languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+        }
     }
 }

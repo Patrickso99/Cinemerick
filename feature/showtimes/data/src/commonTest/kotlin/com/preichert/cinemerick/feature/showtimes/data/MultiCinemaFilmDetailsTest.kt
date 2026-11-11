@@ -12,7 +12,9 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 
 class MultiCinemaFilmDetailsTest {
 
@@ -46,32 +48,29 @@ class MultiCinemaFilmDetailsTest {
     fun fetchesPagesAndMergesThemFieldByFieldBestChainFirst() = runTest {
         val details = repository.getFilmDetails(FilmDetails(rating = "14+"), sources)
 
-        assertEquals(
-            FilmDetails(synopsis = "Notorious plot", genre = "Drama", director = "Dir", rating = "14+", trailerUrl = "https://youtu.be/n"),
-            details
-        )
+        assertThat(details).isEqualTo(FilmDetails(synopsis = "Notorious plot", genre = "Drama", director = "Dir", rating = "14+", trailerUrl = "https://youtu.be/n"))
     }
 
     @Test
     fun knownFieldsAreNeverOverwritten() = runTest {
         val details = repository.getFilmDetails(FilmDetails(synopsis = "UCI plot"), sources)
 
-        assertEquals("UCI plot", details.synopsis)
+        assertThat(details.synopsis).isEqualTo("UCI plot")
     }
 
     @Test
     fun noRequestIsMadeWhenNothingIsMissing() = runTest {
         val complete = FilmDetails("s", "g", "d", "c", "r", "t")
 
-        assertEquals(complete, repository.getFilmDetails(complete, sources))
-        assertEquals(emptyList(), notorious.requested + cristallo.requested)
+        assertThat(repository.getFilmDetails(complete, sources)).isEqualTo(complete)
+        assertThat(notorious.requested + cristallo.requested).isEmpty()
     }
 
     @Test
     fun noRequestIsMadeWithoutSources() = runTest {
         val known = FilmDetails(synopsis = "UCI plot")
 
-        assertEquals(known, repository.getFilmDetails(known, emptyList()))
+        assertThat(repository.getFilmDetails(known, emptyList())).isEqualTo(known)
     }
 
     @Test
@@ -79,8 +78,8 @@ class MultiCinemaFilmDetailsTest {
         repository.getFilmDetails(FilmDetails(), sources)
         repository.getFilmDetails(FilmDetails(), sources)
 
-        assertEquals(listOf("n1"), notorious.requested)
-        assertEquals(listOf("c1"), cristallo.requested)
+        assertThat(notorious.requested).isEqualTo(listOf("n1"))
+        assertThat(cristallo.requested).isEqualTo(listOf("c1"))
     }
 
     @Test
@@ -92,7 +91,7 @@ class MultiCinemaFilmDetailsTest {
 
         val details = broken.getFilmDetails(FilmDetails(genre = "Horror"), sources)
 
-        assertEquals(FilmDetails(synopsis = "Cristallo plot", genre = "Horror", director = "Dir"), details)
+        assertThat(details).isEqualTo(FilmDetails(synopsis = "Cristallo plot", genre = "Horror", director = "Dir"))
     }
 
     @Test
@@ -103,13 +102,13 @@ class MultiCinemaFilmDetailsTest {
         repository.getFilmDetails(FilmDetails(), listOf(DetailsSource(Chain.NOTORIOUS, "n1")))
         repository.getFilmDetails(FilmDetails(), listOf(DetailsSource(Chain.NOTORIOUS, "n1")))
 
-        assertEquals(listOf("n1", "n1"), flaky.requested)
+        assertThat(flaky.requested).isEqualTo(listOf("n1", "n1"))
     }
 
     @Test
     fun aChainWithoutDataSourceContributesNothing() = runTest {
         val details = repository.getFilmDetails(FilmDetails(genre = "Horror"), listOf(DetailsSource(Chain.ARCADIA, "a1")))
 
-        assertEquals(FilmDetails(genre = "Horror"), details)
+        assertThat(details).isEqualTo(FilmDetails(genre = "Horror"))
     }
 }

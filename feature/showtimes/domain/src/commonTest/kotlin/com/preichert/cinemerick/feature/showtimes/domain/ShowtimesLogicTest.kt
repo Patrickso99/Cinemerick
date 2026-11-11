@@ -4,7 +4,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 
 class ShowtimesLogicTest {
 
@@ -27,25 +31,25 @@ class ShowtimesLogicTest {
         val days = setOf(thursday, friday)
         val venues = setOf(venueUci, venueTheSpace)
 
-        assertEquals(false, needsFetch(days, venues, setOf(thursday), setOf(venueUci)))
-        assertEquals(false, needsFetch(days, venues, days, venues))
-        assertEquals(true, needsFetch(days, venues, days, venues + venueNotorious))
-        assertEquals(true, needsFetch(days, venues, days + LocalDate(2026, 10, 3), venues))
+        assertThat(needsFetch(days, venues, setOf(thursday), setOf(venueUci))).isFalse()
+        assertThat(needsFetch(days, venues, days, venues)).isFalse()
+        assertThat(needsFetch(days, venues, days, venues + venueNotorious)).isTrue()
+        assertThat(needsFetch(days, venues, days + LocalDate(2026, 10, 3), venues)).isTrue()
     }
 
     @Test
     fun tagsAreParsedFromFormat() {
-        assertEquals(setOf("2D", "INFINITY VISION", "VO"), showing("A", "2D · INFINITY VISION · VO").tags)
-        assertEquals(setOf("2D"), showing("A", null).tags)
-        assertEquals(setOf("VO", "2D"), showing("A", "VO").tags)
-        assertEquals(setOf("3D", "VO"), showing("A", "3D · VO").tags)
+        assertThat(showing("A", "2D · INFINITY VISION · VO").tags).isEqualTo(setOf("2D", "INFINITY VISION", "VO"))
+        assertThat(showing("A", null).tags).isEqualTo(setOf("2D"))
+        assertThat(showing("A", "VO").tags).isEqualTo(setOf("VO", "2D"))
+        assertThat(showing("A", "3D · VO").tags).isEqualTo(setOf("3D", "VO"))
     }
 
     @Test
     fun displayFormatAddsImpliedDimension() {
-        assertEquals("2D", showing("A", null).displayFormat)
-        assertEquals("2D · VO", showing("A", "VO").displayFormat)
-        assertEquals("3D · VO", showing("A", "3D · VO").displayFormat)
+        assertThat(showing("A", null).displayFormat).isEqualTo("2D")
+        assertThat(showing("A", "VO").displayFormat).isEqualTo("2D · VO")
+        assertThat(showing("A", "3D · VO").displayFormat).isEqualTo("3D · VO")
     }
 
     @Test
@@ -53,7 +57,7 @@ class ShowtimesLogicTest {
         val tags = listOf(showing("A", "3D · VO"), showing("B", "2D"), showing("C", null), showing("D", "3D"))
             .availableTags()
 
-        assertEquals(listOf("2D", "3D", "VO"), tags)
+        assertThat(tags).isEqualTo(listOf("2D", "3D", "VO"))
     }
 
     @Test
@@ -64,9 +68,9 @@ class ShowtimesLogicTest {
         val result = showings.filterShowings(ranges, emptyList(), farPast, hiddenTags = setOf("3D", "VO"))
         val no2d = showings.filterShowings(ranges, emptyList(), farPast, hiddenTags = setOf("2D"))
 
-        assertEquals(listOf("B", "C"), result.map { it.title })
-        assertEquals(listOf("A"), no2d.map { it.title })
-        assertEquals(3, showings.filterShowings(ranges, emptyList(), farPast).size)
+        assertThat(result.map { it.title }).isEqualTo(listOf("B", "C"))
+        assertThat(no2d.map { it.title }).isEqualTo(listOf("A"))
+        assertThat(showings.filterShowings(ranges, emptyList(), farPast).size).isEqualTo(3)
     }
 
     @Test
@@ -79,25 +83,13 @@ class ShowtimesLogicTest {
         ).groupByFilm()
 
         // Group titles are the shortest originals
-        assertEquals(listOf("HEART OF THE BEAST", "Naza"), groups.map { it.title })
+        assertThat(groups.map { it.title }).isEqualTo(listOf("HEART OF THE BEAST", "Naza"))
         // Original titles are preserved in showings (not transformed); at the same time they are ordered by venue name
-        assertEquals(
-            listOf("HEART OF THE BEAST", "Heart of the Beast"),
-            groups.first().showings.map { it.title }
-        )
-        assertEquals(
-            listOf("Naza C.A.", "Naza"),
-            groups.last().showings.map { it.title }
-        )
+        assertThat(groups.first().showings.map { it.title }).isEqualTo(listOf("HEART OF THE BEAST", "Heart of the Beast"))
+        assertThat(groups.last().showings.map { it.title }).isEqualTo(listOf("Naza C.A.", "Naza"))
         // Cinema and time ordering is preserved: same time, so by venue name ("Silea" before "UCI Luxe Marcon")
-        assertEquals(
-            listOf(venueTheSpace, venueUci),
-            groups.first().showings.map { it.venue }
-        )
-        assertEquals(
-            listOf(LocalTime.parse("19:40"), LocalTime.parse("21:40")),
-            groups.last().showings.map { it.time }
-        )
+        assertThat(groups.first().showings.map { it.venue }).isEqualTo(listOf(venueTheSpace, venueUci))
+        assertThat(groups.last().showings.map { it.time }).isEqualTo(listOf(LocalTime.parse("19:40"), LocalTime.parse("21:40")))
     }
 
     @Test
@@ -107,14 +99,14 @@ class ShowtimesLogicTest {
             showing("Digger", thursday, "21:00", venueTheSpace)
         ).groupByFilm().toPollText()
 
-        assertEquals("Digger (Giovedì - 21:00 - Silea)", text)
+        assertThat(text).isEqualTo("Digger (Giovedì - 21:00 - Silea)")
     }
 
     @Test
     fun pollTextIsEmptyWhenEveryShowingIsSoldOut() {
         val text = listOf(showing("Digger", thursday, "19:00", venueTheSpace).copy(soldOut = true)).groupByFilm().toPollText()
 
-        assertEquals("", text)
+        assertThat(text).isEqualTo("")
     }
 
     @Test
@@ -124,10 +116,7 @@ class ShowtimesLogicTest {
             showing("Heart of the Beast", thursday, "21:40", venueUci)
         ).groupByFilm().toPollText()
 
-        assertEquals(
-            "Heart Of The Beast (Giovedì - 21:40 - Silea)\nHeart Of The Beast (Giovedì - 21:40 - UCI Luxe Marcon)",
-            text
-        )
+        assertThat(text).isEqualTo("Heart Of The Beast (Giovedì - 21:40 - Silea)\nHeart Of The Beast (Giovedì - 21:40 - UCI Luxe Marcon)")
     }
 
     private fun validTime(text: String): LocalTime? =
@@ -135,26 +124,26 @@ class ShowtimesLogicTest {
 
     @Test
     fun parseTimeInputAcceptsHourOnlyAndFullTimes() {
-        assertEquals(null, validTime(""))
-        assertEquals(null, validTime("   "))
-        assertEquals(LocalTime(21, 0), validTime("21"))
-        assertEquals(LocalTime(9, 0), validTime("9"))
-        assertEquals(LocalTime(0, 0), validTime("0"))
-        assertEquals(LocalTime(9, 30), validTime("9:30"))
-        assertEquals(LocalTime(21, 15), validTime("21:15"))
-        assertEquals(LocalTime(21, 15), validTime(" 21:15 "))
+        assertThat(validTime("")).isNull()
+        assertThat(validTime("   ")).isNull()
+        assertThat(validTime("21")).isEqualTo(LocalTime(21, 0))
+        assertThat(validTime("9")).isEqualTo(LocalTime(9, 0))
+        assertThat(validTime("0")).isEqualTo(LocalTime(0, 0))
+        assertThat(validTime("9:30")).isEqualTo(LocalTime(9, 30))
+        assertThat(validTime("21:15")).isEqualTo(LocalTime(21, 15))
+        assertThat(validTime(" 21:15 ")).isEqualTo(LocalTime(21, 15))
     }
 
     @Test
     fun parseTimeInputMapsTwentyFourToLastMinuteOfDay() {
-        assertEquals(LocalTime(23, 59), validTime("24"))
-        assertEquals(LocalTime(23, 59), validTime("24:00"))
+        assertThat(validTime("24")).isEqualTo(LocalTime(23, 59))
+        assertThat(validTime("24:00")).isEqualTo(LocalTime(23, 59))
     }
 
     @Test
     fun parseTimeInputRejectsInvalidValues() {
         listOf("25", "24:30", "abc", "21:60", "99", "-1", "21:", ":30", "2:3:4").forEach {
-            assertEquals(ParsedTime.Invalid, parseTimeInput(it), "'$it' should be invalid")
+            assertThat(parseTimeInput(it), name = "input=\"$it\"").isEqualTo(ParsedTime.Invalid)
         }
     }
 
@@ -167,11 +156,8 @@ class ShowtimesLogicTest {
         ).groupByFilm()
 
         // Each format variant has a different filmKey, so they are separate groups
-        assertEquals(3, groups.size)
-        assertEquals(
-            listOf("Avatar 2D", "Avatar 3D", "Avatar XL"),
-            groups.map { it.title }
-        )
+        assertThat(groups.size).isEqualTo(3)
+        assertThat(groups.map { it.title }).isEqualTo(listOf("Avatar 2D", "Avatar 3D", "Avatar XL"))
     }
 
     @Test
@@ -189,13 +175,10 @@ class ShowtimesLogicTest {
 
         val result = showings.filterShowings(ranges, emptyList(), farPast)
 
-        assertEquals(
-            listOf(
+        assertThat(result).isEqualTo(listOf(
                 showing("Digger", thursday, "21:30", venueUci),
                 showing("Digger", friday, "23:15", venueUci)
-            ),
-            result
-        )
+            ))
     }
 
     @Test
@@ -209,22 +192,22 @@ class ShowtimesLogicTest {
 
         val result = showings.filterShowings(listOf(DayRange(thursday)), emptyList(), now)
 
-        assertEquals(listOf(LocalTime.parse("21:00")), result.map { it.time })
+        assertThat(result.map { it.time }).isEqualTo(listOf(LocalTime.parse("21:00")))
     }
 
     @Test
     fun pollLineMatchesPythonFormat() {
         val line = showing("Digger", thursday, "21:00", venueTheSpace).toPollLine()
 
-        assertEquals("Digger (Giovedì - 21:00 - Silea)", line)
+        assertThat(line).isEqualTo("Digger (Giovedì - 21:00 - Silea)")
     }
 
     @Test
     fun pollLineAppendsFormatWhenPresent() {
         val day = LocalDate(2026, 10, 1)
         val xl = Showing("Avengers: Endgame Extra", day, LocalTime.parse("20:15"), venueUci, "XL")
-        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon - XL)", xl.toPollLine())
-        assertEquals("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon)", xl.copy(format = null).toPollLine())
+        assertThat(xl.toPollLine()).isEqualTo("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon - XL)")
+        assertThat(xl.copy(format = null).toPollLine()).isEqualTo("Avengers: Endgame Extra (Giovedì - 20:15 - UCI Luxe Marcon)")
     }
 
     @Test
@@ -232,50 +215,50 @@ class ShowtimesLogicTest {
         val day = LocalDate(2026, 10, 1)
         val xl = Showing("Avengers", day, LocalTime.parse("20:15"), venueUci, "XL")
         val twoD = xl.copy(format = "2D")
-        assertEquals(2, listOf(xl, twoD).distinct().size)
+        assertThat(listOf(xl, twoD).distinct().size).isEqualTo(2)
     }
 
     @Test
     fun cleanTitleDropsRatingSuffix() {
-        assertEquals("Mammina", cleanTitle("Mammina - V.M.14"))
-        assertEquals("Mammina", cleanTitle("MAMMINA - V.M.14"))
-        assertEquals("Mammina", cleanTitle("Mammina (V.M.14)"))
-        assertEquals(filmKey("Mammina"), filmKey(cleanTitle("Mammina - V.M.14")))
+        assertThat(cleanTitle("Mammina - V.M.14")).isEqualTo("Mammina")
+        assertThat(cleanTitle("MAMMINA - V.M.14")).isEqualTo("Mammina")
+        assertThat(cleanTitle("Mammina (V.M.14)")).isEqualTo("Mammina")
+        assertThat(filmKey(cleanTitle("Mammina - V.M.14"))).isEqualTo(filmKey("Mammina"))
     }
 
     @Test
     fun cleanTitleConvertsAllCapsToTitleCaseAndKeepsOthers() {
-        assertEquals("Avengers: Endgame Extra", cleanTitle("AVENGERS: ENDGAME EXTRA"))
-        assertEquals("Avengers: Endgame Extra", cleanTitle("Avengers:  Endgame Extra "))
-        assertEquals("Linkin Park: Unshatter C.A.", cleanTitle("Linkin Park: Unshatter C.A."))
+        assertThat(cleanTitle("AVENGERS: ENDGAME EXTRA")).isEqualTo("Avengers: Endgame Extra")
+        assertThat(cleanTitle("Avengers:  Endgame Extra ")).isEqualTo("Avengers: Endgame Extra")
+        assertThat(cleanTitle("Linkin Park: Unshatter C.A.")).isEqualTo("Linkin Park: Unshatter C.A.")
     }
 
     @Test
     fun filmKeyHandlesPunctuationAndAccentVariantsCorrectly() {
         // Periods: "Vs." should match "Vs"
-        assertEquals(filmKey("Coyote Vs Acme"), filmKey("Coyote Vs. Acme"))
+        assertThat(filmKey("Coyote Vs. Acme")).isEqualTo(filmKey("Coyote Vs Acme"))
 
         // Apostrophes and backticks: different apostrophe variants should match
-        assertEquals(filmKey("L'Isola Dei Ricordi"), filmKey("L`Isola Dei Ricordi"))
+        assertThat(filmKey("L`Isola Dei Ricordi")).isEqualTo(filmKey("L'Isola Dei Ricordi"))
 
         // Multiple punctuation: various punctuation should be ignored
-        assertEquals(filmKey("Toy Story"), filmKey("Toy Story."))
+        assertThat(filmKey("Toy Story.")).isEqualTo(filmKey("Toy Story"))
 
         // Commas and other punctuation
-        assertEquals(filmKey("Hello, World!"), filmKey("Hello World"))
+        assertThat(filmKey("Hello World")).isEqualTo(filmKey("Hello, World!"))
 
         // Mixed: accents with punctuation
-        assertEquals(filmKey("L'Été"), filmKey("L'Ete"))
-        assertEquals(filmKey("L'Été"), filmKey("LÉte"))
+        assertThat(filmKey("L'Ete")).isEqualTo(filmKey("L'Été"))
+        assertThat(filmKey("LÉte")).isEqualTo(filmKey("L'Été"))
     }
 
     @Test
     fun filmKeyTreatsSentenceSubtitleAsDashSubtitle() {
-        assertEquals(filmKey("Carlo Acutis - Il giovane santo"), filmKey("Carlo Acutis. Il Giovane Santo"))
-        assertEquals("carlo acutis il giovane santo", filmKey("Carlo Acutis. Il Giovane Santo"))
+        assertThat(filmKey("Carlo Acutis. Il Giovane Santo")).isEqualTo(filmKey("Carlo Acutis - Il giovane santo"))
+        assertThat(filmKey("Carlo Acutis. Il Giovane Santo")).isEqualTo("carlo acutis il giovane santo")
 
         // Abbreviations are not subtitle separators
-        assertEquals("dr strange", filmKey("Dr. Strange"))
+        assertThat(filmKey("Dr. Strange")).isEqualTo("dr strange")
     }
 
     @Test
@@ -285,57 +268,57 @@ class ShowtimesLogicTest {
             showing("Coyote Vs. Acme", thursday, "21:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(1, groups.size)
-        assertEquals("Coyote Vs Acme", groups.first().title)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().title).isEqualTo("Coyote Vs Acme")
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
     fun searchTitleDropsOnlyFormatLanguageAndRatingSuffixes() {
-        assertEquals("Dune", searchTitle("Dune (3D)"))
-        assertEquals("Avatar", searchTitle("Avatar (IMAX)"))
-        assertEquals("Café", searchTitle("Café - Lingua originale"))
-        assertEquals("Linkin Park Unshatter", searchTitle("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
-        assertEquals("Naza", searchTitle("Naza C.A."))
-        assertEquals("Cars", searchTitle("Cars - 20 Anni"))
-        assertEquals("Mammina", searchTitle("Mammina - V.M.14"))
-        assertEquals("Mammina", searchTitle("Mammina (V.M.14)"))
-        assertEquals("Mammina", searchTitle("Mammina V.M. 14"))
+        assertThat(searchTitle("Dune (3D)")).isEqualTo("Dune")
+        assertThat(searchTitle("Avatar (IMAX)")).isEqualTo("Avatar")
+        assertThat(searchTitle("Café - Lingua originale")).isEqualTo("Café")
+        assertThat(searchTitle("LINKIN PARK UNSHATTER - LINGUA ORIGINALE")).isEqualTo("Linkin Park Unshatter")
+        assertThat(searchTitle("Naza C.A.")).isEqualTo("Naza")
+        assertThat(searchTitle("Cars - 20 Anni")).isEqualTo("Cars")
+        assertThat(searchTitle("Mammina - V.M.14")).isEqualTo("Mammina")
+        assertThat(searchTitle("Mammina (V.M.14)")).isEqualTo("Mammina")
+        assertThat(searchTitle("Mammina V.M. 14")).isEqualTo("Mammina")
     }
 
     @Test
     fun searchTitleKeepsAccentsPunctuationAndRealSubtitles() {
-        assertEquals("Coyote Vs. Acme", searchTitle("Coyote Vs. Acme"))
-        assertEquals("L'Été", searchTitle("L'Été"))
-        assertEquals("Avengers: Endgame", searchTitle("Avengers: Endgame"))
-        assertEquals("Cars - Motori Ruggenti", searchTitle("Cars - Motori Ruggenti"))
-        assertEquals("Film (Parte 2)", searchTitle("Film (Parte 2)"))
+        assertThat(searchTitle("Coyote Vs. Acme")).isEqualTo("Coyote Vs. Acme")
+        assertThat(searchTitle("L'Été")).isEqualTo("L'Été")
+        assertThat(searchTitle("Avengers: Endgame")).isEqualTo("Avengers: Endgame")
+        assertThat(searchTitle("Cars - Motori Ruggenti")).isEqualTo("Cars - Motori Ruggenti")
+        assertThat(searchTitle("Film (Parte 2)")).isEqualTo("Film (Parte 2)")
     }
 
     @Test
     fun titleKeyIgnoresCaseAccentsAndPunctuationButCutsNothing() {
-        assertEquals("cafe", titleKey("Café"))
-        assertEquals("coyote vs acme", titleKey("Coyote Vs. Acme"))
-        assertEquals("lete", titleKey("L'Été"))
-        assertEquals("dune part two", titleKey("Dune: Part Two"))
-        assertEquals("star wars episode iii revenge of the sith", titleKey("Star Wars: Episode III - Revenge of the Sith"))
-        assertEquals("千と千尋の神隠し", titleKey("千と千尋の神隠し"))
-        assertEquals("", titleKey(" !!! "))
+        assertThat(titleKey("Café")).isEqualTo("cafe")
+        assertThat(titleKey("Coyote Vs. Acme")).isEqualTo("coyote vs acme")
+        assertThat(titleKey("L'Été")).isEqualTo("lete")
+        assertThat(titleKey("Dune: Part Two")).isEqualTo("dune part two")
+        assertThat(titleKey("Star Wars: Episode III - Revenge of the Sith")).isEqualTo("star wars episode iii revenge of the sith")
+        assertThat(titleKey("千と千尋の神隠し")).isEqualTo("千と千尋の神隠し")
+        assertThat(titleKey(" !!! ")).isEqualTo("")
         // `filmKey` cuts the subtitle: this is why matching must not use it.
-        assertEquals("star wars episode iii revenge of the sith", filmKey("Star Wars: Episode III - Revenge of the Sith"))
+        assertThat(filmKey("Star Wars: Episode III - Revenge of the Sith")).isEqualTo("star wars episode iii revenge of the sith")
     }
 
     @Test
     fun searchTitleLeavesFilmKeyResultsUnchanged() {
-        assertEquals("avatar", filmKey("Avatar (IMAX)"))
-        assertEquals("linkin park unshatter", filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
-        assertEquals(filmKey("Cars - Motori Ruggenti"), filmKey("Cars: Motori Ruggenti - 20 Anni"))
+        assertThat(filmKey("Avatar (IMAX)")).isEqualTo("avatar")
+        assertThat(filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE")).isEqualTo("linkin park unshatter")
+        assertThat(filmKey("Cars: Motori Ruggenti - 20 Anni")).isEqualTo(filmKey("Cars - Motori Ruggenti"))
     }
 
     @Test
     fun filmKeyHandlesColonAndDashSubtitleSeparators() {
         // Colon and dash separators should produce the same key
-        assertEquals(filmKey("Cars - Motori Ruggenti"), filmKey("Cars: Motori Ruggenti - 20 Anni"))
+        assertThat(filmKey("Cars: Motori Ruggenti - 20 Anni")).isEqualTo(filmKey("Cars - Motori Ruggenti"))
     }
 
     @Test
@@ -345,18 +328,18 @@ class ShowtimesLogicTest {
             showing("Cars: Motori Ruggenti - 20 Anni", thursday, "19:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(1, groups.size)
-        assertEquals("Cars - Motori Ruggenti", groups.first().title)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().title).isEqualTo("Cars - Motori Ruggenti")
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
     fun filmKeyHandlesColonWithLanguageSuffix() {
         // Colon with language suffix should keep both title and subtitle
-        assertEquals(filmKey("Linkin Park: Unshatter"), filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+        assertThat(filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE")).isEqualTo(filmKey("Linkin Park: Unshatter"))
         // Both should normalize to "linkin park unshatter"
-        assertEquals("linkin park unshatter", filmKey("Linkin Park: Unshatter"))
-        assertEquals("linkin park unshatter", filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE"))
+        assertThat(filmKey("Linkin Park: Unshatter")).isEqualTo("linkin park unshatter")
+        assertThat(filmKey("LINKIN PARK UNSHATTER - LINGUA ORIGINALE")).isEqualTo("linkin park unshatter")
     }
 
     @Test
@@ -366,8 +349,8 @@ class ShowtimesLogicTest {
             showing("Carlo Acutis - Il Giovane Santo", thursday, "21:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(1, groups.size)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
@@ -380,8 +363,8 @@ class ShowtimesLogicTest {
             "Heart of the Beast" to 42
         ))
 
-        assertEquals(1, groups.size)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
@@ -394,7 +377,7 @@ class ShowtimesLogicTest {
             "Avengers: Endgame Extra" to 2
         ))
 
-        assertEquals(2, groups.size)
+        assertThat(groups.size).isEqualTo(2)
     }
 
     @Test
@@ -404,8 +387,8 @@ class ShowtimesLogicTest {
             showing("Naza C.A.", friday, "19:40", venueUci)
         )
 
-        assertEquals(1, showings.groupByFilm().size)
-        assertEquals(1, showings.groupByFilm(emptyMap()).size)
+        assertThat(showings.groupByFilm().size).isEqualTo(1)
+        assertThat(showings.groupByFilm(emptyMap()).size).isEqualTo(1)
     }
 
     @Test
@@ -415,7 +398,7 @@ class ShowtimesLogicTest {
             showing("Naza C.A.", friday, "19:40", venueUci)
         ).groupByFilm(mapOf("Naza" to 7))
 
-        assertEquals(2, groups.size)
+        assertThat(groups.size).isEqualTo(2)
     }
 
     @Test
@@ -425,7 +408,7 @@ class ShowtimesLogicTest {
             showing("Avengers: Endgame Extra", thursday, "21:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(2, groups.size)
+        assertThat(groups.size).isEqualTo(2)
     }
 
     @Test
@@ -435,17 +418,17 @@ class ShowtimesLogicTest {
             showing("LINKIN PARK UNSHATTER - LINGUA ORIGINALE", thursday, "21:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(1, groups.size)
-        assertEquals("Linkin Park: Unshatter", groups.first().title)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().title).isEqualTo("Linkin Park: Unshatter")
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
     fun filmKeyStripsTrailingFormatSuffixInParentheses() {
         // Format suffixes in trailing parentheses should be stripped
-        assertEquals(filmKey("Avengers: Endgame Extra"), filmKey("Avengers: Endgame Extra (Infinity Vision)"))
-        assertEquals(filmKey("Avatar"), filmKey("Avatar (IMAX)"))
-        assertEquals("avengers endgame extra", filmKey("Avengers: Endgame Extra (Infinity Vision)"))
+        assertThat(filmKey("Avengers: Endgame Extra (Infinity Vision)")).isEqualTo(filmKey("Avengers: Endgame Extra"))
+        assertThat(filmKey("Avatar (IMAX)")).isEqualTo(filmKey("Avatar"))
+        assertThat(filmKey("Avengers: Endgame Extra (Infinity Vision)")).isEqualTo("avengers endgame extra")
     }
 
     @Test
@@ -455,17 +438,17 @@ class ShowtimesLogicTest {
             showing("Avengers: Endgame Extra (Infinity Vision)", thursday, "21:00", venueUci)
         ).groupByFilm()
 
-        assertEquals(1, groups.size)
-        assertEquals("Avengers: Endgame Extra", groups.first().title)
-        assertEquals(2, groups.first().showings.size)
+        assertThat(groups.size).isEqualTo(1)
+        assertThat(groups.first().title).isEqualTo("Avengers: Endgame Extra")
+        assertThat(groups.first().showings.size).isEqualTo(2)
     }
 
     @Test
     fun unrelatedParenthesesAreNotStripped() {
         // Parentheses without format keywords should not be stripped
-        assertEquals(filmKey("Film (Parte 2)"), filmKey("Film (Parte 2)"))
-        assertEquals(false, filmKey("Avatar 2D") == filmKey("Avatar 3D"))
-        assertEquals(false, filmKey("Avatar XL") == filmKey("Avatar"))
+        assertThat(filmKey("Film (Parte 2)")).isEqualTo(filmKey("Film (Parte 2)"))
+        assertThat(filmKey("Avatar 2D") == filmKey("Avatar 3D")).isFalse()
+        assertThat(filmKey("Avatar XL") == filmKey("Avatar")).isFalse()
     }
 
     @Test
@@ -477,6 +460,6 @@ class ShowtimesLogicTest {
             showing("Avatar XL", thursday, "19:00", venueNotorious)
         ).groupByFilm()
 
-        assertEquals(3, groups.size)
+        assertThat(groups.size).isEqualTo(3)
     }
 }

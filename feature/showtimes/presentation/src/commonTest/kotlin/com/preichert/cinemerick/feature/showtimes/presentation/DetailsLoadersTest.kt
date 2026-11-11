@@ -13,8 +13,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class DetailsLoadersTest {
 
@@ -39,11 +40,11 @@ class DetailsLoadersTest {
         val loader = FilmDetailsLoader(this, filmRepository) { change -> state.update { change(it) } }
 
         loader.open(group)
-        assertEquals(true, state.value.filmDetails?.isLoading)
+        assertThat(state.value.filmDetails?.isLoading).isEqualTo(true)
         advanceUntilIdle()
 
-        assertEquals(false, state.value.filmDetails?.isLoading)
-        assertEquals("Database plot", state.value.filmDetails?.details?.synopsis)
+        assertThat(state.value.filmDetails?.isLoading).isEqualTo(false)
+        assertThat(state.value.filmDetails?.details?.synopsis).isEqualTo("Database plot")
     }
 
     @Test
@@ -55,7 +56,7 @@ class DetailsLoadersTest {
 
         loader.dismiss()
 
-        assertNull(state.value.filmDetails)
+        assertThat(state.value.filmDetails).isNull()
     }
 
     @Test
@@ -69,6 +70,6 @@ class DetailsLoadersTest {
         loader.open(person)
         advanceUntilIdle()
 
-        assertEquals(PersonUi(person, details = null, isLoading = false), state.value.personDetails)
+        assertThat(state.value.personDetails).isEqualTo(PersonUi(person, details = null, isLoading = false))
     }
 }

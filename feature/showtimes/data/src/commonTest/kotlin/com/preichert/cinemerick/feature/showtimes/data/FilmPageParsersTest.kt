@@ -2,9 +2,10 @@ package com.preichert.cinemerick.feature.showtimes.data
 
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 
 // The markup below is condensed from real film pages of each chain.
 class FilmPageParsersTest {
@@ -102,95 +103,80 @@ class FilmPageParsersTest {
 
     @Test
     fun notoriousPageGivesPlotCreditsAndYoutubeTrailer() {
-        assertEquals(
-            FilmDetails(
+        assertThat(parseNotoriousFilmPage(notoriousPage)).isEqualTo(FilmDetails(
                 synopsis = "Subito dopo l'arrivo della famiglia Thompson in campagna, i tre figli scoprono un albero magico.",
                 genre = "Avventura, Family",
                 director = "Ben Gregor",
                 cast = "Andrew Garfield, Claire Foy, Nicola Coughlan",
                 trailerUrl = "https://www.youtube.com/watch?v=3HG7OyFiVo8"
-            ),
-            parseNotoriousFilmPage(notoriousPage)
-        )
+            ))
     }
 
     @Test
     fun notoriousTrailerFallsBackToTheButtonLinkWithoutThumbnail() {
         val page = notoriousPage.replace("img.youtube.com/vi/3HG7OyFiVo8/", "example.com/")
 
-        assertEquals(
-            "http://www.youtrailer.com/trailer/48721/7d8dc488afaf80c533d072b7af5138adB10ok3HG7OyFiVo8/0/",
-            parseNotoriousFilmPage(page).trailerUrl
-        )
+        assertThat(parseNotoriousFilmPage(page).trailerUrl).isEqualTo("http://www.youtrailer.com/trailer/48721/7d8dc488afaf80c533d072b7af5138adB10ok3HG7OyFiVo8/0/")
     }
 
     @Test
     fun notoriousPageWithoutTrailerButtonHasNoTrailer() {
-        assertNull(parseNotoriousFilmPage(notoriousPage.replace("box_trailer", "other")).trailerUrl)
+        assertThat(parseNotoriousFilmPage(notoriousPage.replace("box_trailer", "other")).trailerUrl).isNull()
     }
 
     @Test
     fun arcadiaPageGivesPlotAndCredits() {
         val details = parseArcadiaFilmPage(arcadiaPage)
 
-        assertEquals("Anthony Russo, Joe Russo", details.director)
-        assertEquals("Azione, Fantascienza", details.genre)
-        assertEquals("Joseph Quinn, Pedro Pascal", details.cast)
-        assertEquals(
-            "APERTURA PREVENDITE\ndalle ore 00:01 di LUNEDÌ 5 OTTOBRE\nGli universi si scontrano in Avengers: Doomsday dei Marvel Studios.",
-            details.synopsis
-        )
+        assertThat(details.director).isEqualTo("Anthony Russo, Joe Russo")
+        assertThat(details.genre).isEqualTo("Azione, Fantascienza")
+        assertThat(details.cast).isEqualTo("Joseph Quinn, Pedro Pascal")
+        assertThat(details.synopsis).isEqualTo("APERTURA PREVENDITE\ndalle ore 00:01 di LUNEDÌ 5 OTTOBRE\nGli universi si scontrano in Avengers: Doomsday dei Marvel Studios.")
     }
 
     @Test
     fun arcadiaIgnoresTheTrailersOfOtherFilmsInThePageHeader() {
-        assertNull(parseArcadiaFilmPage(arcadiaPage).trailerUrl)
+        assertThat(parseArcadiaFilmPage(arcadiaPage).trailerUrl).isNull()
     }
 
     @Test
     fun arcadiaTakesATrailerFromTheFilmsOwnSection() {
         val page = arcadiaPage.replace("""<div id="preno">""", """<a href="https://www.youtube.com/watch?v=abcDEF12345">trailer</a><div id="preno">""")
 
-        assertEquals("https://www.youtube.com/watch?v=abcDEF12345", parseArcadiaFilmPage(page).trailerUrl)
+        assertThat(parseArcadiaFilmPage(page).trailerUrl).isEqualTo("https://www.youtube.com/watch?v=abcDEF12345")
     }
 
     @Test
     fun cristalloPageGivesPlotDirectorsAndGenreWithoutCredits() {
         val details = parseCristalloFilmPage(cristalloPage)
 
-        assertEquals("Yuval Abraham, Rachel Szor", details.director)
-        assertEquals("Documentario", details.genre)
-        assertEquals(
-            "Girato di notte sui tetti di Tel Aviv, il film rivela i sistemi di Gaza.\nI registi: Spetta a tutti noi rompere quel silenzio, dell’uccisione.",
-            details.synopsis
-        )
-        assertNull(details.cast)
-        assertNull(details.trailerUrl)
+        assertThat(details.director).isEqualTo("Yuval Abraham, Rachel Szor")
+        assertThat(details.genre).isEqualTo("Documentario")
+        assertThat(details.synopsis).isEqualTo("Girato di notte sui tetti di Tel Aviv, il film rivela i sistemi di Gaza.\nI registi: Spetta a tutti noi rompere quel silenzio, dell’uccisione.")
+        assertThat(details.cast).isNull()
+        assertThat(details.trailerUrl).isNull()
     }
 
     @Test
     fun eighteenTicketsPageGivesPlotCreditsAgeAndTrailer() {
-        assertEquals(
-            FilmDetails(
+        assertThat(parseEighteenTicketsFilmPage(ticketsPage)).isEqualTo(FilmDetails(
                 synopsis = "La trama ruota attorno a una donna che si presenta all’improvviso a casa di sua figlia.",
                 genre = "Thriller, Dramma",
                 director = "Paolo Strippoli",
                 cast = "Jasmine Trinca, Romana Maggiora Vergano",
                 rating = "6+",
                 trailerUrl = "https://www.youtube.com/watch?v=l2iJmznTVNI"
-            ),
-            parseEighteenTicketsFilmPage(ticketsPage)
-        )
+            ))
     }
 
     @Test
     fun pageWithoutKnownMarkupGivesEmptyDetails() {
         val html = "<html><body>404</body></html>"
 
-        assertTrue(parseNotoriousFilmPage(html).isEmpty)
-        assertTrue(parseArcadiaFilmPage(html).isEmpty)
-        assertTrue(parseCristalloFilmPage(html).isEmpty)
-        assertTrue(parseEighteenTicketsFilmPage(html).isEmpty)
+        assertThat(parseNotoriousFilmPage(html).isEmpty).isTrue()
+        assertThat(parseArcadiaFilmPage(html).isEmpty).isTrue()
+        assertThat(parseCristalloFilmPage(html).isEmpty).isTrue()
+        assertThat(parseEighteenTicketsFilmPage(html).isEmpty).isTrue()
     }
 
     @Test
@@ -198,7 +184,7 @@ class FilmPageParsersTest {
         val everyone = "<img src='https://cdn/content_classification_icons/0.png' title='Opere per tutti'>"
         val minors = "<img src='https://cdn/content_classification_icons/14.png' title='Opere non adatte ai minori di anni 14'>"
 
-        assertEquals("Per tutti", parseEighteenTicketsFilmPage(everyone).rating)
-        assertEquals("14+", parseEighteenTicketsFilmPage(minors).rating)
+        assertThat(parseEighteenTicketsFilmPage(everyone).rating).isEqualTo("Per tutti")
+        assertThat(parseEighteenTicketsFilmPage(minors).rating).isEqualTo("14+")
     }
 }

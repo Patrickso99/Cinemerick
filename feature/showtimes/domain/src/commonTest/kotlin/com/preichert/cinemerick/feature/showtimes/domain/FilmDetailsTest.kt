@@ -3,9 +3,10 @@ package com.preichert.cinemerick.feature.showtimes.domain
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 
 class FilmDetailsTest {
 
@@ -23,11 +24,11 @@ class FilmDetailsTest {
 
     @Test
     fun priorityListsUciTheSpaceNotoriousFirstAndRanksEveryChain() {
-        assertEquals(listOf(Chain.UCI, Chain.THE_SPACE, Chain.NOTORIOUS), chainPriority.take(3))
-        assertEquals(Chain.entries.toSet(), chainPriority.toSet())
-        assertTrue(Chain.UCI.priorityRank < Chain.THE_SPACE.priorityRank)
-        assertTrue(Chain.THE_SPACE.priorityRank < Chain.NOTORIOUS.priorityRank)
-        assertTrue(Chain.NOTORIOUS.priorityRank < Chain.ARCADIA.priorityRank)
+        assertThat(chainPriority.take(3)).isEqualTo(listOf(Chain.UCI, Chain.THE_SPACE, Chain.NOTORIOUS))
+        assertThat(chainPriority.toSet()).isEqualTo(Chain.entries.toSet())
+        assertThat(Chain.UCI.priorityRank < Chain.THE_SPACE.priorityRank).isTrue()
+        assertThat(Chain.THE_SPACE.priorityRank < Chain.NOTORIOUS.priorityRank).isTrue()
+        assertThat(Chain.NOTORIOUS.priorityRank < Chain.ARCADIA.priorityRank).isTrue()
     }
 
     @Test
@@ -37,10 +38,7 @@ class FilmDetailsTest {
             showing(Chain.UCI, details = FilmDetails(synopsis = "UCI plot", genre = "Horror", rating = "14+"))
         ).groupByFilm().single()
 
-        assertEquals(
-            FilmDetails(synopsis = "UCI plot", genre = "Horror", director = "Rob Savage", cast = "TS cast", rating = "14+"),
-            group.details
-        )
+        assertThat(group.details).isEqualTo(FilmDetails(synopsis = "UCI plot", genre = "Horror", director = "Rob Savage", cast = "TS cast", rating = "14+"))
     }
 
     @Test
@@ -50,14 +48,14 @@ class FilmDetailsTest {
             showing(Chain.UCI, details = FilmDetails(synopsis = "UCI plot"))
         ).groupByFilm().single()
 
-        assertEquals("UCI plot", group.details.synopsis)
+        assertThat(group.details.synopsis).isEqualTo("UCI plot")
     }
 
     @Test
     fun noDetailsGiveEmptyDetails() {
         val group = listOf(showing(Chain.UCI), showing(Chain.DON_BOSCO)).groupByFilm().single()
 
-        assertTrue(group.details.isEmpty)
+        assertThat(group.details.isEmpty).isTrue()
     }
 
     @Test
@@ -67,7 +65,7 @@ class FilmDetailsTest {
             showing(Chain.THE_SPACE, poster = "thespace.jpg")
         ).groupByFilm().single()
 
-        assertEquals("thespace.jpg", group.posterUrl)
+        assertThat(group.posterUrl).isEqualTo("thespace.jpg")
     }
 
     @Test
@@ -75,8 +73,8 @@ class FilmDetailsTest {
         val withUci = listOf(showing(Chain.THE_SPACE, poster = "ts.jpg"), showing(Chain.UCI, poster = "uci.jpg")).groupByFilm().single()
         val withoutUci = listOf(showing(Chain.CRISTALLO, poster = "cristallo.jpg"), showing(Chain.UCI)).groupByFilm().single()
 
-        assertEquals("uci.jpg", withUci.posterUrl)
-        assertEquals("cristallo.jpg", withoutUci.posterUrl)
+        assertThat(withUci.posterUrl).isEqualTo("uci.jpg")
+        assertThat(withoutUci.posterUrl).isEqualTo("cristallo.jpg")
     }
 
     @Test
@@ -88,27 +86,24 @@ class FilmDetailsTest {
             showing(Chain.UCI)
         ).groupByFilm().single()
 
-        assertEquals(
-            listOf(
+        assertThat(group.detailsSources).isEqualTo(listOf(
                 DetailsSource(Chain.NOTORIOUS, "https://notorious/1"),
                 DetailsSource(Chain.CRISTALLO, "https://cristallo/movie/a")
-            ),
-            group.detailsSources
-        )
+            ))
     }
 
     @Test
     fun tmdbOnlyFieldsMakeDetailsNonEmptyButDoNotCountForCompleteness() {
-        assertTrue(!FilmDetails(runtimeMinutes = 121).isEmpty)
-        assertTrue(!FilmDetails(year = 1977).isEmpty)
-        assertTrue(!FilmDetails(originalTitle = "Star Wars").isEmpty)
-        assertTrue(!FilmDetails(score = FilmScore(8.2, 100)).isEmpty)
+        assertThat(!FilmDetails(runtimeMinutes = 121).isEmpty).isTrue()
+        assertThat(!FilmDetails(year = 1977).isEmpty).isTrue()
+        assertThat(!FilmDetails(originalTitle = "Star Wars").isEmpty).isTrue()
+        assertThat(!FilmDetails(score = FilmScore(8.2, 100)).isEmpty).isTrue()
 
         val chainFieldsOnly = FilmDetails(
             synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t"
         )
-        assertTrue(chainFieldsOnly.isComplete)
-        assertTrue(!FilmDetails(runtimeMinutes = 121, year = 1977, originalTitle = "o", score = FilmScore(8.2, 1)).isComplete)
+        assertThat(chainFieldsOnly.isComplete).isTrue()
+        assertThat(!FilmDetails(runtimeMinutes = 121, year = 1977, originalTitle = "o", score = FilmScore(8.2, 1)).isComplete).isTrue()
     }
 
     @Test
@@ -117,31 +112,31 @@ class FilmDetailsTest {
             FilmDetails(runtimeMinutes = 200, year = 1977, originalTitle = "Star Wars", score = FilmScore(8.2, 10))
         )
 
-        assertEquals(FilmDetails(runtimeMinutes = 100, year = 1977, originalTitle = "Star Wars", score = FilmScore(8.2, 10)), merged)
+        assertThat(merged).isEqualTo(FilmDetails(runtimeMinutes = 100, year = 1977, originalTitle = "Star Wars", score = FilmScore(8.2, 10)))
     }
 
     @Test
     fun withFallbackKeepsOwnFieldsAndFillsGaps() {
         val merged = FilmDetails(synopsis = "own").withFallback(FilmDetails(synopsis = "other", genre = "Drama"))
 
-        assertEquals(FilmDetails(synopsis = "own", genre = "Drama"), merged)
-        assertNull(merged.trailerUrl)
+        assertThat(merged).isEqualTo(FilmDetails(synopsis = "own", genre = "Drama"))
+        assertThat(merged.trailerUrl).isNull()
     }
 
     @Test
     fun enrichmentFieldsMakeDetailsNonEmptyButDoNotCountForCompleteness() {
         val person = FilmPerson(1, "Mark Hamill", "Luke Skywalker", "https://img/p.jpg")
-        assertTrue(!FilmDetails(tagline = "A long time ago").isEmpty)
-        assertTrue(!FilmDetails(backdropUrl = "https://img/b.jpg").isEmpty)
-        assertTrue(!FilmDetails(saga = "Star Wars Collection").isEmpty)
-        assertTrue(!FilmDetails(originalLanguage = "en").isEmpty)
-        assertTrue(!FilmDetails(countries = "United States").isEmpty)
-        assertTrue(!FilmDetails(castMembers = listOf(person)).isEmpty)
-        assertTrue(!FilmDetails(directors = listOf(person)).isEmpty)
+        assertThat(!FilmDetails(tagline = "A long time ago").isEmpty).isTrue()
+        assertThat(!FilmDetails(backdropUrl = "https://img/b.jpg").isEmpty).isTrue()
+        assertThat(!FilmDetails(saga = "Star Wars Collection").isEmpty).isTrue()
+        assertThat(!FilmDetails(originalLanguage = "en").isEmpty).isTrue()
+        assertThat(!FilmDetails(countries = "United States").isEmpty).isTrue()
+        assertThat(!FilmDetails(castMembers = listOf(person)).isEmpty).isTrue()
+        assertThat(!FilmDetails(directors = listOf(person)).isEmpty).isTrue()
 
         val chainFieldsOnly = FilmDetails(synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t")
-        assertTrue(chainFieldsOnly.copy(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete)
-        assertTrue(!FilmDetails(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete)
+        assertThat(chainFieldsOnly.copy(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete).isTrue()
+        assertThat(!FilmDetails(tagline = "t", saga = "s", castMembers = listOf(person)).isComplete).isTrue()
     }
 
     @Test
@@ -152,23 +147,20 @@ class FilmDetailsTest {
             FilmDetails(tagline = "other", saga = "Saga", castMembers = listOf(other), directors = listOf(other))
         )
 
-        assertEquals(
-            FilmDetails(tagline = "own", saga = "Saga", castMembers = listOf(person), directors = listOf(other)),
-            merged
-        )
+        assertThat(merged).isEqualTo(FilmDetails(tagline = "own", saga = "Saga", castMembers = listOf(person), directors = listOf(other)))
     }
 
     @Test
     fun factsAndGalleryMakeDetailsNonEmptyButDoNotCountForCompleteness() {
-        assertTrue(!FilmDetails(productionCompanies = "Legendary").isEmpty)
-        assertTrue(!FilmDetails(budget = 1L).isEmpty)
-        assertTrue(!FilmDetails(revenue = 1L).isEmpty)
-        assertTrue(!FilmDetails(releaseDate = LocalDate(2024, 2, 28)).isEmpty)
-        assertTrue(!FilmDetails(gallery = listOf(FilmImage("t", "f"))).isEmpty)
+        assertThat(!FilmDetails(productionCompanies = "Legendary").isEmpty).isTrue()
+        assertThat(!FilmDetails(budget = 1L).isEmpty).isTrue()
+        assertThat(!FilmDetails(revenue = 1L).isEmpty).isTrue()
+        assertThat(!FilmDetails(releaseDate = LocalDate(2024, 2, 28)).isEmpty).isTrue()
+        assertThat(!FilmDetails(gallery = listOf(FilmImage("t", "f"))).isEmpty).isTrue()
 
         val chainFieldsOnly = FilmDetails(synopsis = "s", genre = "g", director = "d", cast = "c", rating = "r", trailerUrl = "t")
-        assertTrue(chainFieldsOnly.copy(budget = 1L, gallery = listOf(FilmImage("t", "f"))).isComplete)
-        assertTrue(!FilmDetails(budget = 1L, revenue = 1L, productionCompanies = "x").isComplete)
+        assertThat(chainFieldsOnly.copy(budget = 1L, gallery = listOf(FilmImage("t", "f"))).isComplete).isTrue()
+        assertThat(!FilmDetails(budget = 1L, revenue = 1L, productionCompanies = "x").isComplete).isTrue()
     }
 
     @Test
@@ -178,9 +170,6 @@ class FilmDetailsTest {
             FilmDetails(budget = 99L, revenue = 20L, productionCompanies = "A", releaseDate = LocalDate(2024, 1, 1), gallery = listOf(FilmImage("x", "y")))
         )
 
-        assertEquals(
-            FilmDetails(budget = 10L, revenue = 20L, productionCompanies = "A", releaseDate = LocalDate(2024, 1, 1), gallery = listOf(own)),
-            merged
-        )
+        assertThat(merged).isEqualTo(FilmDetails(budget = 10L, revenue = 20L, productionCompanies = "A", releaseDate = LocalDate(2024, 1, 1), gallery = listOf(own)))
     }
 }

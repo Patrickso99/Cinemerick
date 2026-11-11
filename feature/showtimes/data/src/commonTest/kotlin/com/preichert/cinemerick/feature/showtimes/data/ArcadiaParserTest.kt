@@ -5,9 +5,11 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
 
 class ArcadiaParserTest {
 
@@ -51,17 +53,17 @@ class ArcadiaParserTest {
 
         val showings = parseArcadiaShowings(html, venueMelzo, listOf(tuesday, wednesday))
 
-        assertEquals(4, showings.size)
+        assertThat(showings.size).isEqualTo(4)
         val first = showings.first()
-        assertEquals("Avengers - Doomsday", first.title)
-        assertEquals(tuesday, first.day)
-        assertEquals(LocalTime(0, 1), first.time)
-        assertEquals("INFINITY VISION", first.format)
-        assertEquals("https://www.arcadiacinema.com/cdn/movies/a.jpg", first.posterUrl)
-        assertEquals(null, showings[1].format)
-        assertEquals("ENERGIA INFINITY VISION", showings[2].format)
-        assertEquals("https://x/dune.jpg", showings[3].posterUrl)
-        assertFalse(showings.any { it.soldOut })
+        assertThat(first.title).isEqualTo("Avengers - Doomsday")
+        assertThat(first.day).isEqualTo(tuesday)
+        assertThat(first.time).isEqualTo(LocalTime(0, 1))
+        assertThat(first.format).isEqualTo("INFINITY VISION")
+        assertThat(first.posterUrl).isEqualTo("https://www.arcadiacinema.com/cdn/movies/a.jpg")
+        assertThat(showings[1].format).isNull()
+        assertThat(showings[2].format).isEqualTo("ENERGIA INFINITY VISION")
+        assertThat(showings[3].posterUrl).isEqualTo("https://x/dune.jpg")
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     @Test
@@ -74,14 +76,11 @@ class ArcadiaParserTest {
 
         val showings = parseArcadiaShowings(html, venueMelzo, listOf(tuesday, wednesday))
 
-        assertEquals(
-            listOf(
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf(
                 "https://www.arcadiacinema.com/acquista/x/5085/4923/0001/",
                 "https://www.arcadiacinema.com/acquista/x/5085/4923/2130/",
                 "https://www.arcadiacinema.com/acquista/x/5085/4923/0930/"
-            ),
-            showings.map { it.ticketUrl }
-        )
+            ))
     }
 
     @Test
@@ -89,10 +88,7 @@ class ArcadiaParserTest {
         val html = film("DUNE", "/p.jpg", "Martedì 15/12" to listOf("18:00" to null))
             .replace("/acquista/x/5085/4923/1800/", "/acquista/x?a=1&amp;b=2")
 
-        assertEquals(
-            listOf("https://www.arcadiacinema.com/acquista/x?a=1&b=2"),
-            parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).map { it.ticketUrl }
-        )
+        assertThat(parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).map { it.ticketUrl }).isEqualTo(listOf("https://www.arcadiacinema.com/acquista/x?a=1&b=2"))
     }
 
     @Test
@@ -101,12 +97,12 @@ class ArcadiaParserTest {
 
         val showings = parseArcadiaShowings(html, venueMelzo, listOf(wednesday))
 
-        assertEquals(listOf(LocalTime(20, 0)), showings.map { it.time })
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(20, 0)))
     }
 
     @Test
     fun emptyPageHasNoShowings() {
-        assertTrue(parseArcadiaShowings("<html></html>", venueMelzo, listOf(tuesday)).isEmpty())
+        assertThat(parseArcadiaShowings("<html></html>", venueMelzo, listOf(tuesday))).isEmpty()
     }
 
     @Test
@@ -115,15 +111,15 @@ class ArcadiaParserTest {
 
         val venues = parseArcadiaVenues(menu + menu)
 
-        assertEquals(listOf("melzo", "bellinzago"), venues.map { it.id })
-        assertEquals(listOf("Melzo", "Bellinzago Lombardo"), venues.map { it.name })
-        assertEquals("https://www.arcadiacinema.com/melzo", venues.first().webUrl)
+        assertThat(venues.map { it.id }).isEqualTo(listOf("melzo", "bellinzago"))
+        assertThat(venues.map { it.name }).isEqualTo(listOf("Melzo", "Bellinzago Lombardo"))
+        assertThat(venues.first().webUrl).isEqualTo("https://www.arcadiacinema.com/melzo")
     }
 
     @Test
     fun linksEachFilmToItsAbsoluteFilmPage() {
         val html = film("DUNE", "/p.jpg", "Martedì 15/12" to listOf("18:00" to null))
 
-        assertEquals("https://www.arcadiacinema.com/scheda/dune/48783/3364/", parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).single().detailsUrl)
+        assertThat(parseArcadiaShowings(html, venueMelzo, listOf(tuesday)).single().detailsUrl).isEqualTo("https://www.arcadiacinema.com/scheda/dune/48783/3364/")
     }
 }

@@ -17,8 +17,6 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -33,11 +31,15 @@ import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.test.AfterTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import app.cash.turbine.test
+import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isInstanceOf
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import com.preichert.cinemerick.core.testing.FakeTimeWindowPreferences
 
 class ShowtimesViewModelTest {
@@ -59,13 +61,13 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Dune"))
         scheduler.advanceUntilIdle()
-        assertFalse("Dune" in viewModel.state.value.resolvedCards)
+        assertThat(viewModel.state.value.resolvedCards).doesNotContain("Dune")
 
         viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Dune"))
         scheduler.advanceUntilIdle()
 
-        assertEquals(2, calls)
-        assertTrue("Dune" in viewModel.state.value.resolvedCards)
+        assertThat(calls).isEqualTo(2)
+        assertThat(viewModel.state.value.resolvedCards).contains("Dune")
     }
 
     @Test
@@ -78,25 +80,24 @@ class ShowtimesViewModelTest {
         })
         viewModel.onAction(ShowtimesAction.OnDayToggle(day))
         viewModel.onAction(ShowtimesAction.OnGenerateClick)
-        val events = mutableListOf<ShowtimesEvent>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.events.toList(events) }
 
-        viewModel.onAction(ShowtimesAction.OnCopyClick)
+        viewModel.events.test {
+            viewModel.onAction(ShowtimesAction.OnCopyClick)
 
-        val copied = assertIs<ShowtimesEvent.CopyToClipboard>(events[0])
-        assertEquals(viewModel.state.value.pollText, copied.text)
-        assertIs<ShowtimesEvent.ShowSnackbar>(events[1])
+            assertThat(awaitItem()).isEqualTo(ShowtimesEvent.CopyToClipboard(viewModel.state.value.pollText))
+            assertThat(awaitItem()).isInstanceOf<ShowtimesEvent.ShowSnackbar>()
+        }
     }
 
     @Test
     fun copyingAnEmptyPollSendsNothing() = runTest {
         val viewModel = viewModel()
-        val events = mutableListOf<ShowtimesEvent>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.events.toList(events) }
 
-        viewModel.onAction(ShowtimesAction.OnCopyClick)
+        viewModel.events.test {
+            viewModel.onAction(ShowtimesAction.OnCopyClick)
 
-        assertTrue(events.isEmpty())
+            expectNoEvents()
+        }
     }
 
     @AfterTest
@@ -121,14 +122,14 @@ class ShowtimesViewModelTest {
         viewModel(savedStateHandle = savedStateHandle).onAction(ShowtimesAction.OnFilmFilterChange("Dune"))
 
         // A new instance, as after the process is restored, starts from the saved filters.
-        assertEquals("Dune", viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter)
+        assertThat(viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter).isEqualTo("Dune")
     }
 
     @Test
     fun anUnreadableSavedStateStartsFromTheDefaults() = runTest {
         val savedStateHandle = SavedStateHandle(mapOf("filters" to "not json"))
 
-        assertEquals("", viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter)
+        assertThat(viewModel(savedStateHandle = savedStateHandle).state.value.filmFilter).isEqualTo("")
     }
 
     @Test
@@ -139,8 +140,8 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnDayToggle(first))
 
-        assertEquals("18:00", viewModel.day(first).minTime)
-        assertEquals("23:00", viewModel.day(first).maxTime)
+        assertThat(viewModel.day(first).minTime).isEqualTo("18:00")
+        assertThat(viewModel.day(first).maxTime).isEqualTo("23:00")
     }
 
     @Test
@@ -149,8 +150,8 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnDayToggle(first))
 
-        assertEquals("20:00", viewModel.day(first).minTime)
-        assertEquals("", viewModel.day(first).maxTime)
+        assertThat(viewModel.day(first).minTime).isEqualTo("20:00")
+        assertThat(viewModel.day(first).maxTime).isEqualTo("")
     }
 
     @Test
@@ -161,8 +162,8 @@ class ShowtimesViewModelTest {
         controller.setMin(18 * 60)
         viewModel.onAction(ShowtimesAction.OnDayToggle(second))
 
-        assertEquals("20:00", viewModel.day(first).minTime)
-        assertEquals("18:00", viewModel.day(second).minTime)
+        assertThat(viewModel.day(first).minTime).isEqualTo("20:00")
+        assertThat(viewModel.day(second).minTime).isEqualTo("18:00")
     }
 
     // The calendar only takes days from today on, so these tests use days in the future.
@@ -181,8 +182,8 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later2))
         viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
-        assertEquals("15:00", viewModel.day(later).minTime)
-        assertEquals("18:00", viewModel.day(later2).minTime)
+        assertThat(viewModel.day(later).minTime).isEqualTo("15:00")
+        assertThat(viewModel.day(later2).minTime).isEqualTo("18:00")
     }
 
     @Test
@@ -196,7 +197,7 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnCalendarDayToggle(later))
         viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
-        assertEquals(listOf(later2, later3), viewModel.state.value.days.map { it.date })
+        assertThat(viewModel.state.value.days.map { it.date }).isEqualTo(listOf(later2, later3))
     }
 
     @Test
@@ -207,7 +208,7 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnDatesConfirm)
 
-        assertNull(viewModel.state.value.calendar)
+        assertThat(viewModel.state.value.calendar).isNull()
     }
 
     @Test
@@ -218,8 +219,8 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnCalendarDismiss)
 
-        assertEquals(listOf(first), viewModel.state.value.days.map { it.date })
-        assertNull(viewModel.state.value.calendar)
+        assertThat(viewModel.state.value.days.map { it.date }).isEqualTo(listOf(first))
+        assertThat(viewModel.state.value.calendar).isNull()
     }
 
     @Test
@@ -230,7 +231,7 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnDayToggle(first))
 
-        assertEquals(listOf(second), viewModel.state.value.days.map { it.date })
+        assertThat(viewModel.state.value.days.map { it.date }).isEqualTo(listOf(second))
     }
 
     @Test
@@ -250,8 +251,8 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnGenerateClick)
 
         val shown = viewModel.state.value.groups.single().showings
-        assertEquals(listOf("21:00", "21:30"), shown.map { it.time })
-        assertEquals(listOf<String?>("https://ucicinemas.it/movies/mammina/acquista/1/2/3", null), shown.map { it.ticketUrl })
+        assertThat(shown.map { it.time }).isEqualTo(listOf("21:00", "21:30"))
+        assertThat(shown.map { it.ticketUrl }).isEqualTo(listOf<String?>("https://ucicinemas.it/movies/mammina/acquista/1/2/3", null))
     }
 
     @Test
@@ -271,9 +272,9 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnGenerateClick)
 
         val state = viewModel.state.value
-        assertEquals(listOf(true, false), state.groups.single().showings.map { it.soldOut })
-        assertEquals(1, state.optionsCount)
-        assertEquals(1, state.pollText.lines().size)
+        assertThat(state.groups.single().showings.map { it.soldOut }).isEqualTo(listOf(true, false))
+        assertThat(state.optionsCount).isEqualTo(1)
+        assertThat(state.pollText.lines().size).isEqualTo(1)
     }
 
     @Test
@@ -289,9 +290,9 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnGenerateClick)
 
         val state = viewModel.state.value
-        assertEquals(1, state.groups.single().showings.size)
-        assertEquals(0, state.optionsCount)
-        assertEquals("", state.pollText)
+        assertThat(state.groups.single().showings.size).isEqualTo(1)
+        assertThat(state.optionsCount).isEqualTo(0)
+        assertThat(state.pollText).isEqualTo("")
     }
 
     private val notoriousVenue = Venue(Chain.NOTORIOUS, "cagliari", "Cagliari", null)
@@ -333,11 +334,11 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
         // The cinemas' text is not shown while the film database may still replace it.
-        assertEquals(FilmDetailsUi("Mammina", FilmDetails(), isLoading = true), viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isEqualTo(FilmDetailsUi("Mammina", FilmDetails(), isLoading = true))
 
         val resolved = FilmDetails(synopsis = "TMDB plot", runtimeMinutes = 95)
         gate.complete(resolved)
-        assertEquals(FilmDetailsUi("Mammina", resolved, isLoading = false), viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isEqualTo(FilmDetailsUi("Mammina", resolved, isLoading = false))
     }
 
     @Test
@@ -354,8 +355,8 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
 
-        assertEquals(Triple("Mammina", inline, listOf(DetailsSource(Chain.NOTORIOUS, "https://n/1"))), asked)
-        assertEquals(FilmDetailsUi("Mammina", inline, isLoading = false), viewModel.state.value.filmDetails)
+        assertThat(asked).isEqualTo(Triple("Mammina", inline, listOf(DetailsSource(Chain.NOTORIOUS, "https://n/1"))))
+        assertThat(viewModel.state.value.filmDetails).isEqualTo(FilmDetailsUi("Mammina", inline, isLoading = false))
     }
 
     @Test
@@ -370,7 +371,7 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnFilmDetailsDismiss)
         gate.complete(FilmDetails(synopsis = "late"))
 
-        assertNull(viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isNull()
     }
 
     @Test
@@ -385,10 +386,10 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnFilmDetailsDismiss)
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
         gates.first().complete(FilmDetails(synopsis = "stale"))
-        assertTrue(viewModel.state.value.filmDetails!!.isLoading)
+        assertThat(viewModel.state.value.filmDetails!!.isLoading).isTrue()
 
         gates.last().complete(FilmDetails(synopsis = "fresh"))
-        assertEquals(FilmDetailsUi("Mammina", FilmDetails(synopsis = "fresh"), isLoading = false), viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isEqualTo(FilmDetailsUi("Mammina", FilmDetails(synopsis = "fresh"), isLoading = false))
     }
 
     @Test
@@ -401,8 +402,8 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
 
         val shown = viewModel.state.value.filmDetails!!
-        assertFalse(shown.isLoading)
-        assertTrue(shown.details.isEmpty)
+        assertThat(shown.isLoading).isFalse()
+        assertThat(shown.details.isEmpty).isTrue()
     }
 
     @Test
@@ -411,7 +412,7 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Mammina"))
 
-        assertEquals(FilmDetailsUi("Mammina", FilmDetails(), isLoading = false), viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isEqualTo(FilmDetailsUi("Mammina", FilmDetails(), isLoading = false))
     }
 
     @Test
@@ -420,7 +421,7 @@ class ShowtimesViewModelTest {
 
         viewModel.onAction(ShowtimesAction.OnFilmDetailsOpen("Other"))
 
-        assertNull(viewModel.state.value.filmDetails)
+        assertThat(viewModel.state.value.filmDetails).isNull()
     }
 
     @Test
@@ -436,19 +437,19 @@ class ShowtimesViewModelTest {
         viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Mammina"))
         scheduler.advanceUntilIdle()
 
-        assertEquals(listOf("Mammina"), asked)
-        assertEquals(tmdb, viewModel.state.value.groups.single().tmdb)
+        assertThat(asked).isEqualTo(listOf("Mammina"))
+        assertThat(viewModel.state.value.groups.single().tmdb).isEqualTo(tmdb)
     }
 
     @Test
     fun cardPosterIsPendingUntilItsLookupAnswers() = runTest {
         val viewModel = viewModelShowing(listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue)), emptySet())
-        assertTrue(viewModel.state.value.groups.single().posterPending)
+        assertThat(viewModel.state.value.groups.single().posterPending).isTrue()
 
         viewModel.onAction(ShowtimesAction.OnFilmCardVisible("Mammina"))
         scheduler.advanceUntilIdle()
 
-        assertFalse(viewModel.state.value.groups.single().posterPending)
+        assertThat(viewModel.state.value.groups.single().posterPending).isFalse()
     }
 
     private object FakeRepository : ShowtimesRepository {

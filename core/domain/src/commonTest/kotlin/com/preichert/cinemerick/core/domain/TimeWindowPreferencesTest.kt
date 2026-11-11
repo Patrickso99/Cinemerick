@@ -1,20 +1,21 @@
 package com.preichert.cinemerick.core.domain
 
 import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 
 class TimeWindowPreferencesTest {
 
     @Test
-    fun minBelowMaxIsValid() = assertTrue(isValidWindow(1200, 1380))
+    fun minBelowMaxIsValid() = assertThat(isValidWindow(1200, 1380)).isTrue()
 
     @Test
-    fun equalBoundsAreValid() = assertTrue(isValidWindow(1200, 1200))
+    fun equalBoundsAreValid() = assertThat(isValidWindow(1200, 1200)).isTrue()
 
     @Test
-    fun minAboveMaxIsInvalid() = assertFalse(isValidWindow(1380, 1320))
+    fun minAboveMaxIsInvalid() = assertThat(isValidWindow(1380, 1320)).isFalse()
 
     @Test
-    fun missingMaxIsAlwaysValid() = assertTrue(isValidWindow(23 * 60 + 59, null))
+    fun missingMaxIsAlwaysValid() = assertThat(isValidWindow(23 * 60 + 59, null)).isTrue()
 }

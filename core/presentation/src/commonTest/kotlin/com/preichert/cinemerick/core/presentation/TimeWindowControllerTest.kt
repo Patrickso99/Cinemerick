@@ -1,10 +1,11 @@
 package com.preichert.cinemerick.core.presentation
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import com.preichert.cinemerick.core.domain.TimeWindowPreferences
 import com.preichert.cinemerick.core.testing.FakeTimeWindowPreferences
 
@@ -17,8 +18,8 @@ class TimeWindowControllerTest {
     fun startsWithDefaults() {
         val window = controller().window.value
 
-        assertEquals(20 * 60, window.minMinutes)
-        assertNull(window.maxMinutes)
+        assertThat(window.minMinutes).isEqualTo(20 * 60)
+        assertThat(window.maxMinutes).isNull()
     }
 
     @Test
@@ -27,10 +28,10 @@ class TimeWindowControllerTest {
         val controller = controller(preferences)
         controller.setMax(22 * 60)
 
-        assertFalse(controller.setMin(23 * 60))
+        assertThat(controller.setMin(23 * 60)).isFalse()
 
-        assertEquals(20 * 60, controller.window.value.minMinutes)
-        assertEquals(20 * 60, preferences.minMinutes())
+        assertThat(controller.window.value.minMinutes).isEqualTo(20 * 60)
+        assertThat(preferences.minMinutes()).isEqualTo(20 * 60)
     }
 
     @Test
@@ -38,17 +39,17 @@ class TimeWindowControllerTest {
         val preferences = FakeTimeWindowPreferences()
         val controller = controller(preferences)
 
-        assertFalse(controller.setMax(19 * 60))
+        assertThat(controller.setMax(19 * 60)).isFalse()
 
-        assertNull(controller.window.value.maxMinutes)
-        assertNull(preferences.maxMinutes())
+        assertThat(controller.window.value.maxMinutes).isNull()
+        assertThat(preferences.maxMinutes()).isNull()
     }
 
     @Test
     fun acceptsEqualBounds() {
         val controller = controller()
 
-        assertTrue(controller.setMax(20 * 60))
+        assertThat(controller.setMax(20 * 60)).isTrue()
     }
 
     @Test
@@ -56,14 +57,14 @@ class TimeWindowControllerTest {
         val preferences = FakeTimeWindowPreferences()
         val controller = controller(preferences)
 
-        assertTrue(controller.setMin(18 * 60))
-        assertTrue(controller.setMax(23 * 60))
-        assertEquals(TimeWindow(18 * 60, 23 * 60), controller.window.value)
-        assertEquals(18 * 60, preferences.minMinutes())
-        assertEquals(23 * 60, preferences.maxMinutes())
+        assertThat(controller.setMin(18 * 60)).isTrue()
+        assertThat(controller.setMax(23 * 60)).isTrue()
+        assertThat(controller.window.value).isEqualTo(TimeWindow(18 * 60, 23 * 60))
+        assertThat(preferences.minMinutes()).isEqualTo(18 * 60)
+        assertThat(preferences.maxMinutes()).isEqualTo(23 * 60)
 
-        assertTrue(controller.setMax(null))
-        assertNull(preferences.maxMinutes())
+        assertThat(controller.setMax(null)).isTrue()
+        assertThat(preferences.maxMinutes()).isNull()
     }
 
     @Test
@@ -72,23 +73,23 @@ class TimeWindowControllerTest {
         preferences.setMinMinutes(18 * 60)
         preferences.setMaxMinutes(23 * 60)
 
-        assertEquals(TimeWindow(18 * 60, 23 * 60), controller(preferences).window.value)
+        assertThat(controller(preferences).window.value).isEqualTo(TimeWindow(18 * 60, 23 * 60))
     }
 
     @Test
     fun formatsMinutes() {
-        assertEquals("00:00", 0.toTimeString())
-        assertEquals("23:59", (23 * 60 + 59).toTimeString())
-        assertEquals("08:05", (8 * 60 + 5).toTimeString())
-        assertEquals("", null.toTimeInput())
-        assertEquals("18:30", (18 * 60 + 30).toTimeInput())
+        assertThat(0.toTimeString()).isEqualTo("00:00")
+        assertThat((23 * 60 + 59).toTimeString()).isEqualTo("23:59")
+        assertThat((8 * 60 + 5).toTimeString()).isEqualTo("08:05")
+        assertThat(null.toTimeInput()).isEqualTo("")
+        assertThat((18 * 60 + 30).toTimeInput()).isEqualTo("18:30")
     }
 
     @Test
     fun hourMinuteRoundTrip() {
         val minutes = 18 * 60 + 45
-        assertEquals(minutes, minutesOf(minutes.toHour(), minutes.toMinute()))
-        assertEquals(0, minutesOf(0, 0))
-        assertEquals(23 * 60 + 59, minutesOf(23, 59))
+        assertThat(minutesOf(minutes.toHour(), minutes.toMinute())).isEqualTo(minutes)
+        assertThat(minutesOf(0, 0)).isEqualTo(0)
+        assertThat(minutesOf(23, 59)).isEqualTo(23 * 60 + 59)
     }
 }

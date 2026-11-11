@@ -5,10 +5,11 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
 
 class DonBoscoParserTest {
 
@@ -45,14 +46,11 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(monday, tuesday))
 
-        assertEquals(4, showings.size)
-        assertEquals(
-            listOf(LocalTime(16, 30), LocalTime(21, 0)),
-            showings.filter { it.title == "Caravaggio" && it.day == monday }.map { it.time }
-        )
-        assertEquals(LocalTime(15, 0), showings.single { it.title == "Caravaggio" && it.day == tuesday }.time)
-        assertEquals("https://x/digger.jpg", showings.single { it.title == "Digger" }.posterUrl)
-        assertFalse(showings.any { it.soldOut })
+        assertThat(showings.size).isEqualTo(4)
+        assertThat(showings.filter { it.title == "Caravaggio" && it.day == monday }.map { it.time }).isEqualTo(listOf(LocalTime(16, 30), LocalTime(21, 0)))
+        assertThat(showings.single { it.title == "Caravaggio" && it.day == tuesday }.time).isEqualTo(LocalTime(15, 0))
+        assertThat(showings.single { it.title == "Digger" }.posterUrl).isEqualTo("https://x/digger.jpg")
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     @Test
@@ -61,14 +59,14 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(tuesday))
 
-        assertEquals(listOf(LocalTime(15, 0)), showings.map { it.time })
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(15, 0)))
     }
 
     @Test
     fun filmWithoutShowtimesYieldsNothing() {
         val html = film(30, "Prossimamente", "https://x/p.jpg")
 
-        assertTrue(parseDonBoscoShowings(html, venueDonBosco, listOf(monday)).isEmpty())
+        assertThat(parseDonBoscoShowings(html, venueDonBosco, listOf(monday))).isEmpty()
     }
 
     @Test
@@ -78,8 +76,8 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(monday, tuesday))
 
-        assertEquals(3, showings.size)
-        assertEquals(List(3) { "https://ticket.cinebot.it/donbosco2/titolo/671" }, showings.map { it.ticketUrl })
+        assertThat(showings.size).isEqualTo(3)
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(List(3) { "https://ticket.cinebot.it/donbosco2/titolo/671" })
     }
 
     @Test
@@ -89,8 +87,8 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(monday))
 
-        assertEquals(null, showings.single { it.title == "Caravaggio" }.ticketUrl)
-        assertEquals("https://ticket.cinebot.it/donbosco2/titolo/673", showings.single { it.title == "Digger" }.ticketUrl)
+        assertThat(showings.single { it.title == "Caravaggio" }.ticketUrl).isNull()
+        assertThat(showings.single { it.title == "Digger" }.ticketUrl).isEqualTo("https://ticket.cinebot.it/donbosco2/titolo/673")
     }
 
     @Test
@@ -100,7 +98,7 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(monday))
 
-        assertEquals(listOf(LocalTime(17, 20), LocalTime(21, 0)), showings.map { it.time })
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(17, 20), LocalTime(21, 0)))
     }
 
     @Test
@@ -115,14 +113,14 @@ class DonBoscoParserTest {
 
         val showings = parseDonBoscoShowings(html, venueDonBosco, listOf(monday))
 
-        assertEquals(listOf("Carlo Acutis", "Carlo Acutis"), showings.map { it.title })
-        assertEquals(listOf(LocalTime(15, 30), LocalTime(18, 0)), showings.map { it.time })
+        assertThat(showings.map { it.title }).isEqualTo(listOf("Carlo Acutis", "Carlo Acutis"))
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(15, 30), LocalTime(18, 0)))
     }
 
     @Test
     fun showingsNeverPointToAFilmPage() {
         val html = film(28, "Caravaggio", "https://x/car.jpeg", "LUNEDÌ 5 OTTOBRE" to listOf("16.30"))
 
-        assertNull(parseDonBoscoShowings(html, venueDonBosco, listOf(monday)).single().detailsUrl)
+        assertThat(parseDonBoscoShowings(html, venueDonBosco, listOf(monday)).single().detailsUrl).isNull()
     }
 }

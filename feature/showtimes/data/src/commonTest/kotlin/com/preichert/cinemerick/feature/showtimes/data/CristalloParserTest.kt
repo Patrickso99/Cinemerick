@@ -5,8 +5,10 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
 
 class CristalloParserTest {
 
@@ -39,26 +41,26 @@ class CristalloParserTest {
 
         val showings = parseCristalloShowings(html, venueCristallo, day)
 
-        assertEquals(listOf("Digger", "Digger", "Caravaggio"), showings.map { it.title })
-        assertEquals(listOf(LocalTime(17, 0), LocalTime(21, 15), LocalTime(19, 0)), showings.map { it.time })
-        assertEquals("https://x/digger.jpg", showings.first().posterUrl)
-        assertEquals(setOf(day), showings.map { it.day }.toSet())
-        assertEquals(setOf(venueCristallo), showings.map { it.venue }.toSet())
-        assertFalse(showings.any { it.soldOut })
+        assertThat(showings.map { it.title }).isEqualTo(listOf("Digger", "Digger", "Caravaggio"))
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(17, 0), LocalTime(21, 15), LocalTime(19, 0)))
+        assertThat(showings.first().posterUrl).isEqualTo("https://x/digger.jpg")
+        assertThat(showings.map { it.day }.toSet()).isEqualTo(setOf(day))
+        assertThat(showings.map { it.venue }.toSet()).isEqualTo(setOf(venueCristallo))
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     @Test
     fun readsTimesWithLeadingSpaceAndEntranceNote() {
         val html = film("DIGGER", "https://x/d.jpg", "12.30 INGRESSO 5€", " 14.45", "11.00 - INGRESSO 5€")
 
-        assertEquals(listOf(LocalTime(12, 30), LocalTime(14, 45), LocalTime(11, 0)), parseCristalloShowings(html, venueCristallo, day).map { it.time })
+        assertThat(parseCristalloShowings(html, venueCristallo, day).map { it.time }).isEqualTo(listOf(LocalTime(12, 30), LocalTime(14, 45), LocalTime(11, 0)))
     }
 
     @Test
     fun unescapesTitleEntities() {
         val html = film("SANTIAGO &#8211; UN CAMMINO", "https://x/s.jpg", "20.30") + film("L&#8217;ISOLA DEI RICORDI", "https://x/i.jpg", "18.00")
 
-        assertEquals(listOf("Santiago – Un Cammino", "L’Isola Dei Ricordi"), parseCristalloShowings(html, venueCristallo, day).map { it.title })
+        assertThat(parseCristalloShowings(html, venueCristallo, day).map { it.title }).isEqualTo(listOf("Santiago – Un Cammino", "L’Isola Dei Ricordi"))
     }
 
     @Test
@@ -66,18 +68,18 @@ class CristalloParserTest {
         val html = film("DIGGER", "https://x/d.jpg", "17.00")
         val json = "\"" + html.replace("\\", "\\\\").replace("\"", "\\\"").replace("/", "\\/").replace("\n", "\\r\\n") + "\""
 
-        assertEquals(listOf(LocalTime(17, 0)), parseCristalloShowings(json, venueCristallo, day).map { it.time })
+        assertThat(parseCristalloShowings(json, venueCristallo, day).map { it.time }).isEqualTo(listOf(LocalTime(17, 0)))
     }
 
     @Test
     fun returnsNothingForAnEmptyDay() {
-        assertEquals(emptyList(), parseCristalloShowings("\"\"", venueCristallo, day))
+        assertThat(parseCristalloShowings("\"\"", venueCristallo, day)).isEmpty()
     }
 
     @Test
     fun linksEachFilmToItsFilmPage() {
         val html = film("DIGGER", "https://x/d.jpg", "17.00", "21.15")
 
-        assertEquals(listOf<String?>("https://x/movie/a/", "https://x/movie/a/"), parseCristalloShowings(html, venueCristallo, day).map { it.detailsUrl })
+        assertThat(parseCristalloShowings(html, venueCristallo, day).map { it.detailsUrl }).isEqualTo(listOf<String?>("https://x/movie/a/", "https://x/movie/a/"))
     }
 }

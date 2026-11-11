@@ -6,10 +6,11 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 
 private val lenientJson = Json { ignoreUnknownKeys = true }
 
@@ -34,13 +35,10 @@ class TheSpaceShowingMappersTest {
             TheSpaceSessionDto(startTime = "2026-10-12T19:00:00", bookingUrl = "/prenotare-il-biglietto/summary/1028/HO00003608/58355")
         ).toShowings(venue, day)
 
-        assertEquals(
-            listOf(
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf(
                 "https://www.thespacecinema.it/prenotare-il-biglietto/summary/1028/HO00003608/58354",
                 "https://www.thespacecinema.it/prenotare-il-biglietto/summary/1028/HO00003608/58355"
-            ),
-            showings.map { it.ticketUrl }
-        )
+            ))
     }
 
     @Test
@@ -50,15 +48,15 @@ class TheSpaceShowingMappersTest {
             TheSpaceSessionDto(startTime = "2026-10-12T19:00:00", bookingUrl = "")
         ).toShowings(venue, day)
 
-        assertEquals(2, showings.size)
-        assertNull(showings[0].ticketUrl)
-        assertNull(showings[1].ticketUrl)
+        assertThat(showings.size).isEqualTo(2)
+        assertThat(showings[0].ticketUrl).isNull()
+        assertThat(showings[1].ticketUrl).isNull()
     }
     @Test
     fun sessionReportedSoldOutIsSoldOut() {
         val showings = films(TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = true)).toShowings(venue, day)
 
-        assertTrue(showings.single().soldOut)
+        assertThat(showings.single().soldOut).isTrue()
     }
 
     @Test
@@ -67,7 +65,7 @@ class TheSpaceShowingMappersTest {
             TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = false, isBookingAvailable = false)
         ).toShowings(venue, day)
 
-        assertTrue(showings.single().soldOut)
+        assertThat(showings.single().soldOut).isTrue()
     }
 
     @Test
@@ -76,14 +74,14 @@ class TheSpaceShowingMappersTest {
             TheSpaceSessionDto(startTime = "2026-10-12T16:20:00", isSoldOut = false, isBookingAvailable = true)
         ).toShowings(venue, day)
 
-        assertFalse(showings.single().soldOut)
+        assertThat(showings.single().soldOut).isFalse()
     }
 
     @Test
     fun sessionWithoutAvailabilityFieldsIsNotSoldOut() {
         val dto = lenientJson.decodeFromString<TheSpaceSessionDto>("""{"startTime":"2026-10-12T16:20:00"}""")
 
-        assertFalse(films(dto).toShowings(venue, day).single().soldOut)
+        assertThat(films(dto).toShowings(venue, day).single().soldOut).isFalse()
     }
 
     // Condensed from a films response of The Space (genres and trailers come back empty).
@@ -101,28 +99,25 @@ class TheSpaceShowingMappersTest {
     fun filmDetailsAreReadFromTheFilmsResponse() {
         val showing = lenientJson.decodeFromString<TheSpaceFilmsDto>(realPayload).toShowings(venue, day).single()
 
-        assertEquals(
-            FilmDetails(
+        assertThat(showing.details).isEqualTo(FilmDetails(
                 synopsis = "La vincitrice del premio Oscar Jessica Chastain e' protagonista.",
                 director = "Rob Savage",
                 cast = "Alejandro Nieves, Jessica Chastain, Dichen Lachman",
                 rating = "14+ · Violenza, Armi"
-            ),
-            showing.details
-        )
-        assertNull(showing.details?.trailerUrl)
-        assertNull(showing.details?.genre)
+            ))
+        assertThat(showing.details?.trailerUrl).isNull()
+        assertThat(showing.details?.genre).isNull()
     }
 
     @Test
     fun suitableForEveryoneCertificateReadsPerTutti() {
         val payload = realPayload.replace("\"name\":\"14\"", "\"name\":\"t\"").replace("{\"name\":\"Violenza\",\"description\":\"\"},{\"name\":\"Armi\",\"description\":\"\"}", "")
 
-        assertEquals("Per tutti", lenientJson.decodeFromString<TheSpaceFilmsDto>(payload).toShowings(venue, day).single().details?.rating)
+        assertThat(lenientJson.decodeFromString<TheSpaceFilmsDto>(payload).toShowings(venue, day).single().details?.rating).isEqualTo("Per tutti")
     }
 
     @Test
     fun filmWithoutAnyDetailGivesNoDetails() {
-        assertNull(films(TheSpaceSessionDto(startTime = "2026-10-12T16:20:00")).toShowings(venue, day).single().details)
+        assertThat(films(TheSpaceSessionDto(startTime = "2026-10-12T16:20:00")).toShowings(venue, day).single().details).isNull()
     }
 }

@@ -12,8 +12,9 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 
 class MultiCinemaShowingsFailureTest {
 
@@ -43,8 +44,8 @@ class MultiCinemaShowingsFailureTest {
 
         val result = repository.getShowings(listOf(day1), setOf(venue)).single()
 
-        assertIs<Result.Failure<DataError.Network>>(result.result)
-        assertEquals(DataError.Network.SERVER_ERROR, (result.result as Result.Failure).error)
+        assertThat(result.result).isInstanceOf<Result.Failure<DataError.Network>>()
+        assertThat((result.result as Result.Failure).error).isEqualTo(DataError.Network.SERVER_ERROR)
     }
 
     @Test
@@ -57,7 +58,7 @@ class MultiCinemaShowingsFailureTest {
             .getShowings(listOf(day1, day2), setOf(venue))
             .single()
 
-        assertIs<Result.Success<List<Showing>>>(result.result)
-        assertEquals(listOf(day1), (result.result as Result.Success).data.map { it.day })
+        assertThat(result.result).isInstanceOf<Result.Success<List<Showing>>>()
+        assertThat((result.result as Result.Success).data.map { it.day }).isEqualTo(listOf(day1))
     }
 }

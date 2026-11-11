@@ -1,30 +1,31 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class FilmDetailsTextTest {
 
     @Test
     fun paragraphsBecomeLinesAndEntitiesAreDecoded() {
-        assertEquals("Prima &\nSeconda", "<p>Prima &amp;</p><p></p><p> Seconda </p>".htmlToPlainText())
+        assertThat("<p>Prima &amp;</p><p></p><p> Seconda </p>".htmlToPlainText()).isEqualTo("Prima &\nSeconda")
     }
 
     @Test
     fun lineBreaksSplitLines() {
-        assertEquals("a\nb", "a<br>b".htmlToPlainText())
+        assertThat("a<br>b".htmlToPlainText()).isEqualTo("a\nb")
     }
 
     @Test
     fun emptyOrTagOnlyInputGivesNull() {
-        assertNull(null.htmlToPlainText())
-        assertNull("<p></p>".htmlToPlainText())
+        assertThat(null.htmlToPlainText()).isNull()
+        assertThat("<p></p>".htmlToPlainText()).isNull()
     }
 
     @Test
     fun joinedOrNullSkipsBlanks() {
-        assertEquals("a, b", listOf("a", " ", "b").joinedOrNull())
-        assertNull(listOf(" ").joinedOrNull())
+        assertThat(listOf("a", " ", "b").joinedOrNull()).isEqualTo("a, b")
+        assertThat(listOf(" ").joinedOrNull()).isNull()
     }
 }

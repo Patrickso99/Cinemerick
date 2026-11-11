@@ -13,8 +13,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class ShowtimesCacheTest {
 
@@ -31,7 +32,7 @@ class ShowtimesCacheTest {
 
         cache.put(venue, day, listOf(showing(venue)))
 
-        assertEquals(listOf(showing(venue)), cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isEqualTo(listOf(showing(venue)))
     }
 
     @Test
@@ -40,8 +41,8 @@ class ShowtimesCacheTest {
         val venue = venue(1)
         cache.put(venue, day, listOf(showing(venue)))
 
-        assertNull(cache.get(venue, day.plus(1, DateTimeUnit.DAY)))
-        assertNull(cache.get(venue(2), day))
+        assertThat(cache.get(venue, day.plus(1, DateTimeUnit.DAY))).isNull()
+        assertThat(cache.get(venue(2), day)).isNull()
     }
 
     @Test
@@ -50,7 +51,7 @@ class ShowtimesCacheTest {
         val venue = venue(1)
         cache.put(venue, day, listOf(showing(venue)))
 
-        assertNull(cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isNull()
     }
 
     @Test
@@ -61,7 +62,7 @@ class ShowtimesCacheTest {
             async(Dispatchers.Default) { cache.put(venue(index), day, listOf(showing(venue(index)))) }
         }.awaitAll()
 
-        (1..200).forEach { index -> assertEquals(1, cache.get(venue(index), day)?.size) }
+        (1..200).forEach { index -> assertThat(cache.get(venue(index), day)?.size).isEqualTo(1) }
     }
 
     @Test
@@ -72,7 +73,7 @@ class ShowtimesCacheTest {
 
         cache.clear()
 
-        assertNull(cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isNull()
     }
 
     @Test
@@ -84,7 +85,7 @@ class ShowtimesCacheTest {
 
         clock.millis = 1_000
 
-        assertEquals(listOf(showing(venue)), cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isEqualTo(listOf(showing(venue)))
     }
 
     @Test
@@ -96,7 +97,7 @@ class ShowtimesCacheTest {
 
         clock.millis = 1_001
 
-        assertNull(cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isNull()
     }
 
     @Test
@@ -108,6 +109,6 @@ class ShowtimesCacheTest {
 
         clock.millis = 0
 
-        assertEquals(listOf(showing(venue)), cache.get(venue, day))
+        assertThat(cache.get(venue, day)).isEqualTo(listOf(showing(venue)))
     }
 }

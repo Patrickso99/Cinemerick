@@ -3,8 +3,10 @@ package com.preichert.cinemerick.feature.showtimes.data
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isTrue
 
 class ResultMergingTest {
 
@@ -18,8 +20,8 @@ class ResultMergingTest {
 
         val merged = results.mergeResults()
 
-        assertTrue(merged is Result.Success)
-        assertEquals(listOf(1, 2, 3, 4, 5), (merged as Result.Success).data)
+        assertThat(merged is Result.Success).isTrue()
+        assertThat((merged as Result.Success).data).isEqualTo(listOf(1, 2, 3, 4, 5))
     }
 
     @Test
@@ -32,8 +34,8 @@ class ResultMergingTest {
 
         val merged = results.mergeResults()
 
-        assertTrue(merged is Result.Success)
-        assertEquals(listOf(1, 2, 3), (merged as Result.Success).data)
+        assertThat(merged is Result.Success).isTrue()
+        assertThat((merged as Result.Success).data).isEqualTo(listOf(1, 2, 3))
     }
 
     @Test
@@ -47,8 +49,8 @@ class ResultMergingTest {
 
         val merged = results.mergeResults()
 
-        assertTrue(merged is Result.Failure)
-        assertEquals(timeout, (merged as Result.Failure).error)
+        assertThat(merged is Result.Failure).isTrue()
+        assertThat((merged as Result.Failure).error).isEqualTo(timeout)
     }
 
     @Test
@@ -57,8 +59,8 @@ class ResultMergingTest {
 
         val merged = results.mergeResults()
 
-        assertTrue(merged is Result.Success)
-        assertEquals(emptyList(), (merged as Result.Success).data)
+        assertThat(merged is Result.Success).isTrue()
+        assertThat((merged as Result.Success).data).isEmpty()
     }
 
     @Test
@@ -70,7 +72,7 @@ class ResultMergingTest {
 
         val merged = results.mergeResults()
 
-        assertTrue(merged is Result.Success)
-        assertEquals(listOf(1), (merged as Result.Success).data)
+        assertThat(merged is Result.Success).isTrue()
+        assertThat((merged as Result.Success).data).isEqualTo(listOf(1))
     }
 }

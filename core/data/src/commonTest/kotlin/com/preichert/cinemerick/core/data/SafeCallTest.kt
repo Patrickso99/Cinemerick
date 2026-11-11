@@ -1,7 +1,9 @@
 package com.preichert.cinemerick.core.data
 
+import assertk.assertFailure
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import io.ktor.client.HttpClient
@@ -21,7 +23,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 class SafeCallTest {
 
@@ -119,8 +120,8 @@ class SafeCallTest {
 
     @Test
     fun aCancellationIsThrownAgainNotTurnedIntoAFailure() = runTest {
-        assertFailsWith<CancellationException> {
+        assertFailure {
             clientThrowing(CancellationException("cancelled")).getResponse("https://cinema.test")
-        }
+        }.isInstanceOf<CancellationException>()
     }
 }

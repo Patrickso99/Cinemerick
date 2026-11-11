@@ -2,8 +2,9 @@ package com.preichert.cinemerick.core.data
 
 import com.preichert.cinemerick.core.testing.MemorySettings
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class SettingsTimeWindowPreferencesTest {
 
@@ -11,8 +12,8 @@ class SettingsTimeWindowPreferencesTest {
     fun defaultsToEightPmAndNoLimit() {
         val preferences = SettingsTimeWindowPreferences(MemorySettings())
 
-        assertEquals(20 * 60, preferences.minMinutes())
-        assertNull(preferences.maxMinutes())
+        assertThat(preferences.minMinutes()).isEqualTo(20 * 60)
+        assertThat(preferences.maxMinutes()).isNull()
     }
 
     @Test
@@ -22,8 +23,8 @@ class SettingsTimeWindowPreferencesTest {
         preferences.setMinMinutes(18 * 60 + 30)
         preferences.setMaxMinutes(23 * 60)
 
-        assertEquals(18 * 60 + 30, preferences.minMinutes())
-        assertEquals(23 * 60, preferences.maxMinutes())
+        assertThat(preferences.minMinutes()).isEqualTo(18 * 60 + 30)
+        assertThat(preferences.maxMinutes()).isEqualTo(23 * 60)
     }
 
     @Test
@@ -33,6 +34,6 @@ class SettingsTimeWindowPreferencesTest {
 
         preferences.setMaxMinutes(null)
 
-        assertNull(preferences.maxMinutes())
+        assertThat(preferences.maxMinutes()).isNull()
     }
 }

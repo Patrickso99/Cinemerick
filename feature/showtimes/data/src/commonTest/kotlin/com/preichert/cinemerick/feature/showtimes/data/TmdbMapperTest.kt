@@ -8,8 +8,11 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
 
 class TmdbMapperTest {
 
@@ -24,8 +27,7 @@ class TmdbMapperTest {
     fun mapsAFullMovie() {
         val details = json.decodeFromString<TmdbMovieDto>(MOVIE_JSON).toFilmDetails()
 
-        assertEquals(
-            FilmDetails(
+        assertThat(details).isEqualTo(FilmDetails(
                 synopsis = "La principessa Leia viene catturata.",
                 genre = "Avventura, Azione",
                 director = "George Lucas",
@@ -54,9 +56,7 @@ class TmdbMapperTest {
                     FilmImage("https://image.tmdb.org/t/p/w300/b2.jpg", "https://image.tmdb.org/t/p/w1280/b2.jpg"),
                     FilmImage("https://image.tmdb.org/t/p/w300/b3.jpg", "https://image.tmdb.org/t/p/w1280/b3.jpg")
                 )
-            ),
-            details
-        )
+            ))
     }
 
     @Test
@@ -65,48 +65,48 @@ class TmdbMapperTest {
             credits = TmdbCreditsDto(cast = listOf(TmdbCastDto("A", 1, "", null), TmdbCastDto("B", 2, "  ", ""), TmdbCastDto("", 3, "x", "/x.jpg")))
         ).toFilmDetails().castMembers
 
-        assertEquals(listOf(FilmPerson(1, "A"), FilmPerson(2, "B")), people)
+        assertThat(people).isEqualTo(listOf(FilmPerson(1, "A"), FilmPerson(2, "B")))
     }
 
     @Test
     fun castPeopleAreCappedAtEightInOrder() {
         val people = TmdbMovieDto(credits = TmdbCreditsDto(cast = (1..12).map { TmdbCastDto("Actor $it", it) })).toFilmDetails().castMembers
 
-        assertEquals((1..8).toList(), people.map { it.id })
+        assertThat(people.map { it.id }).isEqualTo((1..8).toList())
     }
 
     @Test
     fun blankTaglineSagaAndCountriesStayMissingAndCountriesAreJoined() {
         val blank = TmdbMovieDto(tagline = " ", collection = TmdbCollectionDto(""), productionCountries = listOf(TmdbCountryDto("")), originalLanguage = "")
             .toFilmDetails()
-        assertNull(blank.tagline)
-        assertNull(blank.saga)
-        assertNull(blank.countries)
-        assertNull(blank.originalLanguage)
-        assertNull(blank.backdropUrl)
+        assertThat(blank.tagline).isNull()
+        assertThat(blank.saga).isNull()
+        assertThat(blank.countries).isNull()
+        assertThat(blank.originalLanguage).isNull()
+        assertThat(blank.backdropUrl).isNull()
 
         val countries = TmdbMovieDto(productionCountries = listOf(TmdbCountryDto("Italy"), TmdbCountryDto("France"), TmdbCountryDto("Italy"))).toFilmDetails()
-        assertEquals("Italy, France", countries.countries)
+        assertThat(countries.countries).isEqualTo("Italy, France")
     }
 
     @Test
     fun anOfficialItalianTrailerWinsOverTheOthers() {
         val details = movie(video("it1", "it"), video("it2", "it", official = true), video("it3", "it")).toFilmDetails()
 
-        assertEquals("https://www.youtube.com/watch?v=it2", details.trailerUrl)
+        assertThat(details.trailerUrl).isEqualTo("https://www.youtube.com/watch?v=it2")
     }
 
     @Test
     fun aTrailerOnlyInAnotherLanguageIsNotUsed() {
-        assertNull(movie(video("en1", "en", official = true)).toFilmDetails().trailerUrl)
-        assertEquals("https://www.youtube.com/watch?v=it1", movie(video("en1", "en"), video("it1", "it")).toFilmDetails().trailerUrl)
+        assertThat(movie(video("en1", "en", official = true)).toFilmDetails().trailerUrl).isNull()
+        assertThat(movie(video("en1", "en"), video("it1", "it")).toFilmDetails().trailerUrl).isEqualTo("https://www.youtube.com/watch?v=it1")
     }
 
     @Test
     fun aBlankSynopsisStaysMissing() {
-        assertNull(TmdbMovieDto(overview = "  ").toFilmDetails().synopsis)
-        assertNull(TmdbMovieDto(overview = null).toFilmDetails().synopsis)
-        assertEquals("Trama", TmdbMovieDto(overview = "Trama").toFilmDetails().synopsis)
+        assertThat(TmdbMovieDto(overview = "  ").toFilmDetails().synopsis).isNull()
+        assertThat(TmdbMovieDto(overview = null).toFilmDetails().synopsis).isNull()
+        assertThat(TmdbMovieDto(overview = "Trama").toFilmDetails().synopsis).isEqualTo("Trama")
     }
 
     @Test
@@ -119,7 +119,7 @@ class TmdbMapperTest {
             video("", "it")
         ).toFilmDetails()
 
-        assertNull(details.trailerUrl)
+        assertThat(details.trailerUrl).isNull()
     }
 
     @Test
@@ -135,14 +135,14 @@ class TmdbMapperTest {
             )
         )
 
-        assertEquals("Lana Wachowski, Lilly Wachowski", movie.toFilmDetails().director)
+        assertThat(movie.toFilmDetails().director).isEqualTo("Lana Wachowski, Lilly Wachowski")
     }
 
     @Test
     fun castIsCappedAtEight() {
         val movie = TmdbMovieDto(credits = TmdbCreditsDto(cast = (1..12).map { TmdbCastDto("Actor $it") }))
 
-        assertEquals((1..8).joinToString(", ") { "Actor $it" }, movie.toFilmDetails().cast)
+        assertThat(movie.toFilmDetails().cast).isEqualTo((1..8).joinToString(", ") { "Actor $it" })
     }
 
     @Test
@@ -153,34 +153,34 @@ class TmdbMapperTest {
             )
         ).toFilmDetails().rating
 
-        assertEquals("14+", certified("US" to listOf("R"), "IT" to listOf("", "VM14")))
-        assertEquals("18+", certified("IT" to listOf("VM18")))
-        assertEquals("BA", certified("IT" to listOf("BA")))
-        assertNull(certified("US" to listOf("PG")))
-        assertNull(certified("IT" to listOf("", "")))
+        assertThat(certified("US" to listOf("R"), "IT" to listOf("", "VM14"))).isEqualTo("14+")
+        assertThat(certified("IT" to listOf("VM18"))).isEqualTo("18+")
+        assertThat(certified("IT" to listOf("BA"))).isEqualTo("BA")
+        assertThat(certified("US" to listOf("PG"))).isNull()
+        assertThat(certified("IT" to listOf("", ""))).isNull()
     }
 
     @Test
     fun scoreIsAbsentWithoutVotes() {
-        assertNull(TmdbMovieDto(voteAverage = 0.0, voteCount = 0).toFilmDetails().score)
-        assertEquals(FilmScore(6.5, 3), TmdbMovieDto(voteAverage = 6.5, voteCount = 3).toFilmDetails().score)
+        assertThat(TmdbMovieDto(voteAverage = 0.0, voteCount = 0).toFilmDetails().score).isNull()
+        assertThat(TmdbMovieDto(voteAverage = 6.5, voteCount = 3).toFilmDetails().score).isEqualTo(FilmScore(6.5, 3))
     }
 
     @Test
     fun yearAndRuntimeAreMappedAndBadValuesDropped() {
         val ok = TmdbMovieDto(releaseDate = "2026-09-01", runtime = 95).toFilmDetails()
-        assertEquals(2026, ok.year)
-        assertEquals(95, ok.runtimeMinutes)
+        assertThat(ok.year).isEqualTo(2026)
+        assertThat(ok.runtimeMinutes).isEqualTo(95)
 
         val bad = TmdbMovieDto(releaseDate = "", runtime = 0).toFilmDetails()
-        assertNull(bad.year)
-        assertNull(bad.runtimeMinutes)
-        assertNull(TmdbMovieDto(releaseDate = null, runtime = null).toFilmDetails().year)
+        assertThat(bad.year).isNull()
+        assertThat(bad.runtimeMinutes).isNull()
+        assertThat(TmdbMovieDto(releaseDate = null, runtime = null).toFilmDetails().year).isNull()
     }
 
     @Test
     fun anEmptyMovieGivesEmptyDetails() {
-        assertEquals(true, TmdbMovieDto().toFilmDetails().isEmpty)
+        assertThat(TmdbMovieDto().toFilmDetails().isEmpty).isTrue()
     }
 
     private fun italianDates(vararg dates: TmdbReleaseDateDto) =
@@ -192,12 +192,12 @@ class TmdbMapperTest {
     @Test
     fun zeroOrMissingBudgetAndRevenueGiveNull() {
         val none = TmdbMovieDto(budget = 0, revenue = 0).toFilmDetails()
-        assertNull(none.budget)
-        assertNull(none.revenue)
+        assertThat(none.budget).isNull()
+        assertThat(none.revenue).isNull()
 
         val onlyBudget = TmdbMovieDto(budget = 5_000_000, revenue = 0).toFilmDetails()
-        assertEquals(5_000_000L, onlyBudget.budget)
-        assertNull(onlyBudget.revenue)
+        assertThat(onlyBudget.budget).isEqualTo(5_000_000L)
+        assertThat(onlyBudget.revenue).isNull()
     }
 
     @Test
@@ -207,18 +207,15 @@ class TmdbMapperTest {
             releaseDates = italianDates(date(5, "2024-05-23"), date(3, "2024-11-01"), date(3, "2024-02-28"))
         )
 
-        assertEquals(LocalDate(2024, 2, 28), movie.toFilmDetails().releaseDate)
+        assertThat(movie.toFilmDetails().releaseDate).isEqualTo(LocalDate(2024, 2, 28))
     }
 
     @Test
     fun withoutAnItalianTheatricalDateThePrimaryDateIsUsed() {
-        assertEquals(LocalDate(2024, 3, 1), TmdbMovieDto(releaseDate = "2024-03-01").toFilmDetails().releaseDate)
-        assertEquals(
-            LocalDate(2024, 3, 1),
-            TmdbMovieDto(releaseDate = "2024-03-01", releaseDates = italianDates(date(5, "2024-05-23"))).toFilmDetails().releaseDate
-        )
-        assertNull(TmdbMovieDto(releaseDate = "").toFilmDetails().releaseDate)
-        assertNull(TmdbMovieDto(releaseDate = "not a date").toFilmDetails().releaseDate)
+        assertThat(TmdbMovieDto(releaseDate = "2024-03-01").toFilmDetails().releaseDate).isEqualTo(LocalDate(2024, 3, 1))
+        assertThat(TmdbMovieDto(releaseDate = "2024-03-01", releaseDates = italianDates(date(5, "2024-05-23"))).toFilmDetails().releaseDate).isEqualTo(LocalDate(2024, 3, 1))
+        assertThat(TmdbMovieDto(releaseDate = "").toFilmDetails().releaseDate).isNull()
+        assertThat(TmdbMovieDto(releaseDate = "not a date").toFilmDetails().releaseDate).isNull()
     }
 
     @Test
@@ -226,26 +223,23 @@ class TmdbMapperTest {
         val backdrops = (1..12).map { TmdbImageDto("/b$it.jpg", it.toDouble()) } + TmdbImageDto("/header.jpg", 100.0) + TmdbImageDto("", 50.0)
         val details = TmdbMovieDto(backdropPath = "/header.jpg", images = TmdbImagesDto(backdrops)).toFilmDetails()
 
-        assertEquals((12 downTo 4).map { "https://image.tmdb.org/t/p/w1280/b$it.jpg" }, details.gallery.map { it.fullUrl })
-        assertEquals("https://image.tmdb.org/t/p/w300/b12.jpg", details.gallery.first().thumbUrl)
+        assertThat(details.gallery.map { it.fullUrl }).isEqualTo((12 downTo 4).map { "https://image.tmdb.org/t/p/w1280/b$it.jpg" })
+        assertThat(details.gallery.first().thumbUrl).isEqualTo("https://image.tmdb.org/t/p/w300/b12.jpg")
     }
 
     @Test
     fun noExtraBackdropsGiveNoGallery() {
-        assertEquals(emptyList(), TmdbMovieDto().toFilmDetails().gallery)
-        assertEquals(
-            emptyList(),
-            TmdbMovieDto(backdropPath = "/h.jpg", images = TmdbImagesDto(listOf(TmdbImageDto("/h.jpg", 5.0)))).toFilmDetails().gallery
-        )
+        assertThat(TmdbMovieDto().toFilmDetails().gallery).isEmpty()
+        assertThat(TmdbMovieDto(backdropPath = "/h.jpg", images = TmdbImagesDto(listOf(TmdbImageDto("/h.jpg", 5.0)))).toFilmDetails().gallery).isEmpty()
     }
 
     @Test
     fun descriptorsFollowTheCertification() {
         val withDescriptors = TmdbMovieDto(releaseDates = italianDates(date(3, "2024-01-01", "VM14", listOf("Violence", "Weapons", "Violence"))))
-        assertEquals("14+ · Violence, Weapons", withDescriptors.toFilmDetails().rating)
+        assertThat(withDescriptors.toFilmDetails().rating).isEqualTo("14+ · Violence, Weapons")
 
         val without = TmdbMovieDto(releaseDates = italianDates(date(3, "2024-01-01", "T")))
-        assertEquals("Per tutti", without.toFilmDetails().rating)
+        assertThat(without.toFilmDetails().rating).isEqualTo("Per tutti")
     }
 
     @Test
@@ -257,21 +251,21 @@ class TmdbMapperTest {
             )
         )
 
-        assertEquals("6+ · Fear", movie.toFilmDetails().rating)
+        assertThat(movie.toFilmDetails().rating).isEqualTo("6+ · Fear")
     }
 
     @Test
     fun descriptorsWithoutACertificationShowNothing() {
         val movie = TmdbMovieDto(releaseDates = italianDates(date(3, "2024-01-01", "", listOf("Violence"))))
 
-        assertNull(movie.toFilmDetails().rating)
+        assertThat(movie.toFilmDetails().rating).isNull()
     }
 
     @Test
     fun blankCompaniesAreDroppedAndDuplicatesJoinedOnce() {
         val details = TmdbMovieDto(productionCompanies = listOf(TmdbCompanyDto("A24"), TmdbCompanyDto(" "), TmdbCompanyDto("A24"), TmdbCompanyDto("Blumhouse"))).toFilmDetails()
 
-        assertEquals("A24, Blumhouse", details.productionCompanies)
+        assertThat(details.productionCompanies).isEqualTo("A24, Blumhouse")
     }
 
     @Test
@@ -288,8 +282,8 @@ class TmdbMapperTest {
             )
         ).toFilmDetails()
 
-        assertEquals("https://image.tmdb.org/t/p/w342/poster.jpg", details.posterUrl)
-        assertEquals("https://image.tmdb.org/t/p/w500/it.png", details.logoUrl)
+        assertThat(details.posterUrl).isEqualTo("https://image.tmdb.org/t/p/w342/poster.jpg")
+        assertThat(details.logoUrl).isEqualTo("https://image.tmdb.org/t/p/w500/it.png")
     }
 
     @Test
@@ -304,8 +298,8 @@ class TmdbMapperTest {
             TmdbImageDto(filePath = "/pt.png", voteAverage = 9.5, language = "pt")
         ))).toFilmDetails()
 
-        assertEquals("https://image.tmdb.org/t/p/w500/en.png", english.logoUrl)
-        assertNull(nothing.logoUrl)
+        assertThat(english.logoUrl).isEqualTo("https://image.tmdb.org/t/p/w500/en.png")
+        assertThat(nothing.logoUrl).isNull()
     }
 
     @Test
@@ -316,6 +310,6 @@ class TmdbMapperTest {
             TmdbImageDto(filePath = "/none.jpg", voteAverage = 7.0, language = null)
         ))).toFilmDetails()
 
-        assertEquals(listOf("/none.jpg", "/it.jpg"), details.gallery.map { it.fullUrl.substringAfter("w1280") })
+        assertThat(details.gallery.map { it.fullUrl.substringAfter("w1280") }).isEqualTo(listOf("/none.jpg", "/it.jpg"))
     }
 }

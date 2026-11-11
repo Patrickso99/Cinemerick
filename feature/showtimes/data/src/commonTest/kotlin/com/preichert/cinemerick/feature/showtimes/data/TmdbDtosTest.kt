@@ -2,9 +2,11 @@ package com.preichert.cinemerick.feature.showtimes.data
 
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 
 private val tmdbJson = Json { ignoreUnknownKeys = true; coerceInputValues = true; isLenient = true }
 
@@ -105,78 +107,83 @@ class TmdbDtosTest {
     fun decodesSearchResultsAndToleratesMissingFields() {
         val search = tmdbJson.decodeFromString<TmdbSearchDto>(SEARCH_JSON)
 
-        assertEquals(3, search.results.size)
+        assertThat(search.results.size).isEqualTo(3)
         val first = search.results.first()
-        assertEquals(11, first.id)
-        assertEquals("Guerre stellari", first.title)
-        assertEquals("Star Wars", first.originalTitle)
-        assertEquals("1977-05-25", first.releaseDate)
-        assertEquals(89.1924, first.popularity)
+        assertThat(first.id).isEqualTo(11)
+        assertThat(first.title).isEqualTo("Guerre stellari")
+        assertThat(first.originalTitle).isEqualTo("Star Wars")
+        assertThat(first.releaseDate).isEqualTo("1977-05-25")
+        assertThat(first.popularity).isEqualTo(89.1924)
 
-        assertEquals("", search.results[1].releaseDate)
-        assertNull(search.results[2].releaseDate)
-        assertEquals(0.0, search.results[2].popularity)
+        assertThat(search.results[1].releaseDate).isEqualTo("")
+        assertThat(search.results[2].releaseDate).isNull()
+        assertThat(search.results[2].popularity).isEqualTo(0.0)
     }
 
     @Test
     fun decodesMovieDetailWithAppendedCreditsVideosAndReleaseDates() {
         val movie = tmdbJson.decodeFromString<TmdbMovieDto>(MOVIE_JSON)
 
-        assertEquals("Guerre stellari", movie.title)
-        assertEquals("Star Wars", movie.originalTitle)
-        assertEquals("La principessa Leia viene catturata.", movie.overview)
-        assertEquals(121, movie.runtime)
-        assertEquals(8.207, movie.voteAverage)
-        assertEquals(22999, movie.voteCount)
-        assertEquals(listOf("Avventura", "Azione"), movie.genres.map { it.name })
-        assertEquals("Tanto tempo fa", movie.tagline)
-        assertEquals("/backdrop.jpg", movie.backdropPath)
-        assertEquals("Saga di Guerre stellari", movie.collection?.name)
-        assertEquals("en", movie.originalLanguage)
-        assertEquals(listOf("United States of America"), movie.productionCountries.map { it.name })
-        assertEquals(listOf("Lucasfilm Ltd.", "Twentieth Century Fox"), movie.productionCompanies.map { it.name })
-        assertEquals(11_000_000L, movie.budget)
-        assertEquals(775_398_007L, movie.revenue)
-        assertEquals(listOf("/backdrop.jpg", "/b2.jpg", "/b3.jpg"), assertNotNull(movie.images).backdrops.map { it.filePath })
-        assertEquals(listOf(7.0, 6.1, 3.0), movie.images.backdrops.map { it.voteAverage })
+        assertThat(movie.title).isEqualTo("Guerre stellari")
+        assertThat(movie.originalTitle).isEqualTo("Star Wars")
+        assertThat(movie.overview).isEqualTo("La principessa Leia viene catturata.")
+        assertThat(movie.runtime).isEqualTo(121)
+        assertThat(movie.voteAverage).isEqualTo(8.207)
+        assertThat(movie.voteCount).isEqualTo(22999)
+        assertThat(movie.genres.map { it.name }).isEqualTo(listOf("Avventura", "Azione"))
+        assertThat(movie.tagline).isEqualTo("Tanto tempo fa")
+        assertThat(movie.backdropPath).isEqualTo("/backdrop.jpg")
+        assertThat(movie.collection?.name).isEqualTo("Saga di Guerre stellari")
+        assertThat(movie.originalLanguage).isEqualTo("en")
+        assertThat(movie.productionCountries.map { it.name }).isEqualTo(listOf("United States of America"))
+        assertThat(movie.productionCompanies.map { it.name }).isEqualTo(listOf("Lucasfilm Ltd.", "Twentieth Century Fox"))
+        assertThat(movie.budget).isEqualTo(11_000_000L)
+        assertThat(movie.revenue).isEqualTo(775_398_007L)
+        assertThat(movie.images).isNotNull()
+        val images = movie.images!!
+        assertThat(images.backdrops.map { it.filePath }).isEqualTo(listOf("/backdrop.jpg", "/b2.jpg", "/b3.jpg"))
+        assertThat(images.backdrops.map { it.voteAverage }).isEqualTo(listOf(7.0, 6.1, 3.0))
 
-        val credits = assertNotNull(movie.credits)
-        assertEquals(listOf("Mark Hamill", "Harrison Ford"), credits.cast.map { it.name })
-        assertEquals(listOf("Director" to "George Lucas", "Producer" to "Gary Kurtz"), credits.crew.map { it.job to it.name })
-        assertEquals(listOf(2, 3), credits.cast.map { it.id })
-        assertEquals(listOf("Luke Skywalker", "Han Solo"), credits.cast.map { it.character })
-        assertEquals(listOf("/mark.jpg", null), credits.cast.map { it.profilePath })
-        assertEquals("/george.jpg", credits.crew.first().profilePath)
+        assertThat(movie.credits).isNotNull()
+        val credits = movie.credits!!
+        assertThat(credits.cast.map { it.name }).isEqualTo(listOf("Mark Hamill", "Harrison Ford"))
+        assertThat(credits.crew.map { it.job to it.name }).isEqualTo(listOf("Director" to "George Lucas", "Producer" to "Gary Kurtz"))
+        assertThat(credits.cast.map { it.id }).isEqualTo(listOf(2, 3))
+        assertThat(credits.cast.map { it.character }).isEqualTo(listOf("Luke Skywalker", "Han Solo"))
+        assertThat(credits.cast.map { it.profilePath }).isEqualTo(listOf("/mark.jpg", null))
+        assertThat(credits.crew.first().profilePath).isEqualTo("/george.jpg")
 
-        val videos = assertNotNull(movie.videos).results
-        assertEquals(TmdbVideoDto(key = "abc123", site = "YouTube", type = "Trailer", official = true, language = "it"), videos.first())
-        assertEquals("Vimeo", videos.last().site)
+        assertThat(movie.videos).isNotNull()
+        val videos = movie.videos!!.results
+        assertThat(videos.first()).isEqualTo(TmdbVideoDto(key = "abc123", site = "YouTube", type = "Trailer", official = true, language = "it"))
+        assertThat(videos.last().site).isEqualTo("Vimeo")
 
-        val italy = assertNotNull(movie.releaseDates).results.first { it.country == "IT" }
-        assertEquals(listOf("", "T"), italy.releaseDates.map { it.certification })
-        assertEquals(listOf(3, 3), italy.releaseDates.map { it.type })
-        assertEquals("1977-10-20T00:00:00.000Z", italy.releaseDates.last().releaseDate)
+        assertThat(movie.releaseDates).isNotNull()
+        val italy = movie.releaseDates!!.results.first { it.country == "IT" }
+        assertThat(italy.releaseDates.map { it.certification }).isEqualTo(listOf("", "T"))
+        assertThat(italy.releaseDates.map { it.type }).isEqualTo(listOf(3, 3))
+        assertThat(italy.releaseDates.last().releaseDate).isEqualTo("1977-10-20T00:00:00.000Z")
     }
 
     @Test
     fun movieWithoutAppendedSectionsDecodesWithNulls() {
         val movie = tmdbJson.decodeFromString<TmdbMovieDto>("""{"id": 5, "title": "Solo", "runtime": null, "overview": null}""")
 
-        assertNull(movie.credits)
-        assertNull(movie.videos)
-        assertNull(movie.releaseDates)
-        assertNull(movie.runtime)
-        assertNull(movie.overview)
-        assertNull(movie.tagline)
-        assertNull(movie.backdropPath)
-        assertNull(movie.collection)
-        assertNull(movie.originalLanguage)
-        assertNull(movie.images)
-        assertEquals(0L, movie.budget)
-        assertEquals(0L, movie.revenue)
-        assertEquals(emptyList(), movie.productionCompanies)
-        assertEquals(emptyList(), movie.productionCountries)
-        assertEquals(0, movie.voteCount)
+        assertThat(movie.credits).isNull()
+        assertThat(movie.videos).isNull()
+        assertThat(movie.releaseDates).isNull()
+        assertThat(movie.runtime).isNull()
+        assertThat(movie.overview).isNull()
+        assertThat(movie.tagline).isNull()
+        assertThat(movie.backdropPath).isNull()
+        assertThat(movie.collection).isNull()
+        assertThat(movie.originalLanguage).isNull()
+        assertThat(movie.images).isNull()
+        assertThat(movie.budget).isEqualTo(0L)
+        assertThat(movie.revenue).isEqualTo(0L)
+        assertThat(movie.productionCompanies).isEmpty()
+        assertThat(movie.productionCountries).isEmpty()
+        assertThat(movie.voteCount).isEqualTo(0)
     }
 
     @Test
@@ -188,6 +195,6 @@ class TmdbDtosTest {
         )
 
         val date = movie.releaseDates!!.results.single().releaseDates.single()
-        assertEquals(3, date.descriptors.size)
+        assertThat(date.descriptors.size).isEqualTo(3)
     }
 }

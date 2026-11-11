@@ -5,9 +5,10 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
 
 class NotoriousParserTest {
 
@@ -42,20 +43,20 @@ class NotoriousParserTest {
 
         val showings = parseNotoriousShowings(html, venueFerrara, listOf(thursday, friday))
 
-        assertEquals(listOf("Digger", "Digger", "La Città Dei Vivi"), showings.map { it.title })
-        assertEquals(listOf(thursday, thursday, friday), showings.map { it.day })
-        assertEquals(listOf(LocalTime(20, 5), LocalTime(9, 30), LocalTime(21, 0)), showings.map { it.time })
-        assertEquals(listOf("VO", "VO", null), showings.map { it.format })
-        assertEquals("https://www.notoriouscinemas.it/cvu/modules/img_switcher.php?idfilm=1&type=446&ext=jpg", showings.first().posterUrl)
-        assertEquals(setOf(venueFerrara), showings.map { it.venue }.toSet())
-        assertFalse(showings.any { it.soldOut })
+        assertThat(showings.map { it.title }).isEqualTo(listOf("Digger", "Digger", "La Città Dei Vivi"))
+        assertThat(showings.map { it.day }).isEqualTo(listOf(thursday, thursday, friday))
+        assertThat(showings.map { it.time }).isEqualTo(listOf(LocalTime(20, 5), LocalTime(9, 30), LocalTime(21, 0)))
+        assertThat(showings.map { it.format }).isEqualTo(listOf("VO", "VO", null))
+        assertThat(showings.first().posterUrl).isEqualTo("https://www.notoriouscinemas.it/cvu/modules/img_switcher.php?idfilm=1&type=446&ext=jpg")
+        assertThat(showings.map { it.venue }.toSet()).isEqualTo(setOf(venueFerrara))
+        assertThat(showings.any { it.soldOut }).isFalse()
     }
 
     @Test
     fun ignoresDaysThatWereNotRequested() {
         val html = film(1, "BEAST [2026]", "Gioved&igrave; 01/10" to listOf("20:05"), "Venerd&igrave; 02/10" to listOf("20:05"))
 
-        assertEquals(listOf(friday), parseNotoriousShowings(html, venueFerrara, listOf(friday)).map { it.day })
+        assertThat(parseNotoriousShowings(html, venueFerrara, listOf(friday)).map { it.day }).isEqualTo(listOf(friday))
     }
 
     @Test
@@ -65,21 +66,18 @@ class NotoriousParserTest {
 
         val showings = parseNotoriousShowings(html, venueFerrara, listOf(thursday))
 
-        assertEquals(
-            listOf(
+        assertThat(showings.map { it.ticketUrl }).isEqualTo(listOf(
                 "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=100",
                 "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=101",
                 "https://www.notoriouscinemas.it/generic/seatsframe.php?sc=5848&sp=200"
-            ),
-            showings.map { it.ticketUrl }
-        )
+            ))
     }
 
     @Test
     fun pageWithoutCinemaIdGivesNoPurchaseUrl() {
         val html = film(1, "DIGGER [2026]", "Gioved&igrave; 01/10" to listOf("20:05"))
 
-        assertEquals(listOf<String?>(null), parseNotoriousShowings(html, venueFerrara, listOf(thursday)).map { it.ticketUrl })
+        assertThat(parseNotoriousShowings(html, venueFerrara, listOf(thursday)).map { it.ticketUrl }).isEqualTo(listOf<String?>(null))
     }
 
     @Test
@@ -88,10 +86,7 @@ class NotoriousParserTest {
 
         val showings = parseNotoriousShowings(html, venueFerrara, listOf(thursday))
 
-        assertEquals(
-            listOf("https://www.notoriouscinemas.it/generic/scheda.php?id=48721", "https://www.notoriouscinemas.it/generic/scheda.php?id=48720"),
-            showings.map { it.detailsUrl }
-        )
+        assertThat(showings.map { it.detailsUrl }).isEqualTo(listOf("https://www.notoriouscinemas.it/generic/scheda.php?id=48721", "https://www.notoriouscinemas.it/generic/scheda.php?id=48720"))
     }
 
     @Test
@@ -104,22 +99,22 @@ class NotoriousParserTest {
 
         val venues = parseNotoriousVenues(html)
 
-        assertEquals(listOf("ferrara", "fiumeveneto", "sinalunga"), venues.map { it.id })
-        assertEquals(listOf("Ferrara", "Fiume Veneto", "Sinalunga"), venues.map { it.name })
-        assertEquals("https://www.notoriouscinemas.it/fiumeveneto/index.php", venues[1].webUrl)
+        assertThat(venues.map { it.id }).isEqualTo(listOf("ferrara", "fiumeveneto", "sinalunga"))
+        assertThat(venues.map { it.name }).isEqualTo(listOf("Ferrara", "Fiume Veneto", "Sinalunga"))
+        assertThat(venues[1].webUrl).isEqualTo("https://www.notoriouscinemas.it/fiumeveneto/index.php")
     }
 
     @Test
     fun decodesHtmlEntitiesInVenueNames() {
         val html = "<li><a href=\"../fiumeveneto/index.php\">Fiume&nbsp;Veneto &amp; Sacile</a></li>"
 
-        assertEquals("Fiume Veneto & Sacile", parseNotoriousVenues(html).single().name)
+        assertThat(parseNotoriousVenues(html).single().name).isEqualTo("Fiume Veneto & Sacile")
     }
 
     @Test
     fun filmWithoutFilmPageLinkHasNoDetailsUrl() {
         val html = film(1, "DIGGER", "Gioved&igrave; 01/10" to listOf("20:05")).replace(Regex("<div class=\"scheda\"[^>]*>.*?</div>"), "")
 
-        assertNull(parseNotoriousShowings(html, venueFerrara, listOf(thursday)).single().detailsUrl)
+        assertThat(parseNotoriousShowings(html, venueFerrara, listOf(thursday)).single().detailsUrl).isNull()
     }
 }

@@ -3,8 +3,9 @@ package com.preichert.cinemerick.feature.showtimes.data
 import com.preichert.cinemerick.core.testing.FakeClock
 import com.preichert.cinemerick.core.testing.MemorySettings
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class TmdbMatchLocalDataSourceTest {
 
@@ -15,7 +16,7 @@ class TmdbMatchLocalDataSourceTest {
         val settings = MemorySettings()
         SettingsTmdbMatchDataSource(settings, FakeClock(0L)).put("starwars", RememberedMatch.Found(11))
 
-        assertEquals(RememberedMatch.Found(11), SettingsTmdbMatchDataSource(settings, FakeClock(1L)).get("starwars"))
+        assertThat(SettingsTmdbMatchDataSource(settings, FakeClock(1L)).get("starwars")).isEqualTo(RememberedMatch.Found(11))
     }
 
     @Test
@@ -26,7 +27,7 @@ class TmdbMatchLocalDataSourceTest {
 
         clock.millis = 1000L * day
 
-        assertEquals(RememberedMatch.Found(11), store.get("starwars"))
+        assertThat(store.get("starwars")).isEqualTo(RememberedMatch.Found(11))
     }
 
     @Test
@@ -36,15 +37,15 @@ class TmdbMatchLocalDataSourceTest {
         store.put("mammina", RememberedMatch.NoMatch)
 
         clock.millis = 7 * day
-        assertEquals(RememberedMatch.NoMatch, store.get("mammina"))
+        assertThat(store.get("mammina")).isEqualTo(RememberedMatch.NoMatch)
 
         clock.millis = 7 * day + 1
-        assertNull(store.get("mammina"))
+        assertThat(store.get("mammina")).isNull()
     }
 
     @Test
     fun anUnknownTitleIsNotRemembered() {
-        assertNull(SettingsTmdbMatchDataSource(MemorySettings(), FakeClock(0L)).get("mammina"))
+        assertThat(SettingsTmdbMatchDataSource(MemorySettings(), FakeClock(0L)).get("mammina")).isNull()
     }
 
     @Test
@@ -55,7 +56,7 @@ class TmdbMatchLocalDataSourceTest {
 
         val store = SettingsTmdbMatchDataSource(settings, FakeClock(0L))
 
-        assertNull(store.get("starwars"))
-        assertNull(store.get("mammina"))
+        assertThat(store.get("starwars")).isNull()
+        assertThat(store.get("mammina")).isNull()
     }
 }

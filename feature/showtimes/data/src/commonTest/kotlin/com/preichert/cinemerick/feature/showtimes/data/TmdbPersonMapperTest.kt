@@ -5,7 +5,10 @@ import com.preichert.cinemerick.feature.showtimes.domain.PersonFilm
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class TmdbPersonMapperTest {
 
@@ -15,8 +18,7 @@ class TmdbPersonMapperTest {
     fun mapsTheProfileAndTheFilmsMostRecentFirst() {
         val details = json.decodeFromString<TmdbPersonDto>(PERSON_JSON).toPersonDetails()
 
-        assertEquals(
-            PersonDetails(
+        assertThat(details).isEqualTo(PersonDetails(
                 id = 42,
                 name = "Rob Savage",
                 biography = "Regista britannico.",
@@ -28,9 +30,7 @@ class TmdbPersonMapperTest {
                     PersonFilm(10, "Mammina", 2026, role = null, posterUrl = "https://image.tmdb.org/t/p/w342/mammina.jpg", score = 6.8),
                     PersonFilm(11, "Host", 2020, role = "Regia", posterUrl = null, score = null)
                 )
-            ),
-            details
-        )
+            ))
     }
 
     @Test
@@ -38,9 +38,9 @@ class TmdbPersonMapperTest {
         val details = json.decodeFromString<TmdbPersonDto>("""{"id":7,"name":"Anna","biography":"  ","birthday":"","combined_credits":{"cast":[{"id":3,"media_type":"tv","title":"Serie"}]}}""")
             .toPersonDetails()
 
-        assertEquals(null, details.biography)
-        assertEquals(null, details.birthday)
-        assertEquals(emptyList(), details.films)
+        assertThat(details.biography).isNull()
+        assertThat(details.birthday).isNull()
+        assertThat(details.films).isEmpty()
     }
 
     private companion object {

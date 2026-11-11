@@ -15,8 +15,10 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class VenuePickerControllerTest {
 
@@ -45,12 +47,12 @@ class VenuePickerControllerTest {
         val picker = VenuePickerController(this, repository, preferences) { change -> state.update { change(it) } }
 
         picker.toggle(space)
-        assertEquals(setOf(space), state.value.selectedVenues)
-        assertEquals(setOf(space), preferences.saved)
+        assertThat(state.value.selectedVenues).isEqualTo(setOf(space))
+        assertThat(preferences.saved).isEqualTo(setOf(space))
 
         picker.toggle(space)
-        assertEquals(emptySet(), state.value.selectedVenues)
-        assertEquals(emptySet(), preferences.saved)
+        assertThat(state.value.selectedVenues).isEmpty()
+        assertThat(preferences.saved).isEqualTo(emptySet())
     }
 
     @Test
@@ -63,9 +65,9 @@ class VenuePickerControllerTest {
         picker.search("Marcon")
 
         val venuePicker = state.value.venuePicker
-        assertEquals(Chain.UCI, venuePicker?.chain)
-        assertEquals("Marcon", venuePicker?.query)
-        assertEquals(VenueCatalogUi.Loaded(listOf(uci)), venuePicker?.catalog)
+        assertThat(venuePicker?.chain).isEqualTo(Chain.UCI)
+        assertThat(venuePicker?.query).isEqualTo("Marcon")
+        assertThat(venuePicker?.catalog).isEqualTo(VenueCatalogUi.Loaded(listOf(uci)))
     }
 
     @Test
@@ -77,6 +79,6 @@ class VenuePickerControllerTest {
 
         picker.dismiss()
 
-        assertNull(state.value.venuePicker)
+        assertThat(state.value.venuePicker).isNull()
     }
 }

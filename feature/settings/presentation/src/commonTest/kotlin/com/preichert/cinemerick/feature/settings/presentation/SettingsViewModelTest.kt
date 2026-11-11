@@ -5,17 +5,18 @@ import com.preichert.cinemerick.core.presentation.AnimationController
 import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.presentation.LanguageController
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import app.cash.turbine.test
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNull
 import com.preichert.cinemerick.core.testing.FakeAnimationPreferences
 import com.preichert.cinemerick.core.testing.FakeLanguagePreferences
 import com.preichert.cinemerick.core.testing.FakeThemePreferences
@@ -38,7 +39,7 @@ class SettingsViewModelTest {
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = true, systemDark = false))
 
-        assertEquals(ThemeMode.SYSTEM, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.SYSTEM)
     }
 
     @Test
@@ -48,7 +49,7 @@ class SettingsViewModelTest {
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = true))
 
-        assertEquals(ThemeMode.DARK, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.DARK)
     }
 
     @Test
@@ -58,7 +59,7 @@ class SettingsViewModelTest {
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = false))
 
-        assertEquals(ThemeMode.LIGHT, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.LIGHT)
     }
 
     @Test
@@ -68,7 +69,7 @@ class SettingsViewModelTest {
 
         viewModel.onAction(SettingsAction.OnThemeModeSelected(ThemeMode.DARK))
 
-        assertEquals(ThemeMode.DARK, controller.mode.value)
+        assertThat(controller.mode.value).isEqualTo(ThemeMode.DARK)
     }
 
     @Test
@@ -78,8 +79,9 @@ class SettingsViewModelTest {
 
         val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
 
-        val state = viewModel.state.first()
-        assertEquals(ThemeMode.LIGHT, state.themeMode)
+        viewModel.state.test {
+            assertThat(awaitItem().themeMode).isEqualTo(ThemeMode.LIGHT)
+        }
     }
 
     @Test
@@ -88,12 +90,12 @@ class SettingsViewModelTest {
         val animations = AnimationController(FakeAnimationPreferences())
         val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), animations, timeWindow(), languageController())
 
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.state.collect {} }
+        viewModel.state.test {
+            viewModel.onAction(SettingsAction.OnAnimationsToggled(false))
 
-        viewModel.onAction(SettingsAction.OnAnimationsToggled(false))
-
-        assertEquals(false, animations.isEnabled.value)
-        assertEquals(false, viewModel.state.value.animationsEnabled)
+            assertThat(animations.isEnabled.value).isFalse()
+            assertThat(expectMostRecentItem().animationsEnabled).isFalse()
+        }
     }
 
     @Test
@@ -104,8 +106,8 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(23 * 60))
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(18 * 60))
 
-        assertEquals(18 * 60, window.window.value.minMinutes)
-        assertEquals(23 * 60, window.window.value.maxMinutes)
+        assertThat(window.window.value.minMinutes).isEqualTo(18 * 60)
+        assertThat(window.window.value.maxMinutes).isEqualTo(23 * 60)
     }
 
     @Test
@@ -117,8 +119,8 @@ class SettingsViewModelTest {
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(23 * 60))
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(19 * 60))
 
-        assertEquals(20 * 60, window.window.value.minMinutes)
-        assertEquals(22 * 60, window.window.value.maxMinutes)
+        assertThat(window.window.value.minMinutes).isEqualTo(20 * 60)
+        assertThat(window.window.value.maxMinutes).isEqualTo(22 * 60)
     }
 
     @Test
@@ -129,6 +131,6 @@ class SettingsViewModelTest {
 
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(null))
 
-        assertNull(window.window.value.maxMinutes)
+        assertThat(window.window.value.maxMinutes).isNull()
     }
 }

@@ -3,8 +3,9 @@ package com.preichert.cinemerick.feature.showtimes.domain
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 
 class CalendarMonthTest {
 
@@ -12,60 +13,51 @@ class CalendarMonthTest {
     fun monthStartingOnThursdayHasThreeLeadingPads() {
         val grid = monthGrid(2026, Month.OCTOBER)
 
-        assertEquals(List(3) { null }, grid.take(3))
-        assertEquals(LocalDate(2026, 10, 1), grid[3])
-        assertEquals(LocalDate(2026, 10, 31), grid.last())
-        assertEquals(3 + 31, grid.size)
+        assertThat(grid.take(3)).isEqualTo(List(3) { null })
+        assertThat(grid[3]).isEqualTo(LocalDate(2026, 10, 1))
+        assertThat(grid.last()).isEqualTo(LocalDate(2026, 10, 31))
+        assertThat(grid.size).isEqualTo(3 + 31)
     }
 
     @Test
     fun monthStartingOnMondayHasNoLeadingPads() {
         val grid = monthGrid(2026, Month.JUNE)
 
-        assertEquals(LocalDate(2026, 6, 1), grid.first())
-        assertEquals(30, grid.size)
+        assertThat(grid.first()).isEqualTo(LocalDate(2026, 6, 1))
+        assertThat(grid.size).isEqualTo(30)
     }
 
     @Test
     fun monthStartingOnSundayHasSixLeadingPads() {
         val grid = monthGrid(2026, Month.NOVEMBER)
 
-        assertNull(grid[5])
-        assertEquals(LocalDate(2026, 11, 1), grid[6])
+        assertThat(grid[5]).isNull()
+        assertThat(grid[6]).isEqualTo(LocalDate(2026, 11, 1))
     }
 
     @Test
     fun leapYearFebruaryHas29Days() {
-        assertEquals(29, monthGrid(2028, Month.FEBRUARY).filterNotNull().size)
-        assertEquals(28, monthGrid(2027, Month.FEBRUARY).filterNotNull().size)
+        assertThat(monthGrid(2028, Month.FEBRUARY).filterNotNull().size).isEqualTo(29)
+        assertThat(monthGrid(2027, Month.FEBRUARY).filterNotNull().size).isEqualTo(28)
     }
 
     @Test
     fun weekendFromMidweekIsNextSaturdayAndSunday() {
-        assertEquals(
-            listOf(LocalDate(2026, 10, 3), LocalDate(2026, 10, 4)),
-            upcomingWeekend(LocalDate(2026, 10, 1))
-        )
+        assertThat(upcomingWeekend(LocalDate(2026, 10, 1))).isEqualTo(listOf(LocalDate(2026, 10, 3), LocalDate(2026, 10, 4)))
     }
 
     @Test
     fun weekendOnSaturdayIncludesToday() {
-        assertEquals(
-            listOf(LocalDate(2026, 10, 3), LocalDate(2026, 10, 4)),
-            upcomingWeekend(LocalDate(2026, 10, 3))
-        )
+        assertThat(upcomingWeekend(LocalDate(2026, 10, 3))).isEqualTo(listOf(LocalDate(2026, 10, 3), LocalDate(2026, 10, 4)))
     }
 
     @Test
     fun weekendOnSundayIsOnlyToday() {
-        assertEquals(listOf(LocalDate(2026, 10, 4)), upcomingWeekend(LocalDate(2026, 10, 4)))
+        assertThat(upcomingWeekend(LocalDate(2026, 10, 4))).isEqualTo(listOf(LocalDate(2026, 10, 4)))
     }
 
     @Test
     fun weekendCrossesYearBoundary() {
-        assertEquals(
-            listOf(LocalDate(2027, 1, 2), LocalDate(2027, 1, 3)),
-            upcomingWeekend(LocalDate(2026, 12, 30))
-        )
+        assertThat(upcomingWeekend(LocalDate(2026, 12, 30))).isEqualTo(listOf(LocalDate(2027, 1, 2), LocalDate(2027, 1, 3)))
     }
 }

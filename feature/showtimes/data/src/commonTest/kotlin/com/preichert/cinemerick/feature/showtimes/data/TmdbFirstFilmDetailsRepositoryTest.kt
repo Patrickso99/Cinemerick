@@ -12,7 +12,9 @@ import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import assertk.assertThat
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
 
 class TmdbFirstFilmDetailsRepositoryTest {
 
@@ -55,33 +57,33 @@ class TmdbFirstFilmDetailsRepositoryTest {
 
         val details = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(tmdb, details)
-        assertEquals(emptyList(), showtimes.calls)
+        assertThat(details).isEqualTo(tmdb)
+        assertThat(showtimes.calls).isEmpty()
     }
 
     @Test
     fun databaseDetailsAreAskedOncePerFilmAndNeverTouchTheCinemas() = runTest {
         val (repository, lookup, showtimes) = repository(found(tmdb))
 
-        assertEquals(found(tmdb), repository.getDatabaseDetails("Mammina"))
-        assertEquals(found(tmdb), repository.getDatabaseDetails("Mammina"))
+        assertThat(repository.getDatabaseDetails("Mammina")).isEqualTo(found(tmdb))
+        assertThat(repository.getDatabaseDetails("Mammina")).isEqualTo(found(tmdb))
 
-        assertEquals(1, lookup.searched.size)
-        assertEquals(emptyList(), showtimes.calls)
+        assertThat(lookup.searched.size).isEqualTo(1)
+        assertThat(showtimes.calls).isEmpty()
     }
 
     @Test
     fun aConfidentNoMatchIsSuccessWithNoDetails() = runTest {
         val (repository, _, _) = repository(found(null))
 
-        assertEquals(found(null), repository.getDatabaseDetails("Mammina"))
+        assertThat(repository.getDatabaseDetails("Mammina")).isEqualTo(found(null))
     }
 
     @Test
     fun aFailedLookupIsAFailureSoTheCallerDoesNotRememberIt() = runTest {
         val (repository, _, _) = repository(failed())
 
-        assertEquals(failed(), repository.getDatabaseDetails("Mammina"))
+        assertThat(repository.getDatabaseDetails("Mammina")).isEqualTo(failed())
     }
 
     @Test
@@ -90,8 +92,8 @@ class TmdbFirstFilmDetailsRepositoryTest {
 
         val details = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(cinemaResult, details)
-        assertEquals(listOf(known to sources), showtimes.calls)
+        assertThat(details).isEqualTo(cinemaResult)
+        assertThat(showtimes.calls).isEqualTo(listOf(known to sources))
     }
 
     @Test
@@ -101,10 +103,10 @@ class TmdbFirstFilmDetailsRepositoryTest {
         val first = repository.getFilmDetails("Mammina", known, sources)
         val second = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(cinemaResult, first)
-        assertEquals(tmdb, second)
-        assertEquals(2, lookup.searched.size)
-        assertEquals(1, showtimes.calls.size)
+        assertThat(first).isEqualTo(cinemaResult)
+        assertThat(second).isEqualTo(tmdb)
+        assertThat(lookup.searched.size).isEqualTo(2)
+        assertThat(showtimes.calls.size).isEqualTo(1)
     }
 
     @Test
@@ -114,8 +116,8 @@ class TmdbFirstFilmDetailsRepositoryTest {
         repository.getFilmDetails("Mammina", known, sources)
         val again = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(tmdb, again)
-        assertEquals(1, lookup.searched.size)
+        assertThat(again).isEqualTo(tmdb)
+        assertThat(lookup.searched.size).isEqualTo(1)
     }
 
     @Test
@@ -125,8 +127,8 @@ class TmdbFirstFilmDetailsRepositoryTest {
         repository.getFilmDetails("Dune (3D)", known, sources)
         val other = repository.getFilmDetails("DUNE", known, sources)
 
-        assertEquals(tmdb, other)
-        assertEquals(listOf("Dune"), lookup.searched)
+        assertThat(other).isEqualTo(tmdb)
+        assertThat(lookup.searched).isEqualTo(listOf("Dune"))
     }
 
     @Test
@@ -136,9 +138,9 @@ class TmdbFirstFilmDetailsRepositoryTest {
         repository.getFilmDetails("Mammina", known, sources)
         val again = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(cinemaResult, again)
-        assertEquals(1, lookup.searched.size)
-        assertEquals(2, showtimes.calls.size)
+        assertThat(again).isEqualTo(cinemaResult)
+        assertThat(lookup.searched.size).isEqualTo(1)
+        assertThat(showtimes.calls.size).isEqualTo(2)
     }
 
     @Test
@@ -147,7 +149,7 @@ class TmdbFirstFilmDetailsRepositoryTest {
 
         repository.getFilmDetails("Café - Lingua originale", known, sources)
 
-        assertEquals(listOf("Café"), lookup.searched)
+        assertThat(lookup.searched).isEqualTo(listOf("Café"))
     }
 
     @Test
@@ -156,7 +158,7 @@ class TmdbFirstFilmDetailsRepositoryTest {
 
         val details = repository.getFilmDetails("Mammina", known, sources)
 
-        assertEquals(cinemaResult, details)
-        assertEquals(1, showtimes.calls.size)
+        assertThat(details).isEqualTo(cinemaResult)
+        assertThat(showtimes.calls.size).isEqualTo(1)
     }
 }
