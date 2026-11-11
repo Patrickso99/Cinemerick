@@ -15,3 +15,6 @@ fastlane/test_output/
 iosApp/.claude/
 iosApp/openspec/
 openspec/
+
+# Design build: copies of the pages made only for publishing them as artifacts
+docs/design/**/.artifact/
