@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import com.preichert.cinemerick.core.designsystem.rememberSyncedTextFieldState
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -147,9 +148,11 @@ internal fun VenuePickerSheet(
                     tint = colors.onSurfaceVariant,
                     modifier = Modifier.size(22.dp)
                 )
+                // The field edits a local buffer, so the cursor stays put while the query makes its round trip.
+                val search = rememberSyncedTextFieldState(picker.query)
                 BasicTextField(
-                    value = picker.query,
-                    onValueChange = onSearchChange,
+                    value = search.value,
+                    onValueChange = { if (search.onEdit(it)) onSearchChange(it.text) },
                     modifier = Modifier.weight(1f),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = colors.onSurface,
@@ -160,7 +163,7 @@ internal fun VenuePickerSheet(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                     decorationBox = { innerField ->
-                        if (picker.query.isEmpty()) {
+                        if (search.value.text.isEmpty()) {
                             Text(
                                 text = stringResource(Res.string.search_venue),
                                 style = MaterialTheme.typography.bodyLarge,

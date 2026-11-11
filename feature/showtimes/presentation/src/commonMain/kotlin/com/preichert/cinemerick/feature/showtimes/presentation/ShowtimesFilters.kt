@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import com.preichert.cinemerick.core.designsystem.rememberSyncedTextFieldState
 import androidx.compose.runtime.getValue
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import androidx.compose.animation.animateColorAsState
@@ -40,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
@@ -163,6 +165,8 @@ internal fun FilmSearchField(
 ) {
     val focusManager: FocusManager = LocalFocusManager.current
     val colors = CinemerickTheme.colors
+    // The field edits a local buffer, so the cursor stays put while the filter makes its round trip.
+    val field = rememberSyncedTextFieldState(value)
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2)
@@ -192,8 +196,8 @@ internal fun FilmSearchField(
                 modifier = Modifier.size(22.dp)
             )
             BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
+                value = field.value,
+                onValueChange = { if (field.onEdit(it)) onValueChange(it.text) },
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = colors.onSurface,
@@ -206,7 +210,7 @@ internal fun FilmSearchField(
                     onSearch()
                 }),
                 decorationBox = { innerField ->
-                    if (value.isEmpty()) {
+                    if (field.value.text.isEmpty()) {
                         Text(
                             text = stringResource(Res.string.film_filter),
                             style = MaterialTheme.typography.bodyLarge,
@@ -217,12 +221,12 @@ internal fun FilmSearchField(
                     innerField()
                 }
             )
-            if (value.isNotEmpty()) {
+            if (field.value.text.isNotEmpty()) {
                 val clearLabel = stringResource(Res.string.clear)
                 CinemerickIconButton(
                     icon = CinemerickIcons.Close,
                     contentDescription = clearLabel,
-                    onClick = { onValueChange("") },
+                    onClick = { if (field.onEdit(TextFieldValue(""))) onValueChange("") },
                     container = Color.Transparent,
                     tint = colors.onSurfaceVariant,
                 )
