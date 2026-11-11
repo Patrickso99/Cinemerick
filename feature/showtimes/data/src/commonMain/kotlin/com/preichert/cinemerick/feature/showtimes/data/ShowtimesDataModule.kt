@@ -6,25 +6,27 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
-import com.russhwolf.settings.Settings
 import org.koin.core.module.dsl.singleOf
-import org.koin.dsl.bind
+import org.koin.core.module.dsl.bind
 import org.koin.dsl.module
 
 val showtimesDataModule = module {
-    single<FilterPreferences> { SettingsFilterPreferences(Settings()) }
+    singleOf(::SettingsFilterPreferences) { bind<FilterPreferences>() }
     singleOf(::TheSpaceTokenProvider)
-    singleOf(::KtorUciShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorNotoriousShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorCinergiaShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorCristalloShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorDonBoscoShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorCinemazeroShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorArcadiaShowtimesDataSource) bind ShowtimesDataSource::class
-    singleOf(::KtorTheSpaceShowtimesDataSource) bind ShowtimesDataSource::class
-    single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll()) }
-    single<TmdbMatchStore> { SettingsTmdbMatchStore(Settings()) }
+
+    singleOf(::KtorUciShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorNotoriousShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorCinergiaShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorCristalloShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorDonBoscoShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorCinemazeroShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorArcadiaShowtimesDataSource) { bind<ShowtimesDataSource>() }
+    singleOf(::KtorTheSpaceShowtimesDataSource) { bind<ShowtimesDataSource>() }
+
+    single<TmdbMatchStore> { SettingsTmdbMatchStore(get()) }
     single<FilmLookup> { KtorTmdbFilmLookup(get(), get()) }
-    single<FilmDetailsRepository> { TmdbFirstFilmDetailsRepository(get(), get()) }
     single<PersonLookup> { KtorTmdbPersonLookup(get()) }
+
+    singleOf(::MultiCinemaShowtimesRepository) { bind<ShowtimesRepository>() }
+    singleOf(::TmdbFirstFilmDetailsRepository) { bind<FilmDetailsRepository>() }
 }
