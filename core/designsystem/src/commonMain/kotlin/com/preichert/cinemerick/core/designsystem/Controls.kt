@@ -1,12 +1,11 @@
 package com.preichert.cinemerick.core.designsystem
 
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -19,32 +18,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.SliderDefaults
-import kotlin.math.roundToInt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 /** Two-option (or three) segmented control, 48dp. Used for theme and language. */
 @Composable
@@ -111,26 +109,45 @@ fun CinemerickBottomSheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = CinemerickTheme.colors
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        modifier = modifier,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = colors.surfaceContainer,
-        scrimColor = colors.scrim,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .padding(top = 10.dp, bottom = 4.dp)
-                    .size(width = 36.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(colors.onSurfaceVariant.copy(alpha = 0.5f)),
-            )
-        },
-    ) {
-        Column(content = content)
+    // ModalBottomSheet opens in a window of its own, which previews do not draw: there the sheet is a plain surface.
+    if (LocalInspectionMode.current) {
+        Surface(
+            modifier = modifier.fillMaxWidth(),
+            shape = SheetShape,
+            color = colors.surfaceContainer,
+        ) {
+            Column {
+                SheetDragHandle(modifier = Modifier.align(Alignment.CenterHorizontally))
+                content()
+            }
+        }
+    } else {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = onDismissRequest,
+            modifier = modifier,
+            sheetState = sheetState,
+            shape = SheetShape,
+            containerColor = colors.surfaceContainer,
+            scrimColor = colors.scrim,
+            dragHandle = { SheetDragHandle() },
+        ) {
+            Column(content = content)
+        }
     }
+}
+
+private val SheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+
+@Composable
+private fun SheetDragHandle(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .padding(top = 10.dp, bottom = 4.dp)
+            .size(width = 36.dp, height = 4.dp)
+            .clip(RoundedCornerShape(2.dp))
+            .background(CinemerickTheme.colors.onSurfaceVariant.copy(alpha = 0.5f)),
+    )
 }
 
 /** Section label above a settings group: labelSmall caps. */
