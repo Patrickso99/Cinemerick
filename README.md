@@ -49,7 +49,7 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 | `:core:domain` | Result types, errors, preference interfaces, `BuildKonfig` (name, version, git hash) |
 | `:core:data` | HTTP client with server-error retries, settings preferences, `TmdbConfig` (TMDB token) |
 | `:core:presentation` | `UiText`, controllers (theme, language, animations, time window) |
-| `:core:design-system` | Theme, typography, shapes, adaptive layouts, components, `DeviceConfiguration` |
+| `:core:designsystem` | Theme, typography, shapes, adaptive layouts, components, `DeviceConfiguration` |
 | `:core:testing` | Test helpers: in-memory settings and preference fakes |
 | `:feature:showtimes:domain` | Models, repository interfaces, filtering and formatting |
 | `:feature:showtimes:data` | Cinema data sources, HTML parsers, TMDB lookup, cache, merging |
@@ -97,7 +97,7 @@ Shared Gradle setup lives in `:build-logic:convention`, under the `com.preichert
 | **AGP** | 9.2.1 |
 | **Gradle** (wrapper) | 9.6.0 |
 
-Typography uses the Plus Jakarta Sans font, bundled in `:core:design-system`.
+Typography uses the Plus Jakarta Sans font, bundled in `:core:designsystem`.
 
 ## Getting Started
 
@@ -122,7 +122,7 @@ Without a token the app builds and runs exactly as before, using only the cinema
 #### Desktop
 
 ```bash
-./gradlew :app:run
+./gradlew :composeApp:run
 ```
 
 Resize the window to see adaptive layouts (narrow → mobile, wide → tablet/desktop).
@@ -130,10 +130,10 @@ Resize the window to see adaptive layouts (narrow → mobile, wide → tablet/de
 To create a distributable DMG package for macOS:
 
 ```bash
-./gradlew :app:packageDmg
+./gradlew :composeApp:packageDmg
 ```
 
-Output: `app/build/compose/binaries/main/dmg/`
+Output: `composeApp/build/compose/binaries/main/dmg/`
 
 #### Android
 
@@ -155,7 +155,7 @@ Output: `androidApp/build/outputs/apk/release/cinemerick-v1.1.10-{VERSION_CODE}.
 
 #### iOS
 
-Open `iosApp/iosApp.xcodeproj` in Xcode. The Xcode build phase runs Gradle (`:app:embedAndSignAppleFrameworkForXcode`) to build the Kotlin framework, so the Kotlin side builds as part of the app build. The app name and version are read from the Gradle project (`:app:generateIosVersionConfig`).
+Open `iosApp/iosApp.xcodeproj` in Xcode. The Xcode build phase runs Gradle (`:composeApp:embedAndSignAppleFrameworkForXcode`) to build the Kotlin framework, so the Kotlin side builds as part of the app build. The app name and version are read from the Gradle project (`:composeApp:generateIosVersionConfig`).
 
 ```bash
 open iosApp/iosApp.xcodeproj
@@ -242,12 +242,12 @@ The app picks its layout from the window size (`DeviceConfiguration`):
 ```
 Cinemerick/
 ├── androidApp/                       # Android application (manifest, MainActivity)
-├── app/                              # Shared entry points (Desktop, iOS, Android library)
+├── composeApp/                       # Shared entry points (Desktop, iOS, Android library)
 ├── core/
 │   ├── domain/                       # Result types, errors, preferences, BuildKonfig
 │   ├── data/                         # HTTP client, SafeCall, settings preferences, TMDB token config
 │   ├── presentation/                 # UI utilities, controllers, DeviceConfiguration
-│   ├── design-system/                # Theme, colors, typography, shapes, layouts, components
+│   ├── designsystem/                 # Theme, colors, typography, shapes, layouts, components
 │   └── testing/                      # Shared test helpers and in-memory preference fakes
 ├── feature/
 │   ├── showtimes/

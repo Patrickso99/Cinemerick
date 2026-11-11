@@ -67,7 +67,7 @@ class CmpApplicationConventionPlugin : Plugin<Project> {
 
     /**
      * Generates the xcconfig file with the app name, version and code. Referenced in iosApp/project.yml, which runs
-     * `:app:generateIosVersionConfig` before building the framework.
+     * `:composeApp:generateIosVersionConfig` before building the framework.
      */
     private fun Project.registerIosVersionConfig() {
         val iosConfigFile = rootProject.file("iosApp/Config.xcconfig")

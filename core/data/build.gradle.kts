@@ -8,12 +8,11 @@ plugins {
 
 kotlin {
     sourceSets.commonTest.dependencies {
-        implementation(project(":core:testing"))
-        implementation(libs.coroutines.test)
+        implementation(projects.core.testing)
     }
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core:domain"))
+            implementation(projects.core.domain)
             implementation(libs.coroutines.core)
             implementation(libs.kermit)
             implementation(libs.settings.no.arg)

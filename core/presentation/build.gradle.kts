@@ -4,14 +4,13 @@ plugins {
 
 kotlin {
     sourceSets.commonTest.dependencies {
-        implementation(project(":core:testing"))
-        implementation(libs.coroutines.test)
+        implementation(projects.core.testing)
     }
     sourceSets.androidMain.dependencies {
         implementation(libs.androidx.appcompat)
     }
     sourceSets.commonMain.dependencies {
-        implementation(project(":core:domain"))
+        implementation(projects.core.domain)
         implementation(libs.androidx.lifecycle.runtime.compose)
         implementation(libs.coroutines.core)
         implementation(libs.compose.material3.adaptive)

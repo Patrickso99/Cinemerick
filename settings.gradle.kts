@@ -16,14 +16,15 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Cinemerick"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-include(":app")
+include(":composeApp")
 include(":androidApp")
 include(":core:domain")
 include(":core:data")
 include(":core:testing")
 include(":core:presentation")
-include(":core:design-system")
+include(":core:designsystem")
 include(":feature:showtimes:domain")
 include(":feature:showtimes:data")
 include(":feature:showtimes:presentation")

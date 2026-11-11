@@ -4,10 +4,7 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(project(":core:domain"))
+        api(projects.core.domain)
         api(libs.datetime)
-    }
-    sourceSets.commonTest.dependencies {
-        implementation(libs.assertk)
     }
 }

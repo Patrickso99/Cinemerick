@@ -5,14 +5,14 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core:domain"))
-            implementation(project(":core:data"))
-            implementation(project(":core:presentation"))
-            implementation(project(":core:design-system"))
-            implementation(project(":feature:showtimes:domain"))
-            implementation(project(":feature:showtimes:data"))
-            implementation(project(":feature:showtimes:presentation"))
-            implementation(project(":feature:settings:presentation"))
+            implementation(projects.core.domain)
+            implementation(projects.core.data)
+            implementation(projects.core.presentation)
+            implementation(projects.core.designsystem)
+            implementation(projects.feature.showtimes.domain)
+            implementation(projects.feature.showtimes.data)
+            implementation(projects.feature.showtimes.presentation)
+            implementation(projects.feature.settings.presentation)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

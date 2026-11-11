@@ -24,7 +24,7 @@ targets:
         script: |
           export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
           cd "$SRCROOT/.."
-          ./gradlew :app:generateIosVersionConfig :app:embedAndSignAppleFrameworkForXcode
+          ./gradlew :composeApp:generateIosVersionConfig :composeApp:embedAndSignAppleFrameworkForXcode
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.preichert.cinemerick.ios
@@ -36,5 +36,5 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         ENABLE_USER_SCRIPT_SANDBOXING: NO
-        FRAMEWORK_SEARCH_PATHS: $(SRCROOT)/../app/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
+        FRAMEWORK_SEARCH_PATHS: $(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)
         OTHER_LDFLAGS: -framework ComposeApp

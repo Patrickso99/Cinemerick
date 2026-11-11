@@ -12,6 +12,9 @@ internal fun Project.configureKotlinMultiplatform() {
     extensions.configure<KotlinMultiplatformExtension> {
         sourceSets.commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.assertk)
+            implementation(libs.turbine)
+            implementation(libs.coroutines.test)
         }
     }
 }

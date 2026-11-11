@@ -12,10 +12,15 @@ class CmpFeatureConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply(ConventionPlugin.CMP_LIBRARY)
                 apply(ConventionPlugin.KOIN)
+                apply(ConventionPlugin.SERIALIZATION)
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets.commonMain.dependencies {
+                    implementation(project(":core:presentation"))
+                    implementation(project(":core:designsystem"))
+                    implementation(libs.compose.navigation)
+                    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
                     implementation(libs.koin.compose)
                     implementation(libs.koin.compose.viewmodel)
                     implementation(libs.androidx.lifecycle.viewmodel.compose)

@@ -94,7 +94,7 @@ def build():
 
 def install_outputs(master):
     """Copies the generated icons where each platform expects them."""
-    res = REPO / "app" / "src"
+    res = REPO / "composeApp" / "src"
     shutil.copy(OUT / "ic_launcher_background.png", REPO / "androidApp/src/main/res/drawable-nodpi/ic_launcher_background.png")
     shutil.copy(OUT / "ic_launcher_foreground.png", REPO / "androidApp/src/main/res/drawable-nodpi/ic_launcher_foreground.png")
     shutil.copy(OUT / "icon-1024.png", REPO / "iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/icon-1024.png")

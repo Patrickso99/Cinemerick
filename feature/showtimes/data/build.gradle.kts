@@ -6,14 +6,13 @@ plugins {
 
 kotlin {
     sourceSets.commonTest.dependencies {
-        implementation(project(":core:testing"))
-        implementation(libs.coroutines.test)
+        implementation(projects.core.testing)
         implementation(libs.ktor.mock)
     }
     sourceSets.commonMain.dependencies {
-        implementation(project(":core:domain"))
-        implementation(project(":core:data"))
-        implementation(project(":feature:showtimes:domain"))
+        implementation(projects.core.domain)
+        implementation(projects.core.data)
+        implementation(projects.feature.showtimes.domain)
         implementation(libs.coroutines.core)
         implementation(libs.kermit)
         implementation(libs.settings.no.arg)

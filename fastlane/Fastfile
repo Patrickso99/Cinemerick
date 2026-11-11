@@ -40,13 +40,13 @@ end
 
 def build_desktop(format)
   gradle_task = case format
-    when :dmg then ":app:packageDmg"
-    when :exe then ":app:packageExe"
-    when :msi then ":app:packageMsi"
-    when :deb then ":app:packageDeb"
+    when :dmg then ":composeApp:packageDmg"
+    when :exe then ":composeApp:packageExe"
+    when :msi then ":composeApp:packageMsi"
+    when :deb then ":composeApp:packageDeb"
   end
   run_gradle(gradle_task)
-  pattern = "app/build/compose/binaries/main/#{format}/*"
+  pattern = "composeApp/build/compose/binaries/main/#{format}/*"
   collect(pattern)
 end
 
