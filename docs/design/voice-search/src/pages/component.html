@@ -1,0 +1,121 @@
+<section class="v-page" data-page="ds" data-title="Componenti" data-group="Design system">
+<h1>Componenti dell'assistente</h1>
+<p class="v-lead">Pezzi nuovi del design system (core/designsystem) per l'assistente vocale. Usano solo i token esistenti di Cinemerick: nessun colore, font o forma nuova. Principi: l'AI è una scorciatoia verso i filtri, non una chat; ogni valore capito si corregge a tocco; si sa sempre dove va la richiesta.</p>
+
+<div class="v-section"><h2>Fondamenta</h2>
+<p>Token invariati (tokens.json dell'app). Coppie di contrasto verificate dalla build in chiaro e scuro.</p>
+<div data-render="contrast"></div>
+<div data-render="icons" data-names="mic,mic-off,keyboard,pencil,x,plus,cpu,cloud,search,circle-help,circle-slash,circle-alert,volume-x,wifi-off,gauge,key-round,lock,shield-check,hard-drive-download,hard-drive,trash-2,check,rotate-ccw,calendar,layers,film,eye,eye-off"></div>
+</div>
+
+<div class="v-section" id="c-icon"><h2>Icona AI</h2>
+<div class="spec-grid">
+<div class="spec"><p class="spec-cap">Glifo · 24 dp, tratto 2, stile Lucide</p><div><div class="app"><div class="glyph">
+<span class="px"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg>48</span>
+<span class="px"><svg class="ai" style="width:24px;height:24px" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg>24</span>
+<span class="px"><svg class="ai" style="width:18px;height:18px" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg>18</span>
+</div></div></div><p class="spec-note">Microfono spostato a sinistra + scintilla piena a 4 punte in alto a destra: dice «AI che ascolta», non solo «microfono». Da aggiungere a <code>CinemerickIcons</code> come <code>AssistantMic</code> (ImageVector, 24×24). Il microfono semplice resta per permessi e «Parla».</p></div>
+</div></div>
+
+<div class="v-section" id="c-fab"><h2>FAB AI</h2>
+<div class="spec-grid"><div class="spec wide"><p class="spec-cap">Stati</p><div><div class="app"><div class="fab-row">
+<figure><button class="fab-ai" aria-label="Chiedi all'assistente" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><figcaption>default</figcaption></figure>
+<figure><button class="fab-ai is-hover" aria-label="Chiedi all'assistente" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><figcaption>hover</figcaption></figure>
+<figure><button class="fab-ai is-pressed" aria-label="Chiedi all'assistente" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><figcaption>premuto</figcaption></figure>
+<figure><button class="fab-ai is-focus" aria-label="Chiedi all'assistente" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><figcaption>focus</figcaption></figure>
+<figure><button class="fab-ai is-busy" aria-label="Chiedi all'assistente, download 46%" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><figcaption>modello in download</figcaption></figure>
+<figure style="align-items:flex-end"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-3)"><button class="fab-ai" aria-label="Chiedi all'assistente" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button><button class="fab-copy" aria-label="Copia sondaggio" title="Copia sondaggio" style="box-shadow:none"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 8H16.5A2.5 2.5 0 0 1 19 10.5V17.5A2.5 2.5 0 0 1 16.5 20H10.5A2.5 2.5 0 0 1 8 17.5V10.5A2.5 2.5 0 0 1 10.5 8Z"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg></button></div><figcaption>pila con Copia sondaggio</figcaption></figure>
+</div></div></div><p class="spec-note">56 dp, shape lg (16), primary-container / on-primary-container, elevazione 3 (tolta qui per leggibilità). Pila: due FAB da 56 dp con 12 dp di spazio, AI sopra (primary-container), Copia sondaggio sotto (solo icona, la stessa <code>CinemerickIcons.Copy</code> / ic_copy di oggi, primary, etichetta accessibile e tooltip «Copia sondaggio»; dopo il tap lo snackbar esistente conferma la copia). Colori diversi per distinguerli senza testo. Etichetta accessibile «Chiedi all'assistente» (EN «Ask the assistant»). Durante il download: anello primary indeterminato/determinato attorno al FAB; il tap apre il foglio «Quasi pronto». Nascosto con il pannello riepilogo aperto.</p></div></div></div>
+
+<div class="v-section" id="c-sheet"><h2>Foglio vocale · anatomia</h2>
+<div class="spec-grid">
+<div class="spec"><p class="spec-cap">Ascolto</p><div><div class="app flush"><section class="vsheet static-sheet" aria-label="Ti ascolto"><div class="vs-head"><h3 class="t-title">Ti ascolto…</h3><span class="engine"><i data-icon="cpu"></i>Sul dispositivo</span><button class="icon-btn" aria-label="Chiudi"><i data-icon="x"></i></button></div><div class="vs-body"><div class="orb"><span class="ring r1"></span><span class="ring r2"></span><button class="core" aria-label="Ho finito"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></button></div><p class="live">UCI Marcon <span class="tail">venerdì dopo</span><span class="caret"></span></p></div></section></div></div>
+<p class="spec-note">surface-container-high, angoli superiori shape xl (28), maniglia 32×4. Testata 48 dp: titolo titleLarge, badge motore, Chiudi 48 dp. Cerchio 168 dp: due anelli primary al 10% e 18% che «respirano» col volume (decorativi), centro 80 dp primary. Trascrizione titleLarge, la parte non ancora definitiva in on-surface-variant.</p></div>
+<div class="spec"><p class="spec-cap">Cerchio: attesa · microfono spento · animazioni off</p><div><div class="app"><div class="fab-row">
+<div class="orb idle" style="width:120px;height:120px;margin:0"><span class="ring r1"></span><span class="ring r2" style="inset:16px"></span><span class="core" style="width:64px;height:64px"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></span></div>
+<div class="orb off" style="width:120px;height:120px;margin:0"><span class="ring r1"></span><span class="ring r2" style="inset:16px"></span><span class="core" style="width:64px;height:64px"><i data-icon="mic-off"></i></span></div>
+</div></div></div><p class="spec-note">Attesa: anelli tenui e fermi. Spento (permesso, silenzio): anelli outline-variant, centro surface con bordo. Con «Animazioni» disattivate o riduzione movimento: nessun respiro, il cursore non lampeggia.</p></div>
+</div></div>
+
+<div class="v-section" id="c-badge"><h2>Badge motore</h2>
+<div class="spec-grid"><div class="spec wide"><div><div class="app"><div class="fab-row"><span class="engine"><i data-icon="cpu"></i>Sul dispositivo</span><span class="engine cloud"><i data-icon="cloud"></i>Cloud · Anthropic</span><span class="engine cloud"><i data-icon="cloud"></i>Cloud · OpenRouter</span></div></div></div>
+<p class="spec-note">Sempre nella testata del foglio. «Sul dispositivo» copre AI di sistema e Gemma (il nome esatto è nel tooltip / etichetta: «Motore: Gemini Nano»). Cloud mostra sempre il provider: è la nota privacy dentro il flusso.</p></div></div></div>
+
+<div class="v-section" id="c-review"><h2>Riepilogo «Ho capito»</h2>
+<div class="spec-grid">
+<div class="spec"><p class="spec-cap">Trascrizione · lettura e modifica</p><div><div class="app">
+<div class="trans"><p class="clamp-2">«Vorrei andare a vedere il film Hope al cinema in una di queste catene…»</p><button class="icon-btn" aria-label="Modifica il testo"><i data-icon="pencil"></i></button></div>
+<div class="trans editing"><textarea aria-label="Richiesta" style="min-height:64px">UCI Marcon venerdì dopo le 20</textarea></div>
+</div></div><p class="spec-note">Due righe al massimo in lettura; la matita apre la modifica (bordo primary 2 dp, bodyLarge). Riparla riapre l'ascolto.</p></div>
+<div class="spec"><p class="spec-cap">Chip valore · default · focus · lungo · aggiungi</p><div><div class="app"><div class="vchips">
+<span class="vchip"><span class="dot uci"></span><span class="lbl">UCI · Marcon</span><button class="x" aria-label="Rimuovi UCI Marcon"><i data-icon="x"></i></button></span>
+<span class="vchip is-focus"><span class="dot space"></span><span class="lbl">The Space · Silea</span><button class="x" aria-label="Rimuovi The Space Silea"><i data-icon="x"></i></button></span>
+<span class="vchip" style="max-width:240px"><i data-icon="film"></i><span class="lbl">Il Signore degli Anelli: La caccia a Gollum</span><button class="x" aria-label="Rimuovi"><i data-icon="x"></i></button></span>
+<span class="vchip add"><i data-icon="plus"></i><span class="lbl">Aggiungi</span></span>
+</div></div></div><p class="spec-note">40 dp visivi, × con area 48 dp. Pallino catena decorativo. Testo troncato a una riga, nome intero nell'etichetta letta.</p></div>
+<div class="spec"><p class="spec-cap">Righe giorno e orario · invariato</p><div><div class="app">
+<div class="slots"><div class="slot"><i data-icon="calendar"></i><b class="num">Gio 12</b><span class="t num">17:00–20:00</span></div><div class="slot"><i data-icon="calendar"></i><b class="num">Ven 13</b><span class="t num">20:00–24:00</span></div></div>
+<p class="keep"><i data-icon="minus"></i>Non citato: resta com'è (tutti i formati)</p>
+</div></div><p class="spec-note">Una riga per giorno, 48 dp, apre lo slider orario di quel giorno. I gruppi non citati restano visibili con il valore attuale, così l'utente vede cosa non cambia.</p></div>
+<div class="spec"><p class="spec-cap">Da confermare · alternative · non trovata</p><div><div class="app">
+<div class="resolve"><p class="q"><i data-icon="circle-help"></i><span>Intendevi Notorious · Fiume Veneto?<small>Hai detto «Notorius Fiume»</small></span></p><div class="acts"><button class="btn sm yes">Sì, Fiume Veneto</button><button class="btn sm">Scegli un'altra sede</button></div></div>
+<div class="notfound"><p class="q"><i data-icon="circle-slash"></i><span><b>«Cinema Astra» non è tra le sale di Cinemerick.</b> Verrà ignorata.</span></p></div>
+</div></div><p class="spec-note">Corrispondenza vicina → riquadro warning-container con domanda esplicita (Sì / alternative, max 3). Nessuna corrispondenza → riquadro neutro: viene ignorata. Cerca resta attivo in entrambi i casi.</p></div>
+</div></div>
+
+<div class="v-section" id="c-landscape"><h2>Telefono orizzontale</h2>
+<div class="v-frame" data-theme-panel="light" style="width:844px;height:390px"><div class="app">
+<div class="home"><aside class="pane-filters" style="display:block;width:300px;flex:none;border-right:1px solid var(--color-outline-variant)" aria-hidden="true"><div class="filters"><div class="sec-h"><span class="cap-h">Cinema</span><span class="cap primary">3 sedi</span></div><div class="chain"><span class="badge-c bc-uci"></span><span class="grow"><b class="t-title-sm">UCI Cinemas</b><br><span class="muted cap">Marcon</span></span></div></div></aside><div class="results" aria-hidden="true"><div class="film"><div class="poster"></div><div class="film-body"><p class="t-title-sm">Dune: Parte Tre</p><p class="muted cap">Fantascienza · 2 h 46 min</p></div></div></div></div>
+<div class="scrim" aria-hidden="true"></div>
+<section class="vsheet" style="left:50%;right:auto;width:640px;transform:translateX(-50%);max-height:90%" aria-label="Ti ascolto"><div class="vs-head"><h3 class="t-title">Ti ascolto…</h3><span class="engine"><i data-icon="cpu"></i>Sul dispositivo</span><button class="icon-btn" aria-label="Chiudi"><i data-icon="x"></i></button></div><div class="vs-body" style="flex-direction:row;align-items:center"><div class="orb" style="width:120px;height:120px;margin:0"><span class="ring r1"></span><span class="ring r2" style="inset:16px"></span><span class="core" style="width:64px;height:64px"><svg class="ai" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M16 11v1a7 7 0 0 1-14 0v-1"/><path d="M9 19v3"/><path class="spark" d="M19 1.5l1.1 2.4 2.4 1.1-2.4 1.1L19 8.5l-1.1-2.4L15.5 5l2.4-1.1Z"/></svg></span></div><p class="live grow">UCI Marcon venerdì <span class="tail">dopo le 20</span><span class="caret"></span></p></div></section>
+</div></div>
+<p class="v-note">Foglio largo 640 dp e centrato, fino al 90% dell'altezza. In ascolto il cerchio (120 dp) sta a sinistra della trascrizione; in revisione il corpo scorre e Cerca resta fisso in basso.</p></div>
+
+<div class="v-section" id="errors"><h2>Errori e feedback</h2>
+<p>Ordine di scelta: decisione obbligata o costosa → T6; un campo → T1; schermata vuota → T5; condizione che dura → T4; evento → T3. T2 e T5 non servono qui (un solo campo; la Home ha sempre contenuto).</p>
+<div class="spec-grid">
+<div class="spec"><p class="spec-cap">T1 · chiave rifiutata</p><div><div class="app"><div class="field is-error"><label for="ek">Chiave API di Anthropic</label><div class="control"><input id="ek" class="mono" value="sk-ant-api03-7Hq2…" aria-invalid="true" aria-describedby="ekh"></div><div class="help" id="ekh"><i data-icon="circle-alert"></i>Anthropic non ha accettato questa chiave. Controlla di averla copiata per intero.</div></div></div></div></div>
+<div class="spec"><p class="spec-cap">T3 · dopo Cerca</p><div><div class="app"><div class="snackbar" role="status"><span class="msg">Filtri impostati dalla voce</span><button class="btn text">Annulla</button></div></div></div></div>
+<div class="spec"><p class="spec-cap">T4 · nel foglio</p><div><div class="app"><div class="callout warning" role="status"><i data-icon="wifi-off"></i><div class="body"><strong>Sei offline</strong>Con il motore Cloud serve internet. Puoi usare l'AI del telefono per questa richiesta.</div></div><div class="callout error" role="alert"><i data-icon="circle-alert"></i><div class="body"><strong>L'assistente non ha risposto</strong>Il testo resta qui: riprova o modificalo.</div></div></div></div></div>
+<div class="spec"><p class="spec-cap">T6 · rimuovi chiave</p><div><div class="app"><div class="dialog" role="alertdialog" aria-labelledby="t6t" style="box-shadow:none"><h2 id="t6t">Rimuovere la chiave Anthropic?</h2><p>L'assistente Cloud smette di funzionare finché non aggiungi una chiave.</p><div class="actions"><button class="btn text">Tieni chiave</button><button class="btn danger">Rimuovi chiave</button></div></div></div></div></div>
+</div></div>
+
+<div class="v-section"><h2>Comportamento</h2><table class="v-table">
+<tr><th>Quando</th><th>Cosa succede</th></tr>
+<tr><td>Tap sul FAB AI</td><td>Nessun motore → «Configura l'assistente». Permesso mai chiesto → spiegazione. Altrimenti il foglio si apre già in ascolto (300 ms, emphasized decelerate) con un breve tono/vibrazione.</td></tr>
+<tr><td>Fine del parlato</td><td>1,5 s di silenzio dopo almeno una parola, o tap sul cerchio → interpretazione. 8 s senza parole → «Non ho sentito nulla».</td></tr>
+<tr><td>Interpretazione</td><td>Il modello restituisce sale, giorni, orari per giorno, formati, film. Date relative calcolate da oggi («questo giovedì» = il prossimo giovedì, oggi incluso). «Sera» = 18–24, «pomeriggio» = 14–18, «dopo le 20» = 20–24.</td></tr>
+<tr><td>Regola di unione</td><td>Solo i gruppi citati sostituiscono i filtri attuali; gli altri restano e sono mostrati come «Non citato: resta com'è».</td></tr>
+<tr><td>Sale</td><td>Corrispondenza certa → chip. Vicina → domanda. Nessuna → ignorata, con avviso neutro.</td></tr>
+<tr><td>Cerca</td><td>Chiude il foglio, applica i filtri, avvia la ricerca esistente, scorre ai risultati; T3 «Annulla» ripristina filtri e risultati precedenti.</td></tr>
+<tr><td>Chiudi / Indietro / scrim</td><td>Chiude il foglio senza cambiare niente. In ascolto il microfono si spegne subito.</td></tr>
+<tr><td>Desktop</td><td>Tooltip sul FAB «Chiedi all'assistente (Ctrl+M, ⌘M su macOS)»; la scorciatoia apre il foglio. Esc chiude il foglio, Invio nel campo = Interpreta, Maiusc+Invio va a capo.</td></tr>
+</table></div>
+
+<div class="v-section"><h2>Accessibilità</h2><table class="v-table">
+<tr><td>FAB</td><td>Pulsante «Chiedi all'assistente»; durante il download aggiunge «download 46%». 56 dp.</td></tr>
+<tr><td>Foglio</td><td>Dialog modale con titolo. Focus: cerchio in ascolto, primo elemento da confermare in revisione (altrimenti Cerca), campo in modifica.</td></tr>
+<tr><td>Annunci</td><td>Trascrizione live region polite (solo testo definitivo); «Ho capito: 3 sedi, 2 giorni, solo 2D, 1 da confermare» all'arrivo del riepilogo.</td></tr>
+<tr><td>Senza voce</td><td>Ogni passo ha un'alternativa: Scrivi, chip modificabili, Aggiungi. Lo screen reader non viene catturato dal microfono: l'ascolto parte dopo l'annuncio del foglio.</td></tr>
+<tr><td>Colore</td><td>Stati sempre con icona + testo (domanda, non trovata, errori). Pallini catena decorativi. Contrasto AA verificato dalla build.</td></tr>
+<tr><td>Tocco</td><td>Chip × 48 dp, righe 48 dp, candidati 52 dp, pulsanti 40 dp visivi / 48 dp di area.</td></tr>
+</table></div>
+
+<div class="v-section"><h2>Testi (IT / EN)</h2><table class="v-table">
+<tr><th>Chiave proposta</th><th>Italiano</th><th>English</th></tr>
+<tr><td><code>assistant_fab</code></td><td>Chiedi all'assistente</td><td>Ask the assistant</td></tr>
+<tr><td><code>assistant_listening</code></td><td>Ti ascolto…</td><td>Listening…</td></tr>
+<tr><td><code>assistant_reading</code></td><td>Sto leggendo la richiesta…</td><td>Reading your request…</td></tr>
+<tr><td><code>assistant_understood</code></td><td>Ho capito</td><td>Here's what I got</td></tr>
+<tr><td><code>assistant_confirm_venue</code></td><td>Intendevi %s?</td><td>Did you mean %s?</td></tr>
+<tr><td><code>assistant_you_said</code></td><td>Hai detto «%s»</td><td>You said “%s”</td></tr>
+<tr><td><code>assistant_venue_unknown</code></td><td>«%s» non è tra le sale di Cinemerick. Verrà ignorata.</td><td>“%s” isn't one of Cinemerick's cinemas. It will be skipped.</td></tr>
+<tr><td><code>assistant_unchanged</code></td><td>Non citato: resta com'è</td><td>Not mentioned: stays as it is</td></tr>
+<tr><td><code>assistant_on_device</code> / <code>assistant_cloud</code></td><td>Sul dispositivo / Cloud · %s</td><td>On device / Cloud · %s</td></tr>
+<tr><td><code>assistant_applied</code></td><td>Filtri impostati dalla voce</td><td>Filters set by voice</td></tr>
+<tr><td><code>assistant_nothing_heard</code></td><td>Non ho sentito nulla</td><td>I didn't hear anything</td></tr>
+<tr><td><code>assistant_not_understood</code></td><td>Non ho trovato cosa cercare</td><td>I couldn't find anything to search for</td></tr>
+<tr><td><code>assistant_setup_title</code></td><td>Configura l'assistente</td><td>Set up the assistant</td></tr>
+<tr><td><code>assistant_key_rejected</code></td><td>%s non ha accettato questa chiave. Controlla di averla copiata per intero.</td><td>%s didn't accept this key. Check that you copied all of it.</td></tr>
+</table></div>
+</section>
