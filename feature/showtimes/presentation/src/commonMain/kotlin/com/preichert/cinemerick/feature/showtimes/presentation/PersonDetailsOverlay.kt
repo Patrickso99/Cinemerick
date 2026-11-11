@@ -55,7 +55,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.person_
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.person_deathday
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.person_filmography
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.person_none
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -198,7 +197,7 @@ private fun PersonHeader(person: PersonUi, onDismiss: () -> Unit) {
             )
         }
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.Close),
+            icon = CinemerickIcons.Close,
             contentDescription = closeLabel,
             onClick = onDismiss,
             container = colors.surfaceContainerHigh,

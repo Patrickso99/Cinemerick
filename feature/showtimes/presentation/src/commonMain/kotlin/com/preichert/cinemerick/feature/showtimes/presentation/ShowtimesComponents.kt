@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,6 @@ import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.shimmer
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
-import org.jetbrains.compose.resources.DrawableResource
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.generate_hint
 import org.jetbrains.compose.resources.painterResource
@@ -100,7 +100,7 @@ internal fun Badge(text: String, container: Color, content: Color, bold: Boolean
 
 /** Empty and hint states: an outline icon and a line of text. No emoji. */
 @Composable
-internal fun MessageCard(icon: DrawableResource, text: String) {
+internal fun MessageCard(icon: Painter, text: String) {
     SectionCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -110,7 +110,7 @@ internal fun MessageCard(icon: DrawableResource, text: String) {
             verticalArrangement = Arrangement.spacedBy(Spacing.space2)
         ) {
             Icon(
-                painter = painterResource(icon),
+                painter = icon,
                 contentDescription = null,
                 tint = CinemerickTheme.colors.onSurfaceVariant,
                 modifier = Modifier.size(32.dp)

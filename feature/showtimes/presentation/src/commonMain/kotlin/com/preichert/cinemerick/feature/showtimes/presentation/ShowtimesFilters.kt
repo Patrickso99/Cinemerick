@@ -93,7 +93,6 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.datetime.number
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal fun LocalDate.shortDate(): String =
@@ -123,7 +122,7 @@ internal fun SearchActionBar(
             onClick = onSearchClick,
             enabled = !isLoading,
             loading = isLoading,
-            icon = painterResource(CinemerickIcons.Search),
+            icon = CinemerickIcons.Search,
             modifier = Modifier.weight(1f),
         )
     }
@@ -184,7 +183,7 @@ internal fun FilmSearchField(
             horizontalArrangement = Arrangement.spacedBy(Spacing.space3)
         ) {
             Icon(
-                painter = painterResource(CinemerickIcons.Search),
+                painter = CinemerickIcons.Search,
                 contentDescription = null,
                 tint = colors.onSurfaceVariant,
                 modifier = Modifier.size(22.dp)
@@ -218,7 +217,7 @@ internal fun FilmSearchField(
             if (value.isNotEmpty()) {
                 val clearLabel = stringResource(Res.string.clear)
                 CinemerickIconButton(
-                    icon = painterResource(CinemerickIcons.Close),
+                    icon = CinemerickIcons.Close,
                     contentDescription = clearLabel,
                     onClick = { onValueChange("") },
                     container = Color.Transparent,
@@ -384,7 +383,7 @@ internal fun DaysSection(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.space1),
             ) {
                 Icon(
-                    painter = painterResource(CinemerickIcons.Calendar),
+                    painter = CinemerickIcons.Calendar,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)

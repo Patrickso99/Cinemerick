@@ -21,8 +21,15 @@ data class CinemerickColors(
     val primaryContainer: Color,
     val onPrimaryContainer: Color,
     val scrim: Color,
+    /** Something unavailable or gone wrong, e.g. the "sold out" badge. Material's error color. */
+    val error: Color,
+    val onError: Color,
     /** 1dp stroke around chain badges and chips in dark theme: makes the dark chains (Cinemazero, Cinergia, UCI) visible. */
     val chainEdge: Color,
+    /** Container of a control drawn over a picture (e.g. the close button on a backdrop), the same in both themes. */
+    val overImageContainer: Color,
+    /** Content of a control drawn over a picture. */
+    val onOverImage: Color,
 )
 
 val DarkCinemerickColors = CinemerickColors(
@@ -38,7 +45,11 @@ val DarkCinemerickColors = CinemerickColors(
     primaryContainer = Color(0xFF3A2C7A),
     onPrimaryContainer = Color(0xFFE7DEFF),
     scrim = Color(0xA806040C),
+    error = Color(0xFFB3261E),
+    onError = Color(0xFFFFFFFF),
     chainEdge = Color(0x47FFFFFF),
+    overImageContainer = Color(0x8C0A0812),
+    onOverImage = Color(0xFFFFFFFF),
 )
 
 val LightCinemerickColors = CinemerickColors(
@@ -54,7 +65,11 @@ val LightCinemerickColors = CinemerickColors(
     primaryContainer = Color(0xFFE7E0FF),
     onPrimaryContainer = Color(0xFF2A1670),
     scrim = Color(0x6B140C32),
+    error = Color(0xFFB3261E),
+    onError = Color(0xFFFFFFFF),
     chainEdge = Color(0x00000000),
+    overImageContainer = Color(0x8C0A0812),
+    onOverImage = Color(0xFFFFFFFF),
 )
 
 // Cinema brand colors: fixed in light and dark mode so each cinema is always recognizable.
@@ -75,4 +90,12 @@ object CinemaBrandColors {
     val onCinemazero = Color(0xFFFFFFFF)
     val arcadia = Color(0xFF6E398A)
     val onArcadia = Color(0xFFFFFFFF)
+}
+
+// Colors of the app's own mark (the splash screen): fixed in light and dark mode, like a logo.
+object CinemerickBrandColors {
+    val play = Color(0xFF4B2E83)
+    val dash = Color(0xFF9C8CC8)
+    val italyGreen = Color(0xFF009246)
+    val italyRed = Color(0xFFCE2B37)
 }

@@ -15,6 +15,7 @@
     <string name="tmdb_credit_title">Credits</string>
     <string name="tmdb_credit_description">Synopsis, cast, trailer, runtime and score are provided by TMDB.</string>
     <string name="tmdb_credit_open">Open themoviedb.org</string>
+    <string name="tmdb_logo">TMDB logo</string>
     <string name="settings_back">Back</string>
     <string name="about_title">About</string>
     <string name="language_title">Language</string>

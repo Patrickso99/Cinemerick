@@ -39,9 +39,8 @@ fun CinemerickTheme(
             outline = colors.onSurfaceVariant,
             outlineVariant = colors.outlineVariant,
             scrim = colors.scrim,
-            // Not part of the redesign palette: Material defaults for error states.
-            error = Color(0xFFF2B8B5),
-            onError = Color(0xFF601410),
+            error = colors.error,
+            onError = colors.onError,
             errorContainer = Color(0xFF8C1D18),
             onErrorContainer = Color(0xFFF9DEDC),
         )
@@ -65,8 +64,8 @@ fun CinemerickTheme(
             outline = colors.onSurfaceVariant,
             outlineVariant = colors.outlineVariant,
             scrim = colors.scrim,
-            error = Color(0xFFB3261E),
-            onError = Color(0xFFFFFFFF),
+            error = colors.error,
+            onError = colors.onError,
             errorContainer = Color(0xFFF9DEDC),
             onErrorContainer = Color(0xFF410E0B),
         )

@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import com.preichert.cinemerick.core.designsystem.CinemerickIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -44,10 +45,6 @@ import com.preichert.cinemerick.core.designsystem.DarkThemePreview
 import com.preichert.cinemerick.core.designsystem.LightThemePreview
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.bounceClickable
-import com.preichert.cinemerick.core.designsystem.resources.Res as DesignRes
-import com.preichert.cinemerick.core.designsystem.resources.ic_check
-import com.preichert.cinemerick.core.designsystem.resources.ic_close
-import com.preichert.cinemerick.core.designsystem.resources.ic_search
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.choose_venues
@@ -59,7 +56,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.search_
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.deselect_all
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.select_all
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.venues_selected_count
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,7 +122,7 @@ internal fun VenuePickerSheet(
                         .background(colors.surfaceContainerHigh, CircleShape)
                 ) {
                     Icon(
-                        painter = painterResource(DesignRes.drawable.ic_close),
+                        painter = CinemerickIcons.Close,
                         contentDescription = stringResource(Res.string.details_close),
                         tint = colors.onSurface,
                         modifier = Modifier.size(22.dp)
@@ -146,7 +142,7 @@ internal fun VenuePickerSheet(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.space3)
             ) {
                 Icon(
-                    painter = painterResource(DesignRes.drawable.ic_search),
+                    painter = CinemerickIcons.Search,
                     contentDescription = null,
                     tint = colors.onSurfaceVariant,
                     modifier = Modifier.size(22.dp)
@@ -307,7 +303,7 @@ private fun VenueRow(modifier: Modifier, venue: Venue, selected: Boolean, onClic
         ) {
             if (selected) {
                 Icon(
-                    painter = painterResource(DesignRes.drawable.ic_check),
+                    painter = CinemerickIcons.Check,
                     contentDescription = null,
                     tint = colors.onPrimary,
                     modifier = Modifier.size(16.dp)

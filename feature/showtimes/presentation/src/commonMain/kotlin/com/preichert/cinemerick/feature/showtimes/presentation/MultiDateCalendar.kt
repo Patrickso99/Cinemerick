@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
-import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -76,7 +75,7 @@ fun MultiDateCalendar(
             ) {
                 val description = stringResource(Res.string.calendar_prev_month)
                 Icon(
-                    painter = painterResource(CinemerickIcons.ArrowBack),
+                    painter = CinemerickIcons.ArrowBack,
                     contentDescription = description,
                     modifier = Modifier.size(22.dp),
                 )
@@ -95,7 +94,7 @@ fun MultiDateCalendar(
             ) {
                 val description = stringResource(Res.string.calendar_next_month)
                 Icon(
-                    painter = painterResource(CinemerickIcons.ChevronRight),
+                    painter = CinemerickIcons.ChevronRight,
                     contentDescription = description,
                     modifier = Modifier.size(22.dp),
                 )

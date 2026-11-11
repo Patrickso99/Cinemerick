@@ -102,6 +102,15 @@ internal object PreviewData {
         )
     )
 
+    fun filmGroupSoldOutLongTitle() = FilmGroupUi(
+        title = "Il signore degli anelli: Il ritorno del re - Edizione estesa rimasterizzata in 4K",
+        posterUrl = "https://example.com/poster.jpg",
+        showings = listOf(
+            ShowingUi(DayOfWeek.SATURDAY, "03/10", "18:00", sileaVenue, "2D · ITA", soldOut = true),
+            ShowingUi(DayOfWeek.SATURDAY, "03/10", "21:00", marconVenue, "IMAX · VO", ticketUrl = "https://example.com/t")
+        )
+    )
+
     fun filmGroupNoPoster() = FilmGroupUi(
         title = "Inception",
         posterUrl = null,

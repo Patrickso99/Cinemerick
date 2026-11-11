@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 
 /** Card: surface, shape lg, tonal depth only, no outline or shadow. */
 @Composable
@@ -111,18 +111,25 @@ fun CinemerickChainCard(
                 }
                 // An empty, collapsed chain shows a plus that opens the venue picker directly (quick add).
                 val quickAdd = onQuickAdd.takeIf { !expanded && selectedCount == 0 }
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .then(if (quickAdd != null) Modifier.clickable(role = Role.Button, onClickLabel = name, onClick = quickAdd) else Modifier),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        painter = painterResource(trailingIcon),
-                        contentDescription = if (quickAdd != null) name else null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(22.dp),
-                    )
+                if (quickAdd != null) {
+                    IconButton(onClick = quickAdd) {
+                        Icon(
+                            painter = trailingIcon,
+                            contentDescription = name,
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
+                } else {
+                    // The header row toggles the card, so here the chevron only shows which way it goes.
+                    Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                        Icon(
+                            painter = trailingIcon,
+                            contentDescription = null,
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    }
                 }
             }
             AnimatedVisibility(

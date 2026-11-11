@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
@@ -78,7 +79,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.day_hea
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.sold_out
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.venue_error_message
 import kotlinx.datetime.DayOfWeek
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 private val log = Logger.withTag("ShowtimesResults")
@@ -173,7 +173,7 @@ private fun VenueErrorBanner(error: VenueErrorUi) {
             horizontalArrangement = Arrangement.spacedBy(Spacing.space2)
         ) {
             Icon(
-                painter = painterResource(CinemerickIcons.Alert),
+                painter = CinemerickIcons.Alert,
                 contentDescription = null,
                 tint = colors.onErrorContainer,
                 modifier = Modifier.size(20.dp)
@@ -216,7 +216,7 @@ private fun ResultsSummary(optionsCount: Int, elapsedTimeMillis: Long?, onCopy: 
             CinemerickPrimaryButton(
                 text = stringResource(Res.string.copy_poll),
                 onClick = onCopy,
-                icon = painterResource(CinemerickIcons.Copy),
+                icon = CinemerickIcons.Copy,
             )
         }
     }
@@ -373,7 +373,7 @@ internal fun FilmGroupCard(
                     CinemerickTonalButton(
                         text = stringResource(Res.string.film_details),
                         onClick = onDetailsClick,
-                        icon = painterResource(CinemerickIcons.ChevronRight),
+                        icon = CinemerickIcons.ChevronRight,
                     )
                 }
             }
@@ -407,7 +407,7 @@ private fun TmdbFacts(details: FilmDetails) {
         details.score?.let { score ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 Icon(
-                    painter = painterResource(CinemerickIcons.Star),
+                    painter = CinemerickIcons.Star,
                     contentDescription = null,
                     tint = colors.primary,
                     modifier = Modifier.size(16.dp),
@@ -534,13 +534,13 @@ internal fun ShowingRow(showing: ShowingUi, withDivider: Boolean = false) {
             if (showing.soldOut) {
                 Badge(
                     text = stringResource(Res.string.sold_out),
-                    container = colors.primaryContainer,
-                    content = colors.onPrimaryContainer
+                    container = colors.error,
+                    content = colors.onError
                 )
             }
             showing.ticketUrl?.let { url ->
                 CinemerickIconButton(
-                    icon = painterResource(CinemerickIcons.Cart),
+                    icon = CinemerickIcons.Cart,
                     contentDescription = stringResource(Res.string.buy_ticket),
                     onClick = {
                         log.i { "Opening purchase page for ${showing.venue.name} ${showing.date} ${showing.time}: $url" }
@@ -571,6 +571,38 @@ private fun FormatTag(text: String) {
 }
 
 // Previews - Light theme
+
+@Preview
+@Composable
+private fun FilmGroupCardNoPosterPreviewLight() {
+    LightThemePreview {
+        FilmGroupCard(group = PreviewData.filmGroupNoPoster(), large = false)
+    }
+}
+
+@Preview
+@Composable
+private fun FilmGroupCardSoldOutLongTitlePreviewLight() {
+    LightThemePreview {
+        FilmGroupCard(group = PreviewData.filmGroupSoldOutLongTitle(), large = false)
+    }
+}
+
+@Preview
+@Composable
+private fun FilmGroupCardPosterPendingPreviewDark() {
+    DarkThemePreview {
+        FilmGroupCard(group = PreviewData.filmGroupWithPoster().copy(posterPending = true), large = false)
+    }
+}
+
+@Preview(widthDp = 320)
+@Composable
+private fun FilmGroupCardCompactPreviewLight() {
+    LightThemePreview {
+        FilmGroupCard(group = PreviewData.filmGroupSoldOutLongTitle(), large = false)
+    }
+}
 
 @Preview
 @Composable

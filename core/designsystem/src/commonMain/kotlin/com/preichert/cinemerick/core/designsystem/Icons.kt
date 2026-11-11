@@ -19,29 +19,31 @@ import com.preichert.cinemerick.core.designsystem.resources.ic_search
 import com.preichert.cinemerick.core.designsystem.resources.ic_sliders
 import com.preichert.cinemerick.core.designsystem.resources.ic_star
 import com.preichert.cinemerick.core.designsystem.resources.ic_sun
-import org.jetbrains.compose.resources.DrawableResource
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.painter.Painter
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * Outline icon set of the redesign. Replaces the emoji glyphs (🎬 🍿 ⚠ ★ ‹) and the older filled icons.
- * Use with `painterResource(CinemerickIcons.Search)`; every icon-only control needs a contentDescription.
+ * Use as `Icon(painter = CinemerickIcons.Search, …)`; every icon-only control needs a contentDescription.
  */
 object CinemerickIcons {
-    val Search: DrawableResource get() = Res.drawable.ic_search
-    val Sliders: DrawableResource get() = Res.drawable.ic_sliders
-    val Cart: DrawableResource get() = Res.drawable.ic_cart
-    val Copy: DrawableResource get() = Res.drawable.ic_copy
-    val Play: DrawableResource get() = Res.drawable.ic_play
-    val Star: DrawableResource get() = Res.drawable.ic_star
-    val Calendar: DrawableResource get() = Res.drawable.ic_calendar
-    val Check: DrawableResource get() = Res.drawable.ic_check
-    val Plus: DrawableResource get() = Res.drawable.ic_add
-    val Close: DrawableResource get() = Res.drawable.ic_close
-    val ChevronRight: DrawableResource get() = Res.drawable.ic_chevron_right
-    val ChevronUp: DrawableResource get() = Res.drawable.ic_chevron_up
-    val ArrowBack: DrawableResource get() = Res.drawable.ic_arrow_back
-    val Sun: DrawableResource get() = Res.drawable.ic_sun
-    val Moon: DrawableResource get() = Res.drawable.ic_moon
-    val Auto: DrawableResource get() = Res.drawable.ic_auto
-    val Alert: DrawableResource get() = Res.drawable.ic_alert
-    val Film: DrawableResource get() = Res.drawable.ic_film
+    val Search: Painter @Composable get() = painterResource(Res.drawable.ic_search)
+    val Sliders: Painter @Composable get() = painterResource(Res.drawable.ic_sliders)
+    val Cart: Painter @Composable get() = painterResource(Res.drawable.ic_cart)
+    val Copy: Painter @Composable get() = painterResource(Res.drawable.ic_copy)
+    val Play: Painter @Composable get() = painterResource(Res.drawable.ic_play)
+    val Star: Painter @Composable get() = painterResource(Res.drawable.ic_star)
+    val Calendar: Painter @Composable get() = painterResource(Res.drawable.ic_calendar)
+    val Check: Painter @Composable get() = painterResource(Res.drawable.ic_check)
+    val Plus: Painter @Composable get() = painterResource(Res.drawable.ic_add)
+    val Close: Painter @Composable get() = painterResource(Res.drawable.ic_close)
+    val ChevronRight: Painter @Composable get() = painterResource(Res.drawable.ic_chevron_right)
+    val ChevronUp: Painter @Composable get() = painterResource(Res.drawable.ic_chevron_up)
+    val ArrowBack: Painter @Composable get() = painterResource(Res.drawable.ic_arrow_back)
+    val Sun: Painter @Composable get() = painterResource(Res.drawable.ic_sun)
+    val Moon: Painter @Composable get() = painterResource(Res.drawable.ic_moon)
+    val Auto: Painter @Composable get() = painterResource(Res.drawable.ic_auto)
+    val Alert: Painter @Composable get() = painterResource(Res.drawable.ic_alert)
+    val Film: Painter @Composable get() = painterResource(Res.drawable.ic_film)
 }

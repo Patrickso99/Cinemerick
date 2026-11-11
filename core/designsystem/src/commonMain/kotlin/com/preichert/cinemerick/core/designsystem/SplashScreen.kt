@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -50,10 +52,12 @@ fun CinemerickSplash(appName: String, onFinished: () -> Unit, modifier: Modifier
     val animationsEnabled = LocalAnimationsEnabled.current
     val currentOnFinished by rememberUpdatedState(onFinished)
 
-    val ticket = remember { Animatable(0f) }
-    val play = remember { Animatable(0f) }
-    val stripes = remember { Animatable(0f) }
-    val wordmark = remember { Animatable(0f) }
+    // Previews do not run the animation, so there the mark starts complete instead of invisible.
+    val start = if (LocalInspectionMode.current) 1f else 0f
+    val ticket = remember { Animatable(start) }
+    val play = remember { Animatable(start) }
+    val stripes = remember { Animatable(start) }
+    val wordmark = remember { Animatable(start) }
 
     LaunchedEffect(animationsEnabled) {
         if (!animationsEnabled) {
@@ -105,17 +109,13 @@ private val MarkSize = 260.dp
 
 // The mark is drawn on a 1000 x 1000 grid, then scaled to the canvas.
 private const val UNIT = 1000f
-private val PlayColor = Color(0xFF4B2E83)
-private val DashColor = Color(0xFF9C8CC8)
-private val ItalyGreen = Color(0xFF009246)
-private val ItalyRed = Color(0xFFCE2B37)
 
 private data class Stripe(val x: Float, val color: Color, val outlined: Boolean)
 
 private val StripeSpecs = listOf(
-    Stripe(640f, ItalyGreen, outlined = false),
+    Stripe(640f, CinemerickBrandColors.italyGreen, outlined = false),
     Stripe(690f, Color.White, outlined = true),
-    Stripe(740f, ItalyRed, outlined = false),
+    Stripe(740f, CinemerickBrandColors.italyRed, outlined = false),
 )
 
 /** Ticket outline with a notch at the top and bottom, matching the app icon. */
@@ -170,7 +170,7 @@ private fun DrawScope.drawTicketMark(ticket: Float, play: Float, stripes: Float)
             // Perforation under the notch.
             listOf(380f, 440f, 500f, 560f, 620f).forEach { y ->
                 drawRoundRect(
-                    color = DashColor,
+                    color = CinemerickBrandColors.dash,
                     topLeft = Offset(595f, y),
                     size = Size(10f, 30f),
                     cornerRadius = CornerRadius(5f),
@@ -180,7 +180,7 @@ private fun DrawScope.drawTicketMark(ticket: Float, play: Float, stripes: Float)
 
             // Play button pops in from its centre.
             withTransform({ scale(play, play, pivot = Offset(370f, 510f)) }) {
-                drawPath(PlayPath, color = PlayColor, alpha = play)
+                drawPath(PlayPath, color = CinemerickBrandColors.play, alpha = play)
             }
 
             // Stripes grow from the centre line, one after the other.
@@ -199,7 +199,7 @@ private fun DrawScope.drawTicketMark(ticket: Float, play: Float, stripes: Float)
                     )
                     if (stripe.outlined) {
                         drawRoundRect(
-                            color = DashColor,
+                            color = CinemerickBrandColors.dash,
                             topLeft = topLeft,
                             size = Size(26f, h),
                             cornerRadius = radius,
@@ -210,5 +210,21 @@ private fun DrawScope.drawTicketMark(ticket: Float, play: Float, stripes: Float)
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun CinemerickSplashLightPreview() {
+    CinemerickTheme(isDarkTheme = false) {
+        CinemerickSplash(appName = "Cinemerick", onFinished = {})
+    }
+}
+
+@Preview
+@Composable
+private fun CinemerickSplashDarkPreview() {
+    CinemerickTheme(isDarkTheme = true) {
+        CinemerickSplash(appName = "Cinemerick", onFinished = {})
     }
 }

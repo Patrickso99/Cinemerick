@@ -2,9 +2,7 @@ package com.preichert.cinemerick.core.designsystem
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
 
 // One preview per distinct state. Each is wrapped in the light or dark theme.
 
@@ -61,7 +59,7 @@ private fun FilterChipSelectedDarkPreview() {
 private fun IconButtonLightPreview() {
     LightThemePreview {
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.Close),
+            icon = CinemerickIcons.Close,
             contentDescription = "Close",
             onClick = {},
         )
@@ -73,7 +71,7 @@ private fun IconButtonLightPreview() {
 private fun IconButtonDarkPreview() {
     DarkThemePreview {
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.Close),
+            icon = CinemerickIcons.Close,
             contentDescription = "Close",
             onClick = {},
         )
@@ -154,7 +152,7 @@ private fun TonalButtonTextPreview() {
 @Composable
 private fun TonalButtonIconPreview() {
     LightThemePreview {
-        CinemerickTonalButton(text = "Open details", onClick = {}, icon = painterResource(CinemerickIcons.ArrowBack))
+        CinemerickTonalButton(text = "Open details", onClick = {}, icon = CinemerickIcons.ArrowBack)
     }
 }
 
@@ -162,7 +160,7 @@ private fun TonalButtonIconPreview() {
 @Composable
 private fun TonalButtonIconDarkPreview() {
     DarkThemePreview {
-        CinemerickTonalButton(text = "Open details", onClick = {}, icon = painterResource(CinemerickIcons.ArrowBack))
+        CinemerickTonalButton(text = "Open details", onClick = {}, icon = CinemerickIcons.ArrowBack)
     }
 }
 
@@ -176,8 +174,8 @@ private fun ChainCardCollapsedPreview() {
             name = "UCI",
             subtitle = "2 sale selezionate",
             initials = "UC",
-            badgeContainer = Color(0xFFE30613),
-            badgeContent = Color.White,
+            badgeContainer = CinemaBrandColors.uciBlue,
+            badgeContent = CinemaBrandColors.onUciBlue,
             selectedCount = 2,
             expanded = false,
             onToggle = {},
@@ -194,8 +192,8 @@ private fun ChainCardExpandedPreview() {
             name = "UCI",
             subtitle = "Marcon",
             initials = "UC",
-            badgeContainer = Color(0xFFE30613),
-            badgeContent = Color.White,
+            badgeContainer = CinemaBrandColors.uciBlue,
+            badgeContent = CinemaBrandColors.onUciBlue,
             selectedCount = 1,
             expanded = true,
             onToggle = {},
@@ -212,8 +210,8 @@ private fun ChainCardEmptyDarkPreview() {
             name = "Cinergia",
             subtitle = "Nessuna sala selezionata",
             initials = "CI",
-            badgeContainer = Color(0xFF1E6FD9),
-            badgeContent = Color.White,
+            badgeContainer = CinemaBrandColors.cinergia,
+            badgeContent = CinemaBrandColors.onCinergia,
             selectedCount = 0,
             expanded = false,
             onToggle = {},
@@ -229,7 +227,7 @@ private fun ChainCardEmptyDarkPreview() {
 @Composable
 private fun ChainChipLightPreview() {
     LightThemePreview {
-        CinemerickChainChip(label = "UCI", container = Color(0xFFE30613), content = Color.White)
+        CinemerickChainChip(label = "UCI", container = CinemaBrandColors.uciBlue, content = CinemaBrandColors.onUciBlue)
     }
 }
 
@@ -237,7 +235,7 @@ private fun ChainChipLightPreview() {
 @Composable
 private fun ChainChipDarkPreview() {
     DarkThemePreview {
-        CinemerickChainChip(label = "UCI", container = Color(0xFFE30613), content = Color.White)
+        CinemerickChainChip(label = "UCI", container = CinemaBrandColors.uciBlue, content = CinemaBrandColors.onUciBlue)
     }
 }
 
@@ -272,5 +270,50 @@ private fun SwitchOnDarkPreview() {
 private fun SwitchOffDarkPreview() {
     DarkThemePreview {
         CinemerickSwitch(checked = false)
+    }
+}
+
+// Segmented control
+
+@Preview(name = "Segmented, icons")
+@Composable
+private fun SegmentedControlIconsPreview() {
+    LightThemePreview {
+        CinemerickSegmentedControl(
+            options = listOf("Auto" to CinemerickIcons.Auto, "Light" to CinemerickIcons.Sun, "Dark" to CinemerickIcons.Moon),
+            selectedIndex = 0,
+            onSelect = {},
+        )
+    }
+}
+
+@Preview(name = "Segmented, text only, dark")
+@Composable
+private fun SegmentedControlTextDarkPreview() {
+    DarkThemePreview {
+        CinemerickSegmentedControl(options = listOf("English" to null, "Italiano" to null), selectedIndex = 1, onSelect = {})
+    }
+}
+
+// Switch row
+
+@Preview(name = "Switch row on, with description")
+@Composable
+private fun SwitchRowOnPreview() {
+    LightThemePreview {
+        CinemerickSwitchRow(
+            title = "Smooth animations",
+            description = "Transitions and list motion",
+            checked = true,
+            onCheckedChange = {},
+        )
+    }
+}
+
+@Preview(name = "Switch row off, dark")
+@Composable
+private fun SwitchRowOffDarkPreview() {
+    DarkThemePreview {
+        CinemerickSwitchRow(title = "Smooth animations", checked = false, onCheckedChange = {})
     }
 }

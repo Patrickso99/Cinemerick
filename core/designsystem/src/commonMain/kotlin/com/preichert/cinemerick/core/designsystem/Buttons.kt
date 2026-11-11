@@ -1,14 +1,13 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.shape.CircleShape
@@ -27,12 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -56,7 +52,7 @@ fun CinemerickPrimaryButton(
         modifier = modifier
             .height(52.dp)
             .pressScale(interaction)
-            .alpha(if (enabled) 1f else 0.5f),
+            .graphicsLayer { alpha = if (enabled) 1f else 0.5f },
         interactionSource = interaction,
         shape = CinemerickFullShape,
         colors = ButtonDefaults.buttonColors(
@@ -100,7 +96,7 @@ fun CinemerickSecondaryButton(
         modifier = modifier
             .height(52.dp)
             .pressScale(interaction)
-            .alpha(if (enabled) 1f else 0.5f),
+            .graphicsLayer { alpha = if (enabled) 1f else 0.5f },
         interactionSource = interaction,
         shape = CinemerickFullShape,
         colors = ButtonDefaults.outlinedButtonColors(
@@ -156,17 +152,18 @@ fun CinemerickExtendedFab(
     modifier: Modifier = Modifier,
 ) {
     val colors = CinemerickTheme.colors
-    ButtonShell(
+    val interaction = remember { MutableInteractionSource() }
+    ExtendedFloatingActionButton(
+        text = { Text(text, style = MaterialTheme.typography.titleSmall, maxLines = 1) },
+        icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp)) },
         onClick = onClick,
-        enabled = true,
-        height = 56.dp,
-        container = colors.primary,
-        modifier = modifier.shadow(12.dp, CinemerickFullShape, ambientColor = Color.Black.copy(alpha = 0.5f), spotColor = Color.Black.copy(alpha = 0.5f)),
-        horizontalPadding = 22.dp,
-    ) {
-        Icon(icon, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(22.dp))
-        Text(text, style = MaterialTheme.typography.titleSmall, color = colors.onPrimary, maxLines = 1)
-    }
+        modifier = modifier.height(56.dp).pressScale(interaction),
+        shape = CinemerickFullShape,
+        containerColor = colors.primary,
+        contentColor = colors.onPrimary,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 12.dp, pressedElevation = 12.dp, focusedElevation = 12.dp, hoveredElevation = 12.dp),
+        interactionSource = interaction,
+    )
 }
 
 /** Circular icon button: 48dp hit, 22dp outline icon, always with a content description. */
@@ -192,37 +189,3 @@ fun CinemerickIconButton(
 }
 
 /** Shared shape for the pill buttons: full shape, min tap target 48dp, press scale 0.97. */
-@Composable
-private fun ButtonShell(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    height: Dp,
-    container: Color,
-    modifier: Modifier = Modifier,
-    border: BorderStroke? = null,
-    horizontalPadding: Dp = 22.dp,
-    content: @Composable () -> Unit,
-) {
-    val interaction = remember { MutableInteractionSource() }
-    Row(
-        modifier = modifier
-            .height(height)
-            .pressScale(interaction)
-            .alpha(if (enabled) 1f else 0.5f)
-            .clip(CinemerickFullShape)
-            .background(container)
-            .then(if (border != null) Modifier.border(border, CinemerickFullShape) else Modifier)
-            .clickable(
-                interactionSource = interaction,
-                indication = LocalIndication.current,
-                enabled = enabled,
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .padding(horizontal = horizontalPadding),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = spacedBy(8.dp, Alignment.CenterHorizontally),
-    ) {
-        content()
-    }
-}

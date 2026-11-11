@@ -1,5 +1,7 @@
 package com.preichert.cinemerick.feature.settings.presentation
 
+import com.preichert.cinemerick.core.designsystem.DarkCinemerickColors
+import com.preichert.cinemerick.core.designsystem.LightCinemerickColors
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -176,7 +178,7 @@ private fun SettingsHeader(title: String, backLabel: String, onBack: () -> Unit)
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.ArrowBack),
+            icon = CinemerickIcons.ArrowBack,
             contentDescription = backLabel,
             onClick = onBack,
             container = Color.Transparent,
@@ -232,9 +234,9 @@ private fun ThemeModeControl(
     ) {
         CinemerickSegmentedControl(
             options = listOf(
-                stringResource(Res.string.theme_auto) to painterResource(CinemerickIcons.Auto),
-                stringResource(Res.string.theme_light) to painterResource(CinemerickIcons.Sun),
-                stringResource(Res.string.theme_dark) to painterResource(CinemerickIcons.Moon),
+                stringResource(Res.string.theme_auto) to CinemerickIcons.Auto,
+                stringResource(Res.string.theme_light) to CinemerickIcons.Sun,
+                stringResource(Res.string.theme_dark) to CinemerickIcons.Moon,
             ),
             selectedIndex = selectedIndex,
             onSelect = select,
@@ -277,13 +279,14 @@ private fun ThemeModeControl(
 
 private enum class ThemeTilePreview { AUTO, LIGHT, DARK }
 
-private val LightThemePreviewBackground = Color(0xFFFAF8FF)
-private val DarkThemePreviewBackground = Color(0xFF0D0B14)
-private val LightThemePreviewAccent = Color(0xFF5B3FD6)
-private val DarkThemePreviewAccent = Color(0xFFA78BFA)
-private val LightThemePreviewBar = Color(0xFFE7E3F5)
-private val DarkThemePreviewBar = Color(0xFF262140)
-private val AutoThemePreviewBar = Color(0xFFA9A3C2).copy(alpha = 0.45f)
+// The tiles draw each theme as it is, whatever the theme on screen, so they read the palettes of both themes.
+private val LightThemePreviewBackground = LightCinemerickColors.background
+private val DarkThemePreviewBackground = DarkCinemerickColors.background
+private val LightThemePreviewAccent = LightCinemerickColors.primary
+private val DarkThemePreviewAccent = DarkCinemerickColors.primary
+private val LightThemePreviewBar = LightCinemerickColors.surfaceContainerHigh
+private val DarkThemePreviewBar = DarkCinemerickColors.surfaceContainer
+private val AutoThemePreviewBar = DarkCinemerickColors.onSurfaceVariant.copy(alpha = 0.45f)
 
 /**
  * 64dp preview of a theme: a miniature card with an accent bar and a muted bar. Auto splits the tile on a diagonal,
@@ -366,7 +369,7 @@ private fun LanguageControl(selected: AppLanguage, onSelect: (AppLanguage) -> Un
     Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
         CinemerickSegmentedControl(
             options = labels.mapIndexed { index, label ->
-                label to (if (languages[index] == selected) painterResource(CinemerickIcons.Check) else null)
+                label to (if (languages[index] == selected) CinemerickIcons.Check else null)
             },
             selectedIndex = languages.indexOf(selected),
             onSelect = { onSelect(languages[it]) },
@@ -444,7 +447,7 @@ private fun TmdbCreditSection() {
         )
         Image(
             painter = painterResource(Res.drawable.tmdb_logo),
-            contentDescription = "TMDB",
+            contentDescription = stringResource(Res.string.tmdb_logo),
             modifier = Modifier
                 .width(TMDB_LOGO_WIDTH)
                 .aspectRatio(1094f / 142f),

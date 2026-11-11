@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.runtime.getValue
 import kotlin.time.Clock
 import kotlinx.datetime.toLocalDateTime
@@ -20,7 +21,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
-import org.jetbrains.compose.resources.DrawableResource
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.nav_settings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -171,7 +171,7 @@ fun ShowtimesScreen(
                 collapsedTitle = BuildKonfig.APP_NAME,
                 collapsedAction = {
                     CinemerickIconButton(
-                        icon = painterResource(CinemerickIcons.Sliders),
+                        icon = CinemerickIcons.Sliders,
                         contentDescription = settingsLabel,
                         onClick = onSettingsClick,
                     )
@@ -219,7 +219,7 @@ fun ShowtimesScreen(
             if (state.pollText.isNotEmpty()) {
                 CinemerickExtendedFab(
                     text = stringResource(Res.string.copy_poll),
-                    icon = painterResource(CinemerickIcons.Copy),
+                    icon = CinemerickIcons.Copy,
                     onClick = { onAction(ShowtimesAction.OnCopyClick) },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -330,7 +330,7 @@ private fun HomeHeader(isWideScreen: Boolean, onSettingsClick: () -> Unit, setti
             )
         }
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.Sliders),
+            icon = CinemerickIcons.Sliders,
             contentDescription = settingsLabel,
             onClick = onSettingsClick,
         )
@@ -483,7 +483,7 @@ private fun DesktopNavigationRail(
 }
 
 @Composable
-private fun RailItem(label: String, icon: DrawableResource, selected: Boolean, onClick: () -> Unit) {
+private fun RailItem(label: String, icon: Painter, selected: Boolean, onClick: () -> Unit) {
     val colors = CinemerickTheme.colors
     Column(
         modifier = Modifier
@@ -496,7 +496,7 @@ private fun RailItem(label: String, icon: DrawableResource, selected: Boolean, o
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            painter = painterResource(icon),
+            painter = icon,
             contentDescription = null,
             tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
             modifier = Modifier.size(22.dp),

@@ -1,5 +1,9 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -44,7 +48,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-/** Two-option (or three) segmented control, 48dp. Used for theme and language. */
+/**
+ * Two- or three-option segmented control, 48dp, used for theme and language: Material 3 segmented buttons inside a
+ * pill track. The selected option is a primaryContainer pill; there are no outlines and no check mark.
+ */
 @Composable
 fun CinemerickSegmentedControl(
     options: List<Pair<String, Painter?>>,
@@ -53,14 +60,14 @@ fun CinemerickSegmentedControl(
     modifier: Modifier = Modifier,
 ) {
     val colors = CinemerickTheme.colors
-    Row(
+    SingleChoiceSegmentedButtonRow(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
             .clip(CinemerickFullShape)
             .background(colors.surfaceContainerHigh)
             .padding(4.dp),
-        horizontalArrangement = spacedBy(4.dp),
+        space = 4.dp,
     ) {
         options.forEachIndexed { index, (label, icon) ->
             val selected = index == selectedIndex
@@ -69,33 +76,25 @@ fun CinemerickSegmentedControl(
                 tween(Motion.duration(LocalAnimationsEnabled.current, Motion.Press)),
                 label = "segmentContainer",
             )
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(CinemerickFullShape)
-                    .background(container)
-                    .semantics { this.selected = selected }
-                    .clickable(role = Role.RadioButton, onClick = { onSelect(index) }),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                if (icon != null) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                }
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
-                    maxLines = 1,
-                )
-            }
+            val content = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+            SegmentedButton(
+                selected = selected,
+                onClick = { onSelect(index) },
+                shape = CinemerickFullShape,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                colors = SegmentedButtonDefaults.colors(
+                    activeContainerColor = container,
+                    activeContentColor = content,
+                    activeBorderColor = Color.Transparent,
+                    inactiveContainerColor = container,
+                    inactiveContentColor = content,
+                    inactiveBorderColor = Color.Transparent,
+                ),
+                border = SegmentedButtonDefaults.borderStroke(Color.Transparent, 0.dp),
+                // The default icon is a check mark on the selected option; the design shows the option's own icon instead.
+                icon = { if (icon != null) Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                label = { Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1) },
+            )
         }
     }
 }
@@ -206,8 +205,7 @@ fun CinemerickSwitchRow(
         modifier = modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 56.dp)
-            .clickable(role = Role.Switch, onClick = { onCheckedChange(!checked) })
-            .semantics { this.selected = checked }
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = spacedBy(12.dp),

@@ -223,6 +223,14 @@ Cinemerick uses a **purple, role-based palette** from the redesign (specificatio
 
 `CinemaBrandColors` (in `Color.kt`) defines one fixed accent color per cinema, used only for its badge and chips, so they stay recognizable in light and dark mode (e.g. UCI `#1F3F7A`, The Space `#E8650A`, Cinergia `#414C4C`, Cristallo `#D22D27`, Don Bosco `#8B3A3B`, Cinemazero `#032129`, Arcadia `#6E398A`). When adding a cinema, also add its logo to `design/logos/` and update `design/generate_icons.py`, which regenerates the app icons for all platforms.
 
+`CinemerickBrandColors` holds the colors of the app's own mark (the splash screen), fixed in both themes like a logo. Nothing outside `Color.kt` and `CinemerickTheme.kt` writes a color as a hex value.
+
+### Components and Icons
+
+- **Material 3 first**: the shared components in `:core:designsystem` are Material 3 components styled with the tokens: `CinemerickFilterChip` is a `FilterChip`, `CinemerickSegmentedControl` uses `SegmentedButton`s, buttons are `Button` / `OutlinedButton` / `FilledTonalButton` / `FilledIconButton`, and the floating Copy poll is an `ExtendedFloatingActionButton`.
+- **Icons**: `CinemerickIcons` exposes every icon as a `Painter` (`Icon(painter = CinemerickIcons.Search, …)`); Material icons are not used.
+- **Smooth animations**: `LocalAnimationsEnabled` is a composition local, on purpose: every animated component reads the user's "Smooth animations" setting from it instead of taking it as a parameter. It is the only custom composition local besides the theme's colors.
+
 ### Typography and Shapes
 
 - **Typography**: Plus Jakarta Sans, with SemiBold / Bold weights for titles and regular weight for body text

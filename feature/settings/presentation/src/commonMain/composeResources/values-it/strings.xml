@@ -15,6 +15,7 @@
     <string name="tmdb_credit_title">Crediti</string>
     <string name="tmdb_credit_description">Trama, cast, trailer, durata e voto sono forniti da TMDB.</string>
     <string name="tmdb_credit_open">Apri themoviedb.org</string>
+    <string name="tmdb_logo">Logo di TMDB</string>
     <string name="settings_back">Indietro</string>
     <string name="about_title">Info</string>
     <string name="language_title">Lingua</string>

@@ -85,7 +85,6 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.details
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_score_value
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.details_trailer
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -183,7 +182,7 @@ private fun FilmDetailsSheet(
                     CinemerickPrimaryButton(
                         text = stringResource(Res.string.details_trailer),
                         onClick = { uriHandler.openUri(url) },
-                        icon = painterResource(CinemerickIcons.Play),
+                        icon = CinemerickIcons.Play,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -259,11 +258,11 @@ private fun FilmHeader(film: FilmDetailsUi, onDismiss: () -> Unit) {
             )
         }
         CinemerickIconButton(
-            icon = painterResource(CinemerickIcons.Close),
+            icon = CinemerickIcons.Close,
             contentDescription = closeLabel,
             onClick = onDismiss,
-            container = Color(0x8C0A0812),
-            tint = Color.White,
+            container = colors.overImageContainer,
+            tint = colors.onOverImage,
             modifier = Modifier.align(Alignment.TopEnd).padding(12.dp),
         )
         Row(
@@ -300,7 +299,7 @@ private fun FilmHeader(film: FilmDetailsUi, onDismiss: () -> Unit) {
                     details.score?.let { score ->
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                             Icon(
-                                painter = painterResource(CinemerickIcons.Star),
+                                painter = CinemerickIcons.Star,
                                 contentDescription = null,
                                 tint = colors.primary,
                                 modifier = Modifier.size(16.dp),
