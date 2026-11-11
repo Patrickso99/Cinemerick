@@ -6,5 +6,6 @@ kotlin {
     sourceSets.commonMain.dependencies {
         implementation(libs.compose.material3.adaptive)
         implementation(libs.compose.material3.adaptive.layout)
+        implementation(libs.compose.navigationevent)
     }
 }

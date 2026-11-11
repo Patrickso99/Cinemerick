@@ -100,6 +100,13 @@ class ShowtimesViewModel(
             is ShowtimesAction.OnPersonOpen -> persons.open(action.person)
             ShowtimesAction.OnPersonDismiss -> persons.dismiss()
             ShowtimesAction.OnBiographyExpand -> _state.update { it.copy(personDetails = it.personDetails?.copy(isBiographyExpanded = true)) }
+            ShowtimesAction.OnFilterSummaryToggle -> _state.update { it.copy(isFilterSummaryExpanded = !it.isFilterSummaryExpanded) }
+            ShowtimesAction.OnFilterSummaryDismiss -> _state.update { it.copy(isFilterSummaryExpanded = false) }
+            is ShowtimesAction.OnFilterSummaryTargetClick -> jumpToFilter(action.target)
+            ShowtimesAction.OnFilterSummaryUpdateClick -> {
+                _state.update { it.copy(isFilterSummaryExpanded = false) }
+                results.generate(silent = false)
+            }
         }
     }
 
@@ -110,6 +117,17 @@ class ShowtimesViewModel(
         if (!venuePicker.confirm()) return
         venuePicker.saveSelection(_state.value.selectedVenues)
         refresh()
+    }
+
+    // The panel closes and a chain card opens before the screen scrolls to it, so it arrives already expanded.
+    private fun jumpToFilter(target: FilterTarget) {
+        _state.update { state ->
+            state.copy(
+                isFilterSummaryExpanded = false,
+                expandedChains = if (target is FilterTarget.ChainCard) state.expandedChains + target.chain else state.expandedChains,
+            )
+        }
+        _events.trySend(ShowtimesEvent.ScrollToFilter(target))
     }
 
     private fun toggleChain(chain: Chain) {

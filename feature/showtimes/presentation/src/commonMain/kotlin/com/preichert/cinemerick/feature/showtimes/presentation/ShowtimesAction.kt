@@ -46,4 +46,8 @@ sealed interface ShowtimesAction {
     data class OnPersonOpen(val person: FilmPerson) : ShowtimesAction
     data object OnPersonDismiss : ShowtimesAction
     data object OnBiographyExpand : ShowtimesAction
+    data object OnFilterSummaryToggle : ShowtimesAction
+    data object OnFilterSummaryDismiss : ShowtimesAction
+    data class OnFilterSummaryTargetClick(val target: FilterTarget) : ShowtimesAction
+    data object OnFilterSummaryUpdateClick : ShowtimesAction
 }

@@ -45,7 +45,11 @@ data class ShowtimesState(
     // The film database id of each showing's title: showings with the same id are grouped as one film.
     val movieIds: Map<String, Int> = emptyMap(),
     // Films whose card lookup has answered, with or without a TMDB match: until then the card shows a placeholder poster.
-    val resolvedCards: Set<String> = emptySet()
+    val resolvedCards: Set<String> = emptySet(),
+    // The film filter the results on screen were searched with; null before the first search.
+    val searchedFilmFilter: String? = null,
+    // Whether the filter summary bar is open, on phone layouts.
+    val isFilterSummaryExpanded: Boolean = false,
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }

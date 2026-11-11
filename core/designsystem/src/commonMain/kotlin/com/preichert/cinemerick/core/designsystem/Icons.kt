@@ -4,6 +4,8 @@ import com.preichert.cinemerick.core.designsystem.resources.Res
 import com.preichert.cinemerick.core.designsystem.resources.ic_add
 import com.preichert.cinemerick.core.designsystem.resources.ic_alert
 import com.preichert.cinemerick.core.designsystem.resources.ic_arrow_back
+import com.preichert.cinemerick.core.designsystem.resources.ic_arrow_up_right
+import com.preichert.cinemerick.core.designsystem.resources.ic_clock
 import com.preichert.cinemerick.core.designsystem.resources.ic_auto
 import com.preichert.cinemerick.core.designsystem.resources.ic_cart
 import com.preichert.cinemerick.core.designsystem.resources.ic_calendar
@@ -46,4 +48,6 @@ object CinemerickIcons {
     val Auto: Painter @Composable get() = painterResource(Res.drawable.ic_auto)
     val Alert: Painter @Composable get() = painterResource(Res.drawable.ic_alert)
     val Film: Painter @Composable get() = painterResource(Res.drawable.ic_film)
+    val Clock: Painter @Composable get() = painterResource(Res.drawable.ic_clock)
+    val ArrowUpRight: Painter @Composable get() = painterResource(Res.drawable.ic_arrow_up_right)
 }

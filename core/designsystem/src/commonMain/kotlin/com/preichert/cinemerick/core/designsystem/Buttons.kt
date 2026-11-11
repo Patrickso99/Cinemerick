@@ -33,7 +33,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/** Primary action of a screen: primary fill, pill shape, 52dp. Only one per screen. */
+/** Primary action of a screen: primary fill, pill shape, 52dp ([height] 40dp inside a bar). Only one per screen. */
 @Composable
 fun CinemerickPrimaryButton(
     text: String,
@@ -42,6 +42,7 @@ fun CinemerickPrimaryButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     icon: Painter? = null,
+    height: Dp = 52.dp,
 ) {
     val colors = CinemerickTheme.colors
     val interaction = remember { MutableInteractionSource() }
@@ -50,7 +51,7 @@ fun CinemerickPrimaryButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
-            .height(52.dp)
+            .height(height)
             .pressScale(interaction)
             .graphicsLayer { alpha = if (enabled) 1f else 0.5f },
         interactionSource = interaction,

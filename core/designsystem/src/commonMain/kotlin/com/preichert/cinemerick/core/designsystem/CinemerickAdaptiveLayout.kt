@@ -1,5 +1,19 @@
 package com.preichert.cinemerick.core.designsystem
 
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.NavigationEventInfo
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,7 +42,6 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +77,11 @@ private val CollapseDistance = 72.dp
  * @param resultsContent results of a wide layout, shown in the right pane
  * @param mobileResultsItems results of the phone layout, as lazy items
  * @param desktopRail navigation rail, shown on desktop only
+ * @param layoutState scroll state shared with the screen, to jump to a component (see [CinemerickLayoutState.jumpTo])
+ * @param summaryBar replaces the compact bar on phones: pinned at the top once the large header collapses (portrait),
+ *   or at the top of the filter pane once it scrolls (landscape). Not shown on tablet and desktop.
+ * @param summaryBarExpanded whether [summaryBar] is open: a scrim then covers the content below it
+ * @param onSummaryBarDismiss tap on that scrim
  */
 @Composable
 fun CinemerickAdaptiveLayout(
@@ -77,6 +95,10 @@ fun CinemerickAdaptiveLayout(
     resultsContent: (@Composable ColumnScope.() -> Unit)? = null,
     mobileResultsItems: (LazyListScope.() -> Unit)? = null,
     desktopRail: (@Composable () -> Unit)? = null,
+    layoutState: CinemerickLayoutState = rememberCinemerickLayoutState(),
+    summaryBar: (@Composable () -> Unit)? = null,
+    summaryBarExpanded: Boolean = false,
+    onSummaryBarDismiss: () -> Unit = {},
 ) {
     val colors = CinemerickTheme.colors
     when (val configuration = currentDeviceConfiguration()) {
@@ -90,6 +112,10 @@ fun CinemerickAdaptiveLayout(
                 collapsedAction = collapsedAction,
                 actionBar = actionBar,
                 mobileResultsItems = mobileResultsItems,
+                layoutState = layoutState,
+                summaryBar = summaryBar,
+                summaryBarExpanded = summaryBarExpanded,
+                onSummaryBarDismiss = onSummaryBarDismiss,
             )
         } else {
             Column(
@@ -122,6 +148,10 @@ fun CinemerickAdaptiveLayout(
                 resultsContent = resultsContent,
                 filterWeight = 0.9f,
                 resultsWeight = 1.1f,
+                layoutState = layoutState,
+                summaryBar = summaryBar,
+                summaryBarExpanded = summaryBarExpanded,
+                onSummaryBarDismiss = onSummaryBarDismiss,
             )
         } else {
             Column(
@@ -231,22 +261,48 @@ private fun TwoPanes(
     filterWidth: Dp? = null,
     filterWeight: Float = 1f,
     resultsWeight: Float = 1f,
+    layoutState: CinemerickLayoutState? = null,
+    summaryBar: (@Composable () -> Unit)? = null,
+    summaryBarExpanded: Boolean = false,
+    onSummaryBarDismiss: () -> Unit = {},
 ) {
     val colors = CinemerickTheme.colors
+    // The summary bar only exists on phone landscape: there the filter pane scrolls with the shared state, so a jump can reach it.
+    val filterScroll = if (summaryBar != null && layoutState != null) layoutState.paneScrollState else rememberScrollState()
+    if (summaryBar != null && layoutState != null) {
+        SideEffect { layoutState.activeScrollable = filterScroll }
+    }
+    val collapseDistancePx = with(LocalDensity.current) { CollapseDistance.toPx() }
+    val paneScrolled by remember(filterScroll, collapseDistancePx) { derivedStateOf { filterScroll.value >= collapseDistancePx } }
     Row(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = (if (filterWidth != null) Modifier.width(filterWidth) else Modifier.weight(filterWeight))
-                .fillMaxHeight()
-                .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+        Box(
+            modifier = (if (filterWidth != null) Modifier.width(filterWidth) else Modifier.weight(filterWeight)).fillMaxHeight(),
         ) {
-            header()
             Column(
-                modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
-                content = filtersContent,
-            )
-            actionBar?.invoke()
+            ) {
+                header()
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(if (layoutState != null && summaryBar != null) Modifier.onPlaced { layoutState.viewport = it } else Modifier)
+                        .verticalScroll(filterScroll),
+                    verticalArrangement = Arrangement.spacedBy(CinemerickTheme.spacing.space4),
+                    content = filtersContent,
+                )
+                actionBar?.invoke()
+            }
+            if (summaryBar != null) {
+                SummaryBarOverlay(
+                    visible = paneScrolled || summaryBarExpanded,
+                    expanded = summaryBarExpanded,
+                    onDismiss = onSummaryBarDismiss,
+                    summaryBar = summaryBar,
+                )
+            }
         }
         Spacer(
             modifier = Modifier
@@ -276,10 +332,15 @@ private fun PhoneLazyLayout(
     collapsedAction: (@Composable () -> Unit)?,
     actionBar: (@Composable () -> Unit)?,
     mobileResultsItems: LazyListScope.() -> Unit,
+    layoutState: CinemerickLayoutState,
+    summaryBar: (@Composable () -> Unit)?,
+    summaryBarExpanded: Boolean,
+    onSummaryBarDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = CinemerickTheme.colors
-    val listState = rememberLazyListState()
+    val listState = layoutState.listState
+    SideEffect { layoutState.activeScrollable = listState }
     val collapseDistancePx = with(LocalDensity.current) { CollapseDistance.toPx() }
     val collapsedFraction by remember(listState, collapseDistancePx) {
         derivedStateOf {
@@ -296,7 +357,8 @@ private fun PhoneLazyLayout(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                .imePadding(),
+                .imePadding()
+                .onPlaced { layoutState.viewport = it },
             contentPadding = PaddingValues(bottom = if (actionBar != null) 104.dp else 0.dp),
         ) {
             item(key = "header", contentType = "header") { header() }
@@ -314,8 +376,17 @@ private fun PhoneLazyLayout(
             }
         }
 
-        // Pinned compact bar: fades in as the large header scrolls away
-        if (collapsedTitle != null) {
+        // The summary bar takes the compact bar's place once the large header has collapsed.
+        if (summaryBar != null) {
+            val collapsed by remember { derivedStateOf { collapsedFraction >= 1f } }
+            SummaryBarOverlay(
+                visible = collapsed || summaryBarExpanded,
+                expanded = summaryBarExpanded,
+                onDismiss = onSummaryBarDismiss,
+                summaryBar = summaryBar,
+            )
+        } else if (collapsedTitle != null) {
+            // Pinned compact bar: fades in as the large header scrolls away
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -352,5 +423,51 @@ private fun PhoneLazyLayout(
                 actionBar()
             }
         }
+    }
+}
+
+/**
+ * The summary bar over the content: slides in from the top when [visible], and puts a scrim under itself while
+ * [expanded]. A tap on the scrim or Back calls [onDismiss].
+ */
+@Composable
+private fun BoxScope.SummaryBarOverlay(
+    visible: Boolean,
+    expanded: Boolean,
+    onDismiss: () -> Unit,
+    summaryBar: @Composable () -> Unit,
+) {
+    val colors = CinemerickTheme.colors
+    val animationsEnabled = LocalAnimationsEnabled.current
+    // Back (Android button, iOS swipe) closes the open panel first; the screen only handles it once the panel is closed.
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = expanded,
+        onBackCompleted = onDismiss,
+    )
+    AnimatedVisibility(
+        visible = expanded,
+        modifier = Modifier.matchParentSize(),
+        enter = if (animationsEnabled) fadeIn(tween(Motion.Sheet)) else EnterTransition.None,
+        exit = if (animationsEnabled) fadeOut(tween(Motion.Sheet)) else ExitTransition.None,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.scrim)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss,
+                ),
+        )
+    }
+    AnimatedVisibility(
+        visible = visible,
+        modifier = Modifier.align(Alignment.TopCenter),
+        enter = if (animationsEnabled) slideInVertically(tween(200, easing = Motion.Decelerate)) { -it } + fadeIn(tween(200)) else EnterTransition.None,
+        exit = if (animationsEnabled) slideOutVertically(tween(150)) { -it } + fadeOut(tween(150)) else ExitTransition.None,
+    ) {
+        summaryBar()
     }
 }

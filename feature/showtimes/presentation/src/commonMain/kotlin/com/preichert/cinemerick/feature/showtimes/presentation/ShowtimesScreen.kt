@@ -21,6 +21,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import com.preichert.cinemerick.core.designsystem.CinemerickIcons
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import com.preichert.cinemerick.core.designsystem.CinemerickLayoutState
+import com.preichert.cinemerick.core.designsystem.LocalAnimationsEnabled
+import com.preichert.cinemerick.core.designsystem.cinemerickJumpFocus
+import com.preichert.cinemerick.core.designsystem.cinemerickJumpTarget
+import com.preichert.cinemerick.core.designsystem.cinemerickScrollObstruction
+import com.preichert.cinemerick.core.designsystem.rememberCinemerickLayoutState
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.nav_settings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,12 +90,23 @@ fun ShowtimesRoot(
     // LocalClipboard has no common way to build a plain-text entry in Compose 1.12, so the deprecated manager stays.
     @Suppress("DEPRECATION")
     val clipboardManager = LocalClipboardManager.current
+    val layoutState = rememberCinemerickLayoutState()
+    val animationsEnabled = LocalAnimationsEnabled.current
+    // A jump leaves this gap between the summary bar and the component it lands on.
+    val jumpGapPx = with(LocalDensity.current) { Spacing.space3.toPx() }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is ShowtimesEvent.CopyToClipboard -> clipboardManager.setText(AnnotatedString(event.text))
             is ShowtimesEvent.ShowSnackbar -> scope.launch {
                 snackbarHostState.showSnackbar(event.message.asStringAsync())
+            }
+            is ShowtimesEvent.ScrollToFilter -> scope.launch {
+                val found = layoutState.jumpTo(event.target, animationsEnabled, jumpGapPx)
+                // Layouts without chain cards (chips) still land on the Cinemas section.
+                if (!found && event.target is FilterTarget.ChainCard) {
+                    layoutState.jumpTo(FilterTarget.Cinemas, animationsEnabled, jumpGapPx)
+                }
             }
         }
     }
@@ -95,7 +115,8 @@ fun ShowtimesRoot(
         state = state,
         onAction = viewModel::onAction,
         onSettingsClick = onNavigateToSettings,
-        snackbarHostState = snackbarHostState
+        snackbarHostState = snackbarHostState,
+        layoutState = layoutState,
     )
 }
 
@@ -104,9 +125,26 @@ fun ShowtimesScreen(
     state: ShowtimesState,
     onAction: (ShowtimesAction) -> Unit,
     onSettingsClick: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    layoutState: CinemerickLayoutState = rememberCinemerickLayoutState(),
 ) {
     val configuration = currentDeviceConfiguration()
+    val summary = remember(
+        state.selectedVenues, state.days, state.hiddenTags, state.availableTags,
+        state.hasGenerated, state.filmFilter, state.searchedFilmFilter, state.isLoading,
+    ) { state.toFilterSummary() }
+    val primary = CinemerickTheme.colors.primary
+    // The panel needs the room the keyboard takes, and a jump leaves the field being typed in.
+    val focusManager = LocalFocusManager.current
+    // After a jump only the target is focusable, with a label that says where the jump landed.
+    val focusedTarget = layoutState.focusedTargetKey as? FilterTarget
+    val focusLabel = focusedTarget?.spokenLabel(summary, state.filmFilter)
+    val jumpTarget: (FilterTarget, Shape) -> Modifier = remember(layoutState, primary, focusedTarget, focusLabel) {
+        { target, shape ->
+            val ring = Modifier.cinemerickJumpTarget(layoutState, target, shape, primary)
+            if (target == focusedTarget && focusLabel != null) ring.cinemerickJumpFocus(layoutState, focusLabel) else ring
+        }
+    }
     val today: LocalDate = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     val onFilmVisible: (String) -> Unit = { onAction(ShowtimesAction.OnFilmCardVisible(it)) }
     val onFilmDetailsClick: (String) -> Unit = { onAction(ShowtimesAction.OnFilmDetailsOpen(it)) }
@@ -168,16 +206,14 @@ fun ShowtimesScreen(
                         settingsLabel = settingsLabel,
                     )
                 },
-                collapsedTitle = BuildKonfig.APP_NAME,
-                collapsedAction = {
-                    CinemerickIconButton(
-                        icon = CinemerickIcons.Sliders,
-                        contentDescription = settingsLabel,
-                        onClick = onSettingsClick,
-                    )
-                },
                 filtersContent = {
-                    FiltersContent(state = state, today = today, isWideScreen = configuration.isWideScreen, onAction = onAction)
+                    FiltersContent(
+                        state = state,
+                        today = today,
+                        isWideScreen = configuration.isWideScreen,
+                        onAction = onAction,
+                        jumpTarget = jumpTarget,
+                    )
                 },
                 resultsContent = {
                     ResultsSection(
@@ -214,9 +250,32 @@ fun ShowtimesScreen(
                         onSettingsClick = onSettingsClick,
                     )
                 },
+                layoutState = layoutState,
+                // Phones only: on tablet and desktop the filter pane is always in view.
+                summaryBar = if (configuration.isMobile) {
+                    {
+                        FilterSummaryBar(
+                            summary = summary,
+                            expanded = state.isFilterSummaryExpanded,
+                            onToggle = {
+                                focusManager.clearFocus()
+                                onAction(ShowtimesAction.OnFilterSummaryToggle)
+                            },
+                            onTargetClick = {
+                                focusManager.clearFocus()
+                                onAction(ShowtimesAction.OnFilterSummaryTargetClick(it))
+                            },
+                            onUpdateClick = { onAction(ShowtimesAction.OnFilterSummaryUpdateClick) },
+                            onSettingsClick = onSettingsClick,
+                            barModifier = Modifier.cinemerickScrollObstruction(layoutState),
+                        )
+                    }
+                } else null,
+                summaryBarExpanded = state.isFilterSummaryExpanded,
+                onSummaryBarDismiss = { onAction(ShowtimesAction.OnFilterSummaryDismiss) },
             )
-            // Copy poll floats at the bottom end on every layout.
-            if (state.pollText.isNotEmpty()) {
+            // Copy poll floats at the bottom end on every layout, except under the open summary panel.
+            if (state.pollText.isNotEmpty() && !state.isFilterSummaryExpanded) {
                 CinemerickExtendedFab(
                     text = stringResource(Res.string.copy_poll),
                     icon = CinemerickIcons.Copy,
@@ -240,7 +299,8 @@ private fun ColumnScope.FiltersContent(
     state: ShowtimesState,
     today: LocalDate,
     isWideScreen: Boolean,
-    onAction: (ShowtimesAction) -> Unit
+    onAction: (ShowtimesAction) -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier,
 ) {
     CinemasSection(
         selectedVenues = state.selectedVenues,
@@ -248,7 +308,8 @@ private fun ColumnScope.FiltersContent(
         isWideScreen = isWideScreen,
         onChainExpandToggle = { onAction(ShowtimesAction.OnChainExpandToggle(it)) },
         onVenuePickerOpen = { onAction(ShowtimesAction.OnVenuePickerOpen(it)) },
-        onVenueRemove = { onAction(ShowtimesAction.OnVenueToggle(it)) }
+        onVenueRemove = { onAction(ShowtimesAction.OnVenueToggle(it)) },
+        jumpTarget = jumpTarget,
     )
 
     DaysSection(
@@ -261,7 +322,8 @@ private fun ColumnScope.FiltersContent(
         onTomorrowClick = { onAction(ShowtimesAction.OnSelectTomorrow) },
         onWeekendClick = { onAction(ShowtimesAction.OnSelectWeekend) },
         onDayToggle = { onAction(ShowtimesAction.OnDayToggle(it)) },
-        onMonthChange = { onAction(ShowtimesAction.OnCalendarMonthChange(it)) }
+        onMonthChange = { onAction(ShowtimesAction.OnCalendarMonthChange(it)) },
+        jumpTarget = jumpTarget,
     )
 
     TimeWindowSection(
@@ -269,7 +331,8 @@ private fun ColumnScope.FiltersContent(
         onRangeChange = { date, minTime, maxTime ->
             onAction(ShowtimesAction.OnMinTimeChange(date, minTime))
             onAction(ShowtimesAction.OnMaxTimeChange(date, maxTime))
-        }
+        },
+        jumpTarget = jumpTarget,
     )
 
     if (state.hasGenerated && state.availableTags.isNotEmpty()) {
@@ -277,14 +340,16 @@ private fun ColumnScope.FiltersContent(
             availableTags = state.availableTags,
             hiddenTags = state.hiddenTags,
             onFormatToggle = { onAction(ShowtimesAction.OnFormatToggle(it)) },
-            onShowAllClick = { onAction(ShowtimesAction.OnFormatsReset) }
+            onShowAllClick = { onAction(ShowtimesAction.OnFormatsReset) },
+            jumpTarget = jumpTarget,
         )
     }
 
     FilmSearchField(
         value = state.filmFilter,
         onValueChange = { onAction(ShowtimesAction.OnFilmFilterChange(it)) },
-        onSearch = { onAction(ShowtimesAction.OnGenerateClick) }
+        onSearch = { onAction(ShowtimesAction.OnGenerateClick) },
+        jumpTarget = jumpTarget,
     )
 
     SearchActionBar(

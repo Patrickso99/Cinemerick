@@ -112,4 +112,38 @@
     <string name="venue_error_message">%1$s: %2$s</string>
     <string name="day_heading">%1$s %2$s</string>
     <string name="time_range">%1$s – %2$s</string>
+    <plurals name="summary_venues">
+        <item quantity="one">%1$d venue</item>
+        <item quantity="other">%1$d venues</item>
+    </plurals>
+    <plurals name="summary_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="summary_formats_hidden">
+        <item quantity="one">%1$s hidden</item>
+        <item quantity="other">%1$s hidden</item>
+    </plurals>
+    <string name="summary_no_venue">No venue</string>
+    <string name="summary_no_day">No day</string>
+    <string name="summary_day">%1$s %2$d</string>
+    <string name="summary_times_per_day">times per day</string>
+    <string name="summary_all_films">all films</string>
+    <string name="summary_film_quoted">“%1$s”</string>
+    <string name="summary_changed">Filters changed</string>
+    <string name="summary_searching">Searching…</string>
+    <string name="summary_update">Update</string>
+    <string name="summary_update_results">Update results</string>
+    <string name="summary_panel_title">Active filters</string>
+    <string name="summary_panel_hint">Tap a filter to go back to it</string>
+    <string name="summary_panel_changed_hint">Changed since the search</string>
+    <string name="summary_group_days_times">Days and times</string>
+    <string name="summary_group_format_film">Format and film</string>
+    <string name="summary_flag_changed">Changed</string>
+    <string name="summary_pick_venue">Pick at least one venue</string>
+    <string name="summary_pick_day">Pick at least one day</string>
+    <string name="summary_description">Filters: %1$s. %2$s</string>
+    <string name="summary_show">Show all filters</string>
+    <string name="summary_hide">Hide filters</string>
+    <string name="summary_go_to">Go to this filter</string>
 </resources>

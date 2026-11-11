@@ -78,7 +78,8 @@ internal class ResultsController(
             if (!silent) message(UiText.Resource(Res.string.invalid_time))
             return
         }
-        val filmQueries = state.filmFilter.split(",")
+        val filmFilter = state.filmFilter
+        val filmQueries = filmFilter.split(",")
 
         generateJob?.cancel()
         generateJob = scope.launch {
@@ -102,7 +103,7 @@ internal class ResultsController(
             lastFetch = Fetch(showings, ranges.mapTo(mutableSetOf()) { it.date }, venues, filmQueries, errors)
             val elapsedTimeMillis = clock.now().toEpochMilliseconds() - startTimeMillis
             log.i { "Fetched ${showings.size} showing(s), ${errors.size} venue error(s) in ${elapsedTimeMillis}ms" }
-            update { withResults(it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis)) }
+            update { withResults(it.copy(isLoading = false, hasGenerated = true, elapsedTimeMillis = elapsedTimeMillis, searchedFilmFilter = filmFilter)) }
             loadMovieIds(showings)
         }
     }

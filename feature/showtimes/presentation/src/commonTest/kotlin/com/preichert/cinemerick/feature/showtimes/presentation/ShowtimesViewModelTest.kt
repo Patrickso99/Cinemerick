@@ -100,6 +100,68 @@ class ShowtimesViewModelTest {
         }
     }
 
+    @Test
+    fun theSummaryPanelOpensAndCloses() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.onAction(ShowtimesAction.OnFilterSummaryToggle)
+        assertThat(viewModel.state.value.isFilterSummaryExpanded).isTrue()
+
+        viewModel.onAction(ShowtimesAction.OnFilterSummaryDismiss)
+        assertThat(viewModel.state.value.isFilterSummaryExpanded).isFalse()
+    }
+
+    @Test
+    fun aChainRowClosesThePanelOpensTheCardAndScrollsToIt() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnFilterSummaryToggle)
+
+        viewModel.events.test {
+            viewModel.onAction(ShowtimesAction.OnFilterSummaryTargetClick(FilterTarget.ChainCard(Chain.NOTORIOUS)))
+
+            assertThat(awaitItem()).isEqualTo(ShowtimesEvent.ScrollToFilter(FilterTarget.ChainCard(Chain.NOTORIOUS)))
+        }
+        assertThat(viewModel.state.value.isFilterSummaryExpanded).isFalse()
+        assertThat(viewModel.state.value.expandedChains).contains(Chain.NOTORIOUS)
+    }
+
+    @Test
+    fun anotherRowScrollsWithoutOpeningAChain() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.events.test {
+            viewModel.onAction(ShowtimesAction.OnFilterSummaryTargetClick(FilterTarget.TimeWindow(first)))
+
+            assertThat(awaitItem()).isEqualTo(ShowtimesEvent.ScrollToFilter(FilterTarget.TimeWindow(first)))
+        }
+        assertThat(viewModel.state.value.expandedChains.isEmpty()).isTrue()
+    }
+
+    @Test
+    fun editingTheFilmFilterAfterASearchMarksTheSummaryStaleUntilUpdate() = runTest {
+        val viewModel = viewModelShowing(listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue)), setOf(uciVenue))
+        assertThat(viewModel.state.value.toFilterSummary().isStale).isFalse()
+
+        viewModel.onAction(ShowtimesAction.OnFilmFilterChange("Dune"))
+        assertThat(viewModel.state.value.toFilterSummary().isStale).isTrue()
+
+        viewModel.onAction(ShowtimesAction.OnFilterSummaryToggle)
+        viewModel.onAction(ShowtimesAction.OnFilterSummaryUpdateClick)
+
+        assertThat(viewModel.state.value.isFilterSummaryExpanded).isFalse()
+        assertThat(viewModel.state.value.searchedFilmFilter).isEqualTo("Dune")
+        assertThat(viewModel.state.value.toFilterSummary().isStale).isFalse()
+    }
+
+    @Test
+    fun clearingForgetsTheSearchedFilmFilter() = runTest {
+        val viewModel = viewModelShowing(listOf(Showing("Mammina", soon, LocalTime(21, 0), uciVenue)), setOf(uciVenue))
+
+        viewModel.onAction(ShowtimesAction.OnClearClick)
+
+        assertThat(viewModel.state.value.searchedFilmFilter).isNull()
+    }
+
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()

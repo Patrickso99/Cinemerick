@@ -112,4 +112,41 @@
     <string name="venue_error_message">%1$s: %2$s</string>
     <string name="day_heading">%1$s %2$s</string>
     <string name="time_range">%1$s – %2$s</string>
+    <plurals name="summary_venues">
+        <item quantity="one">%1$d sede</item>
+        <item quantity="many">%1$d sedi</item>
+        <item quantity="other">%1$d sedi</item>
+    </plurals>
+    <plurals name="summary_days">
+        <item quantity="one">%1$d giorno</item>
+        <item quantity="many">%1$d giorni</item>
+        <item quantity="other">%1$d giorni</item>
+    </plurals>
+    <plurals name="summary_formats_hidden">
+        <item quantity="one">%1$s nascosto</item>
+        <item quantity="many">%1$s nascosti</item>
+        <item quantity="other">%1$s nascosti</item>
+    </plurals>
+    <string name="summary_no_venue">Nessuna sede</string>
+    <string name="summary_no_day">Nessun giorno</string>
+    <string name="summary_day">%1$s %2$d</string>
+    <string name="summary_times_per_day">orari per giorno</string>
+    <string name="summary_all_films">tutti i film</string>
+    <string name="summary_film_quoted">«%1$s»</string>
+    <string name="summary_changed">Filtri modificati</string>
+    <string name="summary_searching">Ricerca in corso…</string>
+    <string name="summary_update">Aggiorna</string>
+    <string name="summary_update_results">Aggiorna risultati</string>
+    <string name="summary_panel_title">Filtri attivi</string>
+    <string name="summary_panel_hint">Tocca un filtro per tornarci</string>
+    <string name="summary_panel_changed_hint">Modificati dopo la ricerca</string>
+    <string name="summary_group_days_times">Giorni e orari</string>
+    <string name="summary_group_format_film">Formato e film</string>
+    <string name="summary_flag_changed">Modificato</string>
+    <string name="summary_pick_venue">Scegli almeno una sede</string>
+    <string name="summary_pick_day">Scegli almeno un giorno</string>
+    <string name="summary_description">Filtri: %1$s. %2$s</string>
+    <string name="summary_show">Mostra tutti i filtri</string>
+    <string name="summary_hide">Chiudi i filtri</string>
+    <string name="summary_go_to">Vai al filtro</string>
 </resources>

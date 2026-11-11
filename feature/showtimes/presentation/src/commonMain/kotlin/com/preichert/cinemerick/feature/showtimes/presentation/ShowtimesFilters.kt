@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
@@ -157,7 +158,8 @@ private fun SectionHeader(title: String, trailing: @Composable RowScope.() -> Un
 internal fun FilmSearchField(
     value: String,
     onValueChange: (String) -> Unit,
-    onSearch: () -> Unit
+    onSearch: () -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier = { _, _ -> Modifier },
 ) {
     val focusManager: FocusManager = LocalFocusManager.current
     val colors = CinemerickTheme.colors
@@ -175,6 +177,7 @@ internal fun FilmSearchField(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(jumpTarget(FilterTarget.FilmFilter, MaterialTheme.shapes.medium))
                 .height(52.dp)
                 .clip(MaterialTheme.shapes.medium)
                 .background(colors.surfaceContainerHigh)
@@ -240,14 +243,15 @@ internal fun CinemasSection(
     isWideScreen: Boolean,
     onChainExpandToggle: (Chain) -> Unit,
     onVenuePickerOpen: (Chain) -> Unit,
-    onVenueRemove: (Venue) -> Unit
+    onVenueRemove: (Venue) -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier = { _, _ -> Modifier },
 ) {
     val addVenue = stringResource(Res.string.add_venue)
     val noVenue = stringResource(Res.string.chain_no_venue)
     val colors = CinemerickTheme.colors
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(jumpTarget(FilterTarget.Cinemas, MaterialTheme.shapes.large)),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2)
     ) {
         SectionHeader(title = stringResource(Res.string.cinemas_title)) {
@@ -272,6 +276,7 @@ internal fun CinemasSection(
                 expanded = chain in expandedChains,
                 onToggle = { onChainExpandToggle(chain) },
                 onQuickAdd = { onVenuePickerOpen(chain) },
+                modifier = jumpTarget(FilterTarget.ChainCard(chain), MaterialTheme.shapes.large),
             ) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
@@ -301,11 +306,12 @@ internal fun FormatsSection(
     availableTags: List<String>,
     hiddenTags: Set<String>,
     onFormatToggle: (String) -> Unit,
-    onShowAllClick: () -> Unit
+    onShowAllClick: () -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier = { _, _ -> Modifier },
 ) {
     val visibleCount = availableTags.count { it !in hiddenTags }
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(jumpTarget(FilterTarget.Formats, MaterialTheme.shapes.large)),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2)
     ) {
         SectionHeader(title = stringResource(Res.string.formats_title)) {
@@ -360,7 +366,8 @@ internal fun DaysSection(
     onTomorrowClick: () -> Unit,
     onWeekendClick: () -> Unit,
     onDayToggle: (LocalDate) -> Unit,
-    onMonthChange: (LocalDate) -> Unit
+    onMonthChange: (LocalDate) -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier = { _, _ -> Modifier },
 ) {
     // Today and the following days, plus any chosen day outside that window so every selection stays visible.
     val stripDates = remember(today, days) {
@@ -369,7 +376,7 @@ internal fun DaysSection(
         (upcoming + chosen).distinct().sorted()
     }
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(jumpTarget(FilterTarget.Days, MaterialTheme.shapes.large)),
         verticalArrangement = Arrangement.spacedBy(Spacing.space2)
     ) {
         SectionHeader(title = stringResource(Res.string.days_title)) {
@@ -485,7 +492,8 @@ private const val LAST_MINUTE_OF_DAY = 23 * 60 + 59
 @Composable
 internal fun TimeWindowSection(
     days: List<DayUi>,
-    onRangeChange: (date: LocalDate, minTime: String, maxTime: String) -> Unit
+    onRangeChange: (date: LocalDate, minTime: String, maxTime: String) -> Unit,
+    jumpTarget: (FilterTarget, Shape) -> Modifier = { _, _ -> Modifier },
 ) {
     val selectedDays = days.filter { it.isSelected }
     if (selectedDays.isEmpty()) return
@@ -509,7 +517,11 @@ internal fun TimeWindowSection(
             verticalArrangement = Arrangement.spacedBy(Spacing.space3)
         ) {
             selectedDays.forEach { day ->
-                DayRangeRow(day = day, onRangeChange = { minTime, maxTime -> onRangeChange(day.date, minTime, maxTime) })
+                DayRangeRow(
+                    day = day,
+                    onRangeChange = { minTime, maxTime -> onRangeChange(day.date, minTime, maxTime) },
+                    modifier = jumpTarget(FilterTarget.TimeWindow(day.date), MaterialTheme.shapes.medium),
+                )
             }
         }
     }
@@ -518,14 +530,13 @@ internal fun TimeWindowSection(
 @Composable
 internal fun DayRangeRow(
     day: DayUi,
-    onRangeChange: (minTime: String, maxTime: String) -> Unit
+    onRangeChange: (minTime: String, maxTime: String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colors = CinemerickTheme.colors
-    // A blank bound means "no limit", so it sits at the edge of the day until the user moves the thumb.
-    val start = day.minTime.toMinutesOr(default = 0)
-    val end = day.maxTime.toMinutesOr(default = DAY_MINUTES).let { if (it == LAST_MINUTE_OF_DAY) DAY_MINUTES else it }
+    val (start, end) = day.windowMinutes()
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Spacing.space1)
     ) {
         Row(
@@ -548,6 +559,16 @@ internal fun DayRangeRow(
             onChange = { newStart, newEnd -> onRangeChange(newStart.toTimeString(), newEnd.toTimeString()) },
         )
     }
+}
+
+/**
+ * The day's window in minutes from midnight, as the slider shows it. A blank bound means "no limit", so it sits at
+ * the edge of the day; "24:00" is stored as 23:59 and read back as the end of the day (1440).
+ */
+internal fun DayUi.windowMinutes(): Pair<Int, Int> {
+    val start = minTime.toMinutesOr(default = 0)
+    val end = maxTime.toMinutesOr(default = DAY_MINUTES).let { if (it == LAST_MINUTE_OF_DAY) DAY_MINUTES else it }
+    return start to end
 }
 
 private fun String.toMinutesOr(default: Int): Int {
