@@ -6,15 +6,18 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
-import io.ktor.util.network.UnresolvedAddressException
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CancellationException
-import kotlinx.serialization.SerializationException
 
 private val log = Logger.withTag("SafeCall")
 
+/**
+ * GET [url] and decode the JSON body into [Response]. For the sources that answer in JSON (UCI, The Space, TMDB).
+ * Never throws for a failed request: no connection, an error status or a body that does not decode come back as a
+ * [Result.Failure].
+ */
 suspend inline fun <reified Response : Any> HttpClient.get(
     url: String,
     headers: Map<String, String> = emptyMap()
@@ -27,7 +30,11 @@ suspend inline fun <reified Response : Any> HttpClient.get(
     }
 }
 
-suspend inline fun HttpClient.getResponse(
+/**
+ * GET [url] and return the raw response, without decoding it. For the cinemas whose pages are read as HTML: the caller
+ * takes the text with `bodyAsText()` and parses it. Fails the same way as [get], except that the body is not checked.
+ */
+suspend fun HttpClient.getResponse(
     url: String,
     headers: Map<String, String> = emptyMap()
 ): Result<HttpResponse, DataError.Network> {
@@ -40,7 +47,7 @@ suspend inline fun HttpClient.getResponse(
 }
 
 suspend inline fun <reified T> safeCall(
-    execute: () -> HttpResponse
+    noinline execute: suspend () -> HttpResponse
 ): Result<T, DataError.Network> {
     return when (val result = safeResponse(execute)) {
         is Result.Failure -> result
@@ -55,28 +62,26 @@ suspend inline fun <reified T> safeCall(
     }
 }
 
-suspend inline fun safeResponse(
-    execute: () -> HttpResponse
+suspend fun safeResponse(
+    execute: suspend () -> HttpResponse
 ): Result<HttpResponse, DataError.Network> {
-    val response = try {
-        execute()
-    } catch (e: UnresolvedAddressException) {
-        logFailure("No internet", e)
-        return Result.Failure(DataError.Network.NO_INTERNET)
-    } catch (e: SerializationException) {
-        logFailure("Serialization failed", e)
-        return Result.Failure(DataError.Network.SERIALIZATION)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Throwable) {
-        logFailure("Request failed", e)
-        return Result.Failure(DataError.Network.UNKNOWN)
-    }
-    return statusToResult(response)
+    return platformSafeCall(execute = execute, handleResponse = ::statusToResult)
 }
 
+/**
+ * Runs [execute] and hands its response to [handleResponse]. A request that throws becomes a failure: which exception
+ * means "no internet" or "timed out" differs by engine (OkHttp on Android and desktop, Darwin on iOS), so each platform
+ * maps its own. A cancellation is always thrown again.
+ */
+expect suspend fun <T> platformSafeCall(
+    execute: suspend () -> HttpResponse,
+    handleResponse: suspend (HttpResponse) -> Result<T, DataError.Network>
+): Result<T, DataError.Network>
+
 @PublishedApi
-internal fun logFailure(message: String, throwable: Throwable) = log.w(throwable) { message }
+internal fun logFailure(message: String, throwable: Throwable) {
+    log.w(throwable) { message }
+}
 
 fun statusToResult(response: HttpResponse): Result<HttpResponse, DataError.Network> {
     if (response.status.value !in 200..299) log.w { "HTTP ${response.status.value}" }

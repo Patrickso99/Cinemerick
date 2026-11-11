@@ -6,7 +6,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
@@ -20,8 +20,8 @@ import kotlinx.datetime.LocalDate
 private val log = Logger.withTag("ShowtimesRepository")
 
 class MultiCinemaShowtimesRepository(
-    private val dataSources: List<ShowtimesDataSource>,
-    private val cache: ShowtimesCache = ShowtimesCache()
+    private val dataSources: List<ShowtimesRemoteDataSource>,
+    private val cache: ShowtimesCache
 ) : ShowtimesRepository {
 
     // Film pages rarely change and are only fetched on demand: kept for the whole session, by page URL.

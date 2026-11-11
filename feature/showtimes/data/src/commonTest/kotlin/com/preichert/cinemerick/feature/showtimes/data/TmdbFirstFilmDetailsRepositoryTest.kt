@@ -5,7 +5,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
-import com.preichert.cinemerick.feature.showtimes.domain.FilmLookup
+import com.preichert.cinemerick.feature.showtimes.domain.FilmRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.VenueShowings
@@ -21,7 +21,7 @@ class TmdbFirstFilmDetailsRepositoryTest {
     private val sources = listOf(DetailsSource(Chain.NOTORIOUS, "https://n/1"))
     private val cinemaResult = FilmDetails(synopsis = "Page plot", genre = "Horror", director = "Rob Savage")
 
-    private class FakeLookup(private val outcomes: MutableList<Result<FilmDetails?, DataError.Network>>) : FilmLookup {
+    private class FakeFilmDataSource(private val outcomes: MutableList<Result<FilmDetails?, DataError.Network>>) : FilmRemoteDataSource {
         val searched = mutableListOf<String>()
         override suspend fun find(searchTitle: String): Result<FilmDetails?, DataError.Network> {
             searched += searchTitle
@@ -43,8 +43,8 @@ class TmdbFirstFilmDetailsRepositoryTest {
     private fun found(details: FilmDetails?) = Result.Success(details)
     private fun failed() = Result.Failure(DataError.Network.NO_INTERNET)
 
-    private fun repository(vararg outcomes: Result<FilmDetails?, DataError.Network>): Triple<TmdbFirstFilmDetailsRepository, FakeLookup, FakeShowtimes> {
-        val lookup = FakeLookup(outcomes.toMutableList())
+    private fun repository(vararg outcomes: Result<FilmDetails?, DataError.Network>): Triple<TmdbFirstFilmDetailsRepository, FakeFilmDataSource, FakeShowtimes> {
+        val lookup = FakeFilmDataSource(outcomes.toMutableList())
         val showtimes = FakeShowtimes()
         return Triple(TmdbFirstFilmDetailsRepository(lookup, showtimes), lookup, showtimes)
     }

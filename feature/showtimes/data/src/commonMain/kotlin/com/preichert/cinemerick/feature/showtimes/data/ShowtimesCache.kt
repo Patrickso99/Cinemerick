@@ -5,6 +5,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.LocalDate
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
 data class CacheEntry<T>(
@@ -13,6 +14,7 @@ data class CacheEntry<T>(
 )
 
 class ShowtimesCache(
+    private val clock: Clock,
     private val ttlMillis: Long = 5.minutes.inWholeMilliseconds
 ) {
     // Written from concurrent fetches of several venues, so every access goes through the lock.
@@ -26,7 +28,7 @@ class ShowtimesCache(
         val key = cacheKey(venue, day)
         val entry = cache[key] ?: return@withLock null
 
-        val now = getCurrentTimeMillis()
+        val now = clock.now().toEpochMilliseconds()
         val age = now - entry.timestamp
         if (age > ttlMillis) {
             cache.remove(key)
@@ -38,7 +40,7 @@ class ShowtimesCache(
 
     suspend fun put(venue: Venue, day: LocalDate, showings: List<Showing>) = lock.withLock {
         val key = cacheKey(venue, day)
-        cache[key] = CacheEntry(showings, getCurrentTimeMillis())
+        cache[key] = CacheEntry(showings, clock.now().toEpochMilliseconds())
     }
 
     suspend fun clear() = lock.withLock {
@@ -46,7 +48,7 @@ class ShowtimesCache(
     }
 
     suspend fun clearStale() = lock.withLock {
-        val now = getCurrentTimeMillis()
+        val now = clock.now().toEpochMilliseconds()
         cache.entries.removeAll { (_, entry) ->
             (now - entry.timestamp) > ttlMillis
         }

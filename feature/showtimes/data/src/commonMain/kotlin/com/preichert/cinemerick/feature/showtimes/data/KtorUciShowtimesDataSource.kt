@@ -8,7 +8,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.domain.map
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -18,7 +18,7 @@ import kotlinx.datetime.LocalDate
 class KtorUciShowtimesDataSource(
     private val httpClient: HttpClient,
     private val dispatchers: DispatcherProvider
-) : ShowtimesDataSource {
+) : ShowtimesRemoteDataSource {
 
     override val chain = Chain.UCI
 

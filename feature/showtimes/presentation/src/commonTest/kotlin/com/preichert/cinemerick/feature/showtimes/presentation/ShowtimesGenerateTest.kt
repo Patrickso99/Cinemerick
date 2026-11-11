@@ -13,7 +13,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
-import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
+import com.preichert.cinemerick.feature.showtimes.domain.PersonRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
@@ -89,7 +89,7 @@ class ShowtimesGenerateTest {
 
     private fun viewModel(repository: ShowtimesRepository): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
-        return ShowtimesViewModel(repository, FakeFilmDetailsRepository, selectedOnly(venue), controller, FakePersonLookup)
+        return ShowtimesViewModel(repository, FakeFilmDetailsRepository, selectedOnly(venue), controller, FakePersonDataSource)
     }
 
     // The venue is selected from the start, so a toggle cannot remove it when it is a default.
@@ -122,7 +122,7 @@ class ShowtimesGenerateTest {
         override suspend fun getMovieId(title: String): Result<Int?, DataError.Network> = Result.Success(null)
     }
 
-    private object FakePersonLookup : PersonLookup {
+    private object FakePersonDataSource : PersonRemoteDataSource {
         override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> = Result.Success(null)
     }
 

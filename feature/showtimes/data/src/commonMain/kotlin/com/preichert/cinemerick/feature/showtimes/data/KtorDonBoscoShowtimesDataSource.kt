@@ -8,7 +8,7 @@ import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.core.data.DispatcherProvider
 import kotlinx.coroutines.withContext
@@ -20,7 +20,7 @@ private val log = Logger.withTag("DonBoscoShowtimes")
 class KtorDonBoscoShowtimesDataSource(
     private val httpClient: HttpClient,
     private val dispatchers: DispatcherProvider
-) : ShowtimesDataSource {
+) : ShowtimesRemoteDataSource {
 
     override val chain = Chain.DON_BOSCO
 

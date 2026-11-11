@@ -6,7 +6,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
-import com.preichert.cinemerick.feature.showtimes.domain.FilmLookup
+import com.preichert.cinemerick.feature.showtimes.domain.FilmRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.filmKey
 import com.preichert.cinemerick.feature.showtimes.domain.searchTitle
@@ -20,7 +20,7 @@ private val log = Logger.withTag("FilmDetailsRepository")
  * not be asked) what the cinemas publish, through [showtimesRepository]. The two are never mixed.
  */
 class TmdbFirstFilmDetailsRepository(
-    private val lookup: FilmLookup,
+    private val lookup: FilmRemoteDataSource,
     private val showtimesRepository: ShowtimesRepository
 ) : FilmDetailsRepository {
 

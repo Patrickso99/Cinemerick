@@ -1,11 +1,12 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.core.testing.FakeClock
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -20,7 +21,7 @@ class MultiCinemaShowingsFailureTest {
         override val chain: Chain,
         private val failingDays: Set<LocalDate> = emptySet(),
         private val failAll: Boolean = false,
-    ) : ShowtimesDataSource {
+    ) : ShowtimesRemoteDataSource {
         override suspend fun getVenues(): Result<List<Venue>, DataError.Network> = Result.Success(emptyList())
 
         override suspend fun getShowings(venue: Venue, days: List<LocalDate>): Result<List<Showing>, DataError.Network> {
@@ -38,7 +39,7 @@ class MultiCinemaShowingsFailureTest {
 
     @Test
     fun failingVenueWithNothingCachedSurfacesAsFailure() = runTest {
-        val repository = MultiCinemaShowtimesRepository(listOf(FakeDataSource(Chain.UCI, failAll = true)))
+        val repository = MultiCinemaShowtimesRepository(listOf(FakeDataSource(Chain.UCI, failAll = true)), ShowtimesCache(FakeClock()))
 
         val result = repository.getShowings(listOf(day1), setOf(venue)).single()
 
@@ -48,7 +49,7 @@ class MultiCinemaShowingsFailureTest {
 
     @Test
     fun partialFailureKeepsCachedShowingsAsSuccess() = runTest {
-        val cache = ShowtimesCache()
+        val cache = ShowtimesCache(FakeClock())
         MultiCinemaShowtimesRepository(listOf(FakeDataSource(Chain.UCI)), cache).getShowings(listOf(day1), setOf(venue))
 
         val failingSource = FakeDataSource(Chain.UCI, failingDays = setOf(day2))

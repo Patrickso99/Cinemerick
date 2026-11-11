@@ -9,6 +9,7 @@ plugins {
 kotlin {
     sourceSets.commonTest.dependencies {
         implementation(projects.core.testing)
+        implementation(libs.ktor.mock)
     }
     sourceSets {
         commonMain.dependencies {

@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.core.testing.FakeClock
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
@@ -25,7 +26,7 @@ class ShowtimesCacheTest {
 
     @Test
     fun aPutIsReadBackForTheSameVenueAndDay() = runTest {
-        val cache = ShowtimesCache()
+        val cache = ShowtimesCache(FakeClock())
         val venue = venue(1)
 
         cache.put(venue, day, listOf(showing(venue)))
@@ -35,7 +36,7 @@ class ShowtimesCacheTest {
 
     @Test
     fun aDifferentDayOrVenueIsAMiss() = runTest {
-        val cache = ShowtimesCache()
+        val cache = ShowtimesCache(FakeClock())
         val venue = venue(1)
         cache.put(venue, day, listOf(showing(venue)))
 
@@ -45,7 +46,7 @@ class ShowtimesCacheTest {
 
     @Test
     fun anEntryOlderThanTheTtlIsDropped() = runTest {
-        val cache = ShowtimesCache(ttlMillis = -1)
+        val cache = ShowtimesCache(FakeClock(), ttlMillis = -1)
         val venue = venue(1)
         cache.put(venue, day, listOf(showing(venue)))
 
@@ -54,7 +55,7 @@ class ShowtimesCacheTest {
 
     @Test
     fun writesFromConcurrentFetchesAreAllKept() = runTest {
-        val cache = ShowtimesCache()
+        val cache = ShowtimesCache(FakeClock())
 
         (1..200).map { index ->
             async(Dispatchers.Default) { cache.put(venue(index), day, listOf(showing(venue(index)))) }
@@ -65,12 +66,48 @@ class ShowtimesCacheTest {
 
     @Test
     fun clearEmptiesTheCache() = runTest {
-        val cache = ShowtimesCache()
+        val cache = ShowtimesCache(FakeClock())
         val venue = venue(1)
         cache.put(venue, day, listOf(showing(venue)))
 
         cache.clear()
 
         assertNull(cache.get(venue, day))
+    }
+
+    @Test
+    fun anEntryExactlyAsOldAsTheTtlIsStillRead() = runTest {
+        val clock = FakeClock()
+        val cache = ShowtimesCache(clock, ttlMillis = 1_000)
+        val venue = venue(1)
+        cache.put(venue, day, listOf(showing(venue)))
+
+        clock.millis = 1_000
+
+        assertEquals(listOf(showing(venue)), cache.get(venue, day))
+    }
+
+    @Test
+    fun anEntryOneMillisecondPastTheTtlIsDropped() = runTest {
+        val clock = FakeClock()
+        val cache = ShowtimesCache(clock, ttlMillis = 1_000)
+        val venue = venue(1)
+        cache.put(venue, day, listOf(showing(venue)))
+
+        clock.millis = 1_001
+
+        assertNull(cache.get(venue, day))
+    }
+
+    @Test
+    fun aClockThatGoesBackKeepsTheEntry() = runTest {
+        val clock = FakeClock(millis = 10_000)
+        val cache = ShowtimesCache(clock, ttlMillis = 1_000)
+        val venue = venue(1)
+        cache.put(venue, day, listOf(showing(venue)))
+
+        clock.millis = 0
+
+        assertEquals(listOf(showing(venue)), cache.get(venue, day))
     }
 }

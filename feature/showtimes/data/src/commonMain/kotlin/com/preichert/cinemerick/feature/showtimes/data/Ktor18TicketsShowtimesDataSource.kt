@@ -10,7 +10,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,7 +29,7 @@ abstract class Ktor18TicketsShowtimesDataSource(
     private val venue: Venue,
     private val baseUrl: String,
     private val dispatchers: DispatcherProvider
-) : ShowtimesDataSource {
+) : ShowtimesRemoteDataSource {
 
     // The site answers 429 to bursts of requests, so only a couple of days are fetched at a time.
     private val permits = Semaphore(MAX_CONCURRENT_REQUESTS)

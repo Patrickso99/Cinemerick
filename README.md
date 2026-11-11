@@ -289,6 +289,7 @@ The app implements robust error handling for network resilience:
 
 - **Graceful degradation**: If one cinema API fails, results from the other cinemas are still displayed with an error message showing which cinema had issues. Users always get partial results when possible.
 - **Retry**: The HTTP client retries server errors (HTTP 5xx) twice, with exponential backoff. Rate limits (HTTP 429) and timeouts are not retried: that cinema shows an error for the search.
+- **Error mapping**: A request that throws is mapped to a typed error per platform (`platformSafeCall`): OkHttp on Android and desktop, Darwin on iOS. No connection shows "no internet" and a timeout shows "timed out" on every platform, not "unknown error".
 - **Debounce**: A filter change refreshes the results after 500 ms, so rapid changes cause at most one fetch, and only for the days or cinemas not fetched yet.
 - **User experience**: Failed requests don't block the entire operation; the app continues fetching from working sources and surfaces errors in the UI
 

@@ -10,7 +10,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
-import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
+import com.preichert.cinemerick.feature.showtimes.domain.PersonRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.domain.tomorrow
@@ -35,7 +35,7 @@ class ShowtimesViewModel(
     private val filmDetailsRepository: FilmDetailsRepository,
     private val filterPreferences: FilterPreferences,
     private val timeWindowController: TimeWindowController,
-    private val personLookup: PersonLookup,
+    private val personDataSource: PersonRemoteDataSource,
     private val clock: Clock = Clock.System,
     private val savedStateHandle: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
@@ -53,7 +53,7 @@ class ShowtimesViewModel(
     private val results = ResultsController(viewModelScope, showtimesRepository, filmDetailsRepository, clock, ::now, { _state.value }, { change -> _state.update { change(it) } }, ::showSnackbar)
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
     private val filmDetails = FilmDetailsLoader(viewModelScope, filmDetailsRepository) { change -> _state.update { change(it) } }
-    private val persons = PersonDetailsLoader(viewModelScope, personLookup) { change -> _state.update { change(it) } }
+    private val persons = PersonDetailsLoader(viewModelScope, personDataSource) { change -> _state.update { change(it) } }
 
     init {
         filterPersistence.track(viewModelScope, _state)

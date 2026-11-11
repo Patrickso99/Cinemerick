@@ -5,7 +5,7 @@ import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
-import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
+import com.preichert.cinemerick.feature.showtimes.domain.PersonRemoteDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -50,7 +50,7 @@ internal class FilmDetailsLoader(
  */
 internal class PersonDetailsLoader(
     private val scope: CoroutineScope,
-    private val personLookup: PersonLookup,
+    private val personDataSource: PersonRemoteDataSource,
     private val update: StateUpdate,
 ) {
     private var job: Job? = null
@@ -59,7 +59,7 @@ internal class PersonDetailsLoader(
         job?.cancel()
         update { it.copy(personDetails = PersonUi(person, isLoading = true)) }
         job = scope.launch {
-            val details = when (val result = personLookup.find(person.id)) {
+            val details = when (val result = personDataSource.find(person.id)) {
                 is Result.Success -> result.data
                 is Result.Failure -> {
                     log.w { "Person lookup failed for ${person.id}: ${result.error}" }

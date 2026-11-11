@@ -1,7 +1,5 @@
 package com.preichert.cinemerick.feature.showtimes.domain
 
-import com.preichert.cinemerick.core.domain.DataError
-import com.preichert.cinemerick.core.domain.Result
 import kotlinx.datetime.LocalDate
 
 /**
@@ -28,8 +26,3 @@ data class PersonFilm(
     val posterUrl: String? = null,
     val score: Double? = null
 )
-
-/** Where to look a person up in the film database. Null means the database has no such person. */
-interface PersonLookup {
-    suspend fun find(id: Int): Result<PersonDetails?, DataError.Network>
-}

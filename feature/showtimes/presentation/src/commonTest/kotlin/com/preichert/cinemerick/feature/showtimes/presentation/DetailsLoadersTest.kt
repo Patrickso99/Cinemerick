@@ -7,7 +7,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
 import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
-import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
+import com.preichert.cinemerick.feature.showtimes.domain.PersonRemoteDataSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -60,7 +60,7 @@ class DetailsLoadersTest {
 
     @Test
     fun aFailedPersonLookupKeepsTheNameAndNoDetails() = runTest {
-        val lookup = object : PersonLookup {
+        val lookup = object : PersonRemoteDataSource {
             override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> = Result.Failure(DataError.Network.NO_INTERNET)
         }
         val state = MutableStateFlow(ShowtimesState())

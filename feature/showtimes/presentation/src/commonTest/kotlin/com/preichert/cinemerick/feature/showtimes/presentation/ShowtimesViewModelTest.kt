@@ -9,7 +9,7 @@ import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.PersonDetails
-import com.preichert.cinemerick.feature.showtimes.domain.PersonLookup
+import com.preichert.cinemerick.feature.showtimes.domain.PersonRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
 import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRepository
@@ -110,7 +110,7 @@ class ShowtimesViewModelTest {
         savedStateHandle: SavedStateHandle = SavedStateHandle()
     ): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
-        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonLookup, savedStateHandle = savedStateHandle)
+        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonDataSource, savedStateHandle = savedStateHandle)
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }
@@ -453,7 +453,7 @@ class ShowtimesViewModelTest {
         override suspend fun getMovieId(title: String): Result<Int?, DataError.Network> = Result.Success(null)
     }
 
-    private object FakePersonLookup : PersonLookup {
+    private object FakePersonDataSource : PersonRemoteDataSource {
         override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> = Result.Success(null)
     }
 

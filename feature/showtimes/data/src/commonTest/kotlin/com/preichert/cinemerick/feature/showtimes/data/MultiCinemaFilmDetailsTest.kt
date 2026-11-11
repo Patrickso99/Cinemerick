@@ -1,12 +1,13 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.core.testing.FakeClock
 import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.Showing
-import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesDataSource
+import com.preichert.cinemerick.feature.showtimes.domain.ShowtimesRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -18,7 +19,7 @@ class MultiCinemaFilmDetailsTest {
     private class FakeDataSource(
         override val chain: Chain,
         private val pages: Map<String, Result<FilmDetails, DataError.Network>>
-    ) : ShowtimesDataSource {
+    ) : ShowtimesRemoteDataSource {
         val requested = mutableListOf<String>()
 
         override suspend fun getVenues(): Result<List<Venue>, DataError.Network> = Result.Success(emptyList())
@@ -37,7 +38,7 @@ class MultiCinemaFilmDetailsTest {
 
     private val notorious = FakeDataSource(Chain.NOTORIOUS, mapOf("n1" to Result.Success(notoriousPage)))
     private val cristallo = FakeDataSource(Chain.CRISTALLO, mapOf("c1" to Result.Success(cristalloPage)))
-    private val repository = MultiCinemaShowtimesRepository(listOf(notorious, cristallo))
+    private val repository = MultiCinemaShowtimesRepository(listOf(notorious, cristallo), ShowtimesCache(FakeClock()))
 
     private val sources = listOf(DetailsSource(Chain.NOTORIOUS, "n1"), DetailsSource(Chain.CRISTALLO, "c1"))
 
@@ -85,7 +86,8 @@ class MultiCinemaFilmDetailsTest {
     @Test
     fun aFailedPageKeepsTheOthersAndTheKnownDetails() = runTest {
         val broken = MultiCinemaShowtimesRepository(
-            listOf(FakeDataSource(Chain.NOTORIOUS, emptyMap()), cristallo)
+            listOf(FakeDataSource(Chain.NOTORIOUS, emptyMap()), cristallo),
+            ShowtimesCache(FakeClock())
         )
 
         val details = broken.getFilmDetails(FilmDetails(genre = "Horror"), sources)
@@ -96,7 +98,7 @@ class MultiCinemaFilmDetailsTest {
     @Test
     fun aFailedPageIsRetriedNextTime() = runTest {
         val flaky = FakeDataSource(Chain.NOTORIOUS, emptyMap())
-        val repository = MultiCinemaShowtimesRepository(listOf(flaky))
+        val repository = MultiCinemaShowtimesRepository(listOf(flaky), ShowtimesCache(FakeClock()))
 
         repository.getFilmDetails(FilmDetails(), listOf(DetailsSource(Chain.NOTORIOUS, "n1")))
         repository.getFilmDetails(FilmDetails(), listOf(DetailsSource(Chain.NOTORIOUS, "n1")))
