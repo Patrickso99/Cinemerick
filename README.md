@@ -15,6 +15,7 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 🗓️ **Calendar**: Pick several dates at once; on larger screens the calendar sits inline in the filters panel (a dialog on mobile)
 - 🏢 **Venue selection**: Choose which venues to query in a searchable multi-select sheet; venues are fetched at runtime (no hardcoded limits)
 - 🎞️ **Film filtering**: Narrow results by comma-separated film titles
+- 🧭 **Filter summary bar**: On phones, once the header scrolls away, a bar at the top sums up the selected venues, days and times, hidden formats and film filter. Tap it for one row per filter: a row scrolls back to that filter and highlights it, and a screen reader lands on it. When the film filter changed after a search, the bar offers Update. Back closes the open panel
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
 - 📖 **Film details**: Tap a film for synopsis, tagline, genres, saga, director and cast (with photos and characters), trailer, runtime, year, original title and language, production countries and companies, budget and box office (when known), Italian release date, a backdrop with a gallery and the TMDB score. Details come from [TMDB](https://www.themoviedb.org) in Italian whatever the language of the app (a synopsis or trailer TMDB only has in another language is not shown); films TMDB does not recognise (concerts, live events, rassegne) fall back to what the cinemas publish, and a TMDB result is never mixed with cinema data
 - 🎟️ **Showtime status**: Sold-out showings are marked
@@ -268,7 +269,7 @@ Cinemerick/
 ├── iosApp/                           # Xcode project and project.yml
 ├── build-logic/convention/           # Gradle convention plugins
 ├── design/                           # Cinema logos and app icon generator
-├── docs/design/                      # Redesign specification
+├── docs/design/                      # Redesign specification, filter summary bar design (design.html, brief.md)
 ├── fastlane/                         # Build lanes for every platform
 ├── .github/workflows/                # CI builds per platform
 └── gradle/libs.versions.toml         # Centralized dependency versions
