@@ -58,6 +58,7 @@ import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.domain.assistant.CloudProvider
 import com.preichert.cinemerick.core.domain.assistant.SavedKey
 import com.preichert.cinemerick.core.presentation.ObserveAsEvents
+import com.preichert.cinemerick.core.presentation.assistant.ProviderMark
 import com.preichert.cinemerick.feature.settings.presentation.SettingsHeader
 import com.preichert.cinemerick.feature.settings.presentation.resources.Res
 import com.preichert.cinemerick.feature.settings.presentation.resources.key_error_empty
@@ -128,7 +129,6 @@ fun AssistantKeyScreen(
             ) {
                 ProviderPicker(
                     selected = state.provider,
-                    saved = state.savedKeys.keys,
                     onSelect = { onAction(AssistantKeyAction.OnProviderSelect(it)) },
                 )
                 state.savedKey?.let { saved ->
@@ -155,10 +155,10 @@ fun AssistantKeyScreen(
     }
 }
 
-/** The six providers as single-choice chips; those with a key saved on this device show a key. */
+/** The six providers as single-choice chips, each with its own mark. A saved key is shown on the cards, not here. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ProviderPicker(selected: CloudProvider, saved: Set<CloudProvider>, onSelect: (CloudProvider) -> Unit) {
+private fun ProviderPicker(selected: CloudProvider, onSelect: (CloudProvider) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
         Text(stringResource(Res.string.key_provider), style = MaterialTheme.typography.labelLarge, color = CinemerickTheme.colors.onSurface)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.space2), verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
@@ -167,11 +167,7 @@ private fun ProviderPicker(selected: CloudProvider, saved: Set<CloudProvider>, o
                     label = provider.displayName,
                     selected = provider == selected,
                     onClick = { onSelect(provider) },
-                    leadingIcon = when {
-                        provider == selected -> CinemerickIcons.Check
-                        provider in saved -> CinemerickIcons.Key
-                        else -> null
-                    },
+                    leadingContent = { ProviderMark(provider, size = 18.dp) },
                 )
             }
         }

@@ -2,6 +2,7 @@ package com.preichert.cinemerick.feature.showtimes.presentation
 
 import androidx.compose.runtime.Immutable
 import com.preichert.cinemerick.core.domain.assistant.AssistantError
+import com.preichert.cinemerick.core.domain.assistant.CloudProvider
 import com.preichert.cinemerick.core.domain.assistant.AssistantStatus
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 
@@ -69,11 +70,11 @@ data class FormatChoiceUi(
 
 /** What answers the assistant, as the sheet names it: [name] is the provider or the system AI; [onDevice] if nothing leaves the phone. */
 @Immutable
-data class EngineUi(val name: String, val onDevice: Boolean)
+data class EngineUi(val name: String, val onDevice: Boolean, val provider: CloudProvider? = null)
 
 /** The engine behind the voice sheet, or null while none is set up. */
 internal fun ShowtimesState.engineUi(): EngineUi? = when (val status = assistantStatus) {
     is AssistantStatus.Ready ->
-        status.provider?.let { EngineUi(it.displayName, onDevice = false) } ?: EngineUi(systemAi.name.orEmpty(), onDevice = true)
+        status.provider?.let { EngineUi(it.displayName, onDevice = false, provider = it) } ?: EngineUi(systemAi.name.orEmpty(), onDevice = true)
     AssistantStatus.NeedsSetup -> null
 }

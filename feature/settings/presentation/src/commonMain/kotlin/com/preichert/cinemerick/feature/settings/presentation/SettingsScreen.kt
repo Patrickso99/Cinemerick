@@ -118,6 +118,7 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.assistan
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_download
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_privacy_device
 import com.preichert.cinemerick.core.domain.assistant.CloudProvider
+import com.preichert.cinemerick.core.presentation.assistant.ProviderMark
 import com.preichert.cinemerick.core.domain.assistant.SavedKey
 import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import org.jetbrains.compose.resources.painterResource
@@ -533,6 +534,7 @@ private fun AssistantSection(
         } else {
             onKeyClick
         },
+        leading = key?.let { saved -> { ProviderMark(saved.provider, size = 22.dp) } },
         trailing = if (key != null) {
             {
                 Text(
@@ -597,6 +599,7 @@ private fun EngineRow(
     enabled: Boolean,
     onClick: () -> Unit,
     trailing: (@Composable () -> Unit)?,
+    leading: (@Composable () -> Unit)? = null,
 ) {
     val colors = CinemerickTheme.colors
     val textAlpha = if (enabled) 1f else 0.5f
@@ -615,6 +618,7 @@ private fun EngineRow(
             enabled = enabled,
             colors = RadioButtonDefaults.colors(selectedColor = colors.primary, unselectedColor = colors.onSurfaceVariant),
         )
+        leading?.invoke()
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface.copy(alpha = textAlpha))
             Text(description, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant.copy(alpha = textAlpha))

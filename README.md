@@ -19,7 +19,7 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
 - 📖 **Film details**: Tap a film for synopsis, tagline, genres, saga, director and cast (with photos and characters), trailer, runtime, year, original title and language, production countries and companies, budget and box office (when known), Italian release date, a backdrop with a gallery and the TMDB score. Details come from [TMDB](https://www.themoviedb.org) in Italian whatever the language of the app (a synopsis or trailer TMDB only has in another language is not shown); films TMDB does not recognise (concerts, live events, rassegne) fall back to what the cinemas publish, and a TMDB result is never mixed with cinema data
 - 🎟️ **Showtime status**: Sold-out showings are marked
-- 🎙️ **Voice assistant**: Tap the assistant button and say (or type) what you want, in Italian or English: cinemas, days, a time window per day, formats and films, e.g. "The Space Silea and UCI Marcon on Thursday from 5 to 8 pm, 2D only". A review sheet shows what was understood, asks about cinemas it is not sure of ("Notorius Fiume" → Notorious · Fiume Veneto), skips names it cannot match, and keeps the filters that were not mentioned; Search applies it and Undo puts the previous filters back. The request is read on the device, with nothing sent out, when the phone has the system's own AI (Gemini Nano on supported Android phones, Apple Intelligence on iOS 26+), or by a cloud provider with your own API key (OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter) kept in the system's secure storage (Keystore, Keychain). Several keys can be saved and switched with one tap. Settings shows which engine answers: until you choose, a ready on-device model is used, otherwise your key, and an engine you picked is never quietly replaced by the other when it is not ready. Several cinemas named in one phrase are split at each chain name, so "The Space Silea UCI Marcon" fills both. Speech recognition runs on the device on Android and iOS; desktop takes typed requests and has no on-device model
+- 🎙️ **Voice assistant**: Tap the assistant button and say (or type) what you want, in Italian or English: cinemas, days, a time window per day, formats and films, e.g. "The Space Silea and UCI Marcon on Thursday from 5 to 8 pm, 2D only". A review sheet shows what was understood, asks about cinemas it is not sure of ("Notorius Fiume" → Notorious · Fiume Veneto), skips names it cannot match, and keeps the filters that were not mentioned; Search applies it and Undo puts the previous filters back. The request is read on the device, with nothing sent out, when the phone has the system's own AI (Gemini Nano on supported Android phones, Apple Intelligence on iOS 26+), or by a cloud provider with your own API key (OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter) kept in the system's secure storage (Keystore, Keychain). Several keys can be saved and switched with one tap, and each provider is shown with its own mark. Settings shows which engine answers: until you choose, a ready on-device model is used, otherwise your key, and an engine you picked is never quietly replaced by the other when it is not ready. Several cinemas named in one phrase are split at each chain name, so "The Space Silea UCI Marcon" fills both. Speech recognition runs on the device on Android and iOS; desktop takes typed requests and has no on-device model
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap; the poll text stays in Italian
 - 🌐 **Language choice**: English (default) or Italiano, selected in Settings and applied per platform
 - 🌓 **Theme choice**: Auto (follows the system), Light or Dark, selected in Settings
@@ -50,7 +50,7 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 |--------|----------------|
 | `:core:domain` | Result types, errors, preference interfaces, `BuildKonfig` (name, version, git hash) |
 | `:core:data` | HTTP client with server-error retries, settings preferences, `TmdbConfig` (TMDB token) |
-| `:core:presentation` | `UiText`, controllers (theme, language, animations, time window) |
+| `:core:presentation` | `UiText`, controllers (theme, language, animations, time window), provider marks (`ProviderMark`, VectorDrawables from the provider files) |
 | `:core:designsystem` | Theme, typography, shapes, adaptive layouts, components, `DeviceConfiguration` |
 | `:core:assistant` | Voice assistant engines: the AI of the system (Gemini Nano, Apple Intelligence), cloud providers over Ktor, API keys in secure storage, platform speech recognition |
 | `:core:testing` | Test helpers: in-memory settings and preference fakes |
@@ -93,6 +93,8 @@ Shared Gradle setup lives in `:build-logic:convention`, under the `com.preichert
 | **Kotlinx Serialization** | 1.11.0 |
 | **Kotlinx Datetime** | 0.8.0 |
 | **Kotlinx Coroutines** | 1.11.0 |
+| **AssertK** (tests) | 0.28.1 |
+| **Turbine** (tests, flows) | 1.2.1 |
 | **Navigation Compose** | 2.9.2 |
 | **Lifecycle** | 2.11.0 |
 | **Activity** (Android) | 1.13.0 |
@@ -113,7 +115,7 @@ Typography uses the Plus Jakarta Sans font, bundled in `:core:designsystem`.
 
 ### Voice assistant (optional)
 
-The assistant uses the AI of the system where the device has one, and the request stays on the device. Gemini Nano runs on Android phones that support it (recent Pixel and Galaxy models, with a locked bootloader). If the model is not there yet, Settings › Voice assistant offers Download: Google's AICore fetches it once, and the download continues after you leave the screen. Apple Intelligence runs on iOS 26 and later when it is turned on. The app does not download it. If it is off, Settings tells you to turn it on in the system settings; if the system is still preparing the model, Settings says so. Desktop, including macOS, has no on-device engine the app can call, so that row is not shown. Until you pick an engine, a ready on-device model answers, otherwise the cloud provider that already has a key. The engine you chose is never silently replaced by the other one when it is not ready. A cloud engine needs an API key from one of the supported providers, added under Settings › Voice assistant. API access is billed by the provider separately from any chat subscription (e.g. Claude Pro does not include API credit); Google Gemini offers a free tier. Nothing is configured at build time. FoundationModels is Swift-only, so the iOS app registers it for the shared code at start (`iosApp/iosApp/AppleIntelligence.swift`) and links it weakly, which keeps the app running on iOS 16 and later.
+The assistant uses the AI of the system where the device has one, and the request stays on the device. Gemini Nano runs on Android phones that support it (recent Pixel and Galaxy models, with a locked bootloader). If the model is not there yet, Settings › Voice assistant offers Download: Google's AICore fetches it once, and the download continues after you leave the screen. Apple Intelligence runs on iOS 26 and later when it is turned on. The app does not download it. If it is off, Settings tells you to turn it on in the system settings; if the system is still preparing the model, Settings says so. Desktop, including macOS, has no on-device engine the app can call, so that row is not shown. Until you pick an engine, a ready on-device model answers, otherwise the cloud provider that already has a key. The engine you chose is never silently replaced by the other one when it is not ready. A cloud engine needs an API key from one of the supported providers (OpenAI, Anthropic, Google Gemini, xAI Grok, Mistral, OpenRouter), added under Settings › Voice assistant. Each provider is shown with its own mark in Settings and in the voice sheet. No provider signs in with an account: OpenAI and Google Gemini do not document account access for third-party apps, and Anthropic does not allow subscription logins in them, so the app asks for a key for all six. API access is billed by the provider separately from any chat subscription (e.g. Claude Pro does not include API credit); Google Gemini offers a free tier. Nothing is configured at build time. FoundationModels is Swift-only, so the iOS app registers it for the shared code at start (`iosApp/iosApp/AppleIntelligence.swift`) and links it weakly, which keeps the app running on iOS 16 and later.
 
 ### TMDB access token (optional)
 
@@ -261,7 +263,7 @@ Cinemerick/
 ├── core/
 │   ├── domain/                       # Result types, errors, preferences, BuildKonfig
 │   ├── data/                         # HTTP client, SafeCall, settings preferences, TMDB token config
-│   ├── presentation/                 # UI utilities, controllers, DeviceConfiguration
+│   ├── presentation/                 # UI utilities, controllers, provider marks, DeviceConfiguration
 │   ├── designsystem/                 # Theme, colors, typography, shapes, layouts, components
 │   └── testing/                      # Shared test helpers and in-memory preference fakes
 ├── feature/
@@ -275,7 +277,7 @@ Cinemerick/
 ├── iosApp/                           # Xcode project and project.yml
 ├── build-logic/convention/           # Gradle convention plugins
 ├── design/                           # Cinema logos and app icon generator
-├── docs/design/                      # Redesign specification, filter summary bar design (design.html, brief.md)
+├── docs/design/                      # Design briefs and pages: redesign, filter summary bar, voice assistant, assistant API keys
 ├── fastlane/                         # Build lanes for every platform
 ├── .github/workflows/                # CI builds per platform
 └── gradle/libs.versions.toml         # Centralized dependency versions

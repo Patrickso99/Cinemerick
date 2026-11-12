@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import com.preichert.cinemerick.core.domain.assistant.CloudProvider
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import assertk.assertThat
@@ -397,7 +398,7 @@ class VoiceAssistantTest {
     @Test
     fun theSheetNamesTheEngineThatAnswers() = runTest {
         val viewModel = viewModel()
-        assertThat(viewModel.state.value.engineUi()).isEqualTo(EngineUi("Anthropic", onDevice = false))
+        assertThat(viewModel.state.value.engineUi()).isEqualTo(EngineUi("Anthropic", onDevice = false, provider = CloudProvider.ANTHROPIC))
 
         assistant.useSystemAi("Gemini Nano")
         assertThat(viewModel.state.value.engineUi()).isEqualTo(EngineUi("Gemini Nano", onDevice = true))

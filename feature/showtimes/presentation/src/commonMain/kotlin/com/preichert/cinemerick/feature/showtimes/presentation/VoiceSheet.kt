@@ -37,6 +37,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +69,7 @@ import com.preichert.cinemerick.core.designsystem.rememberSyncedTextFieldState
 import com.preichert.cinemerick.core.domain.assistant.AssistantError
 import com.preichert.cinemerick.core.domain.assistant.SystemAiAvailability
 import com.preichert.cinemerick.core.domain.assistant.SystemAiState
+import com.preichert.cinemerick.core.presentation.assistant.ProviderMark
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -283,7 +287,13 @@ private fun EngineBadge(engine: EngineUi) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.space1),
     ) {
-        Icon(if (engine.onDevice) CinemerickIcons.Lock else CinemerickIcons.Cloud, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(14.dp))
+        // The provider's own mark when a cloud provider answers, so the badge says who gets the text.
+        val provider = engine.provider
+        when {
+            engine.onDevice -> Icon(CinemerickIcons.Lock, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(14.dp))
+            provider != null -> ProviderMark(provider, size = 14.dp)
+            else -> Icon(CinemerickIcons.Cloud, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(14.dp))
+        }
         Text(label, style = MaterialTheme.typography.labelSmall, color = if (engine.onDevice) colors.onSurfaceVariant else colors.onSurface, maxLines = 1)
     }
 }
@@ -480,7 +490,14 @@ private fun RequestField(text: String, autoFocus: Boolean = false, onTextChange:
     val colors = CinemerickTheme.colors
     // Typing was chosen on purpose: the keyboard opens at once. After a refused microphone it waits for a tap.
     val focusRequester = remember { FocusRequester() }
-    if (autoFocus) LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    if (autoFocus) LaunchedEffect(Unit) {
+        // On iOS the sheet is laid out in a window of its own: the field can take the focus only after a couple of
+        // frames, as the layout state does for its jump targets. Asked at once, the focus is lost and no keyboard opens.
+        withFrameNanos { }
+        withFrameNanos { }
+        runCatching { focusRequester.requestFocus() }
+    }
     val field = rememberSyncedTextFieldState(text)
     val label = stringResource(Res.string.voice_request_label)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.space2)) {
@@ -495,6 +512,8 @@ private fun RequestField(text: String, autoFocus: Boolean = false, onTextChange:
                 .border(2.dp, colors.primary, MaterialTheme.shapes.medium)
                 .padding(Spacing.space3)
                 .focusRequester(focusRequester)
+                // Gaining the focus, by a tap or by the request above, opens the keyboard explicitly.
+                .onFocusChanged { if (it.isFocused) keyboard?.show() }
                 .semantics { contentDescription = label },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface),
             cursorBrush = SolidColor(colors.primary),

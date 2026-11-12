@@ -48,6 +48,8 @@ fun CinemerickFilterChip(
     leadingIcon: Painter? = null,
     leadingDot: Color? = null,
     enabled: Boolean = true,
+    /** Content with its own colors (a provider mark), shown first in the leading slot; the check icon is not added then. */
+    leadingContent: (@Composable () -> Unit)? = null,
 ) {
     val colors = CinemerickTheme.colors
     // M3 switches the container color at once; the design fades it, unless the user turned animations off.
@@ -57,7 +59,7 @@ fun CinemerickFilterChip(
         label = "filterChipContainer",
     )
     val content = if (selected) colors.onPrimaryContainer else colors.onSurface
-    val icon = leadingIcon ?: if (selected) CinemerickIcons.Check else null
+    val icon = leadingIcon ?: if (selected && leadingContent == null) CinemerickIcons.Check else null
     // The 48dp slot keeps the touch target in the layout, so rows of chips keep their spacing.
     Box(modifier = modifier.minimumInteractiveComponentSize(), contentAlignment = Alignment.Center) {
         FilterChip(
@@ -73,9 +75,10 @@ fun CinemerickFilterChip(
             },
             modifier = Modifier.height(40.dp),
             enabled = enabled,
-            leadingIcon = if (icon == null && leadingDot == null) null else {
+            leadingIcon = if (icon == null && leadingDot == null && leadingContent == null) null else {
                 {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = spacedBy(8.dp)) {
+                        leadingContent?.invoke()
                         if (icon != null) Icon(painter = icon, contentDescription = null, modifier = Modifier.size(18.dp))
                         if (leadingDot != null) {
                             Box(Modifier.size(12.dp).clip(RoundedCornerShape(4.dp)).background(leadingDot))
