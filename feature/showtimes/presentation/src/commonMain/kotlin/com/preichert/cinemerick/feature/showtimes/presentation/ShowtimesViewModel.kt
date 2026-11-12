@@ -4,9 +4,14 @@ import co.touchlab.kermit.Logger
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.preichert.cinemerick.core.domain.assistant.AssistantRepository
+import com.preichert.cinemerick.core.domain.assistant.AssistantStatus
+import com.preichert.cinemerick.core.domain.assistant.SpeechRecognizer
+import com.preichert.cinemerick.core.presentation.LanguageController
 import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
+import com.preichert.cinemerick.feature.showtimes.domain.CinemaRequestInterpreter
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetails
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
@@ -22,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -36,6 +42,10 @@ class ShowtimesViewModel(
     private val filterPreferences: FilterPreferences,
     private val timeWindowController: TimeWindowController,
     private val personDataSource: PersonRemoteDataSource,
+    private val speechRecognizer: SpeechRecognizer,
+    private val requestInterpreter: CinemaRequestInterpreter,
+    private val assistant: AssistantRepository,
+    private val languageController: LanguageController,
     private val clock: Clock = Clock.System,
     private val savedStateHandle: SavedStateHandle = SavedStateHandle()
 ) : ViewModel() {
@@ -54,9 +64,30 @@ class ShowtimesViewModel(
     private val cardLoader = CardDetailsLoader(viewModelScope, filmDetailsRepository, ::applyCardDetails)
     private val filmDetails = FilmDetailsLoader(viewModelScope, filmDetailsRepository) { change -> _state.update { change(it) } }
     private val persons = PersonDetailsLoader(viewModelScope, personDataSource) { change -> _state.update { change(it) } }
+    private val voice = VoiceController(
+        scope = viewModelScope,
+        speech = speechRecognizer,
+        interpreter = requestInterpreter,
+        assistant = assistant,
+        showtimesRepository = showtimesRepository,
+        languageTag = { languageController.language.value.tag },
+        today = ::today,
+        newDay = days::newDay,
+        read = { _state.value },
+        update = { change -> _state.update { change(it) } },
+        search = ::searchFromVoice,
+    )
+
+    // The filters before the last voice search, so Undo can put them back.
+    private var beforeVoice: ShowtimesState? = null
 
     init {
         filterPersistence.track(viewModelScope, _state)
+        viewModelScope.launch {
+            assistant.status.collect { status ->
+                _state.update { it.copy(assistantProvider = (status as? AssistantStatus.Ready)?.provider?.displayName) }
+            }
+        }
     }
 
     fun onAction(action: ShowtimesAction) {
@@ -106,6 +137,59 @@ class ShowtimesViewModel(
             ShowtimesAction.OnFilterSummaryUpdateClick -> {
                 _state.update { it.copy(isFilterSummaryExpanded = false) }
                 results.generate(silent = false)
+            }
+            is ShowtimesAction.OnAssistantClick -> voice.open(action.mic)
+            is ShowtimesAction.OnVoiceMicResult -> voice.onMicResult(action.status)
+            ShowtimesAction.OnVoiceListen -> voice.listen()
+            ShowtimesAction.OnVoiceStopListening -> voice.stopListening()
+            ShowtimesAction.OnVoiceType -> voice.type()
+            is ShowtimesAction.OnVoiceTextChange -> voice.changeText(action.text)
+            ShowtimesAction.OnVoiceInterpret -> voice.interpret()
+            ShowtimesAction.OnVoiceDismiss -> voice.dismiss()
+            is ShowtimesAction.OnVoiceVenueConfirm -> voice.confirmVenue(action.spoken, action.venue)
+            is ShowtimesAction.OnVoiceVenueCandidates -> voice.showCandidates(action.spoken)
+            is ShowtimesAction.OnVoiceVenueIgnore -> voice.ignoreVenue(action.spoken)
+            is ShowtimesAction.OnVoiceVenueRemove -> voice.removeVenue(action.venue)
+            is ShowtimesAction.OnVoiceDayRemove -> voice.removeDay(action.date)
+            ShowtimesAction.OnVoiceFormatsRemove -> voice.removeFormats()
+            is ShowtimesAction.OnVoiceFilmRemove -> voice.removeFilm(action.title)
+            ShowtimesAction.OnVoiceSearch -> voice.search()
+            ShowtimesAction.OnVoiceUndo -> undoVoiceSearch()
+        }
+    }
+
+    // The mentioned groups replace the filters, then the search runs as if Search had been tapped.
+    private fun searchFromVoice(review: VoiceReviewUi) {
+        val before = _state.value
+        beforeVoice = before
+        _state.update { results.withResults(it.withVoiceReview(review)) }
+        if (_state.value.selectedVenues != before.selectedVenues) venuePicker.saveSelection(_state.value.selectedVenues)
+        results.generate(silent = false)
+        _events.trySend(ShowtimesEvent.ShowVoiceUndo)
+    }
+
+    // Puts back the filters from before the voice search, and the results with them (none if there were none).
+    private fun undoVoiceSearch() {
+        val before = beforeVoice ?: return
+        beforeVoice = null
+        _state.update {
+            it.copy(
+                selectedVenues = before.selectedVenues,
+                days = before.days,
+                hiddenTags = before.hiddenTags,
+                filmFilter = before.filmFilter,
+            )
+        }
+        venuePicker.saveSelection(before.selectedVenues)
+        if (before.hasGenerated) {
+            results.generate(silent = true)
+        } else {
+            results.clear()
+            _state.update {
+                it.copy(
+                    isLoading = false, hasGenerated = false, groups = emptyList(), pollText = "", optionsCount = 0,
+                    venueErrors = emptyList(), elapsedTimeMillis = null, searchedFilmFilter = null,
+                )
             }
         }
     }

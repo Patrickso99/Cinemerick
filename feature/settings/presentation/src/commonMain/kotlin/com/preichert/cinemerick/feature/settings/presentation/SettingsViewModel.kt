@@ -9,6 +9,8 @@ import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.presentation.TimeWindow
 import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.domain.ThemeMode
+import com.preichert.cinemerick.core.domain.assistant.AssistantRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,15 +21,18 @@ class SettingsViewModel(
     private val animationController: AnimationController,
     private val timeWindowController: TimeWindowController,
     private val languageController: LanguageController,
+    private val assistant: AssistantRepository,
 ) : ViewModel() {
 
+    private val isRemoveKeyDialogOpen = MutableStateFlow(false)
+
     val state: StateFlow<SettingsState> = combine(
-        themeController.mode,
-        animationController.isEnabled,
-        timeWindowController.window,
-        languageController.language,
-        ::toState
-    ).stateIn(
+        combine(themeController.mode, animationController.isEnabled, timeWindowController.window, languageController.language, ::toState),
+        assistant.savedKey,
+        isRemoveKeyDialogOpen,
+    ) { state, key, dialogOpen ->
+        state.copy(assistantKey = key, isRemoveKeyDialogOpen = dialogOpen && key != null)
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
         initialValue = toState(
@@ -35,7 +40,7 @@ class SettingsViewModel(
             animationController.isEnabled.value,
             timeWindowController.window.value,
             languageController.language.value,
-        )
+        ).copy(assistantKey = assistant.savedKey.value)
     )
 
     private fun toState(themeMode: ThemeMode, animationsEnabled: Boolean, window: TimeWindow, language: AppLanguage) = SettingsState(
@@ -66,6 +71,12 @@ class SettingsViewModel(
             // The dialog blocks invalid windows; the controller rejects them as a safety net.
             is SettingsAction.OnDefaultMinTimeChanged -> timeWindowController.setMin(action.minutes)
             is SettingsAction.OnDefaultMaxTimeChanged -> timeWindowController.setMax(action.minutes)
+            SettingsAction.OnRemoveKeyClick -> isRemoveKeyDialogOpen.value = true
+            SettingsAction.OnRemoveKeyDismiss -> isRemoveKeyDialogOpen.value = false
+            SettingsAction.OnRemoveKeyConfirm -> {
+                assistant.removeKey()
+                isRemoveKeyDialogOpen.value = false
+            }
         }
     }
 }

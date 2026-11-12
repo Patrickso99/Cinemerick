@@ -50,6 +50,10 @@ data class ShowtimesState(
     val searchedFilmFilter: String? = null,
     // Whether the filter summary bar is open, on phone layouts.
     val isFilterSummaryExpanded: Boolean = false,
+    // The voice sheet, while it is open.
+    val voice: VoiceUi? = null,
+    // The provider that answers the assistant, for the badge in the voice sheet; null until one is set up.
+    val assistantProvider: String? = null,
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }

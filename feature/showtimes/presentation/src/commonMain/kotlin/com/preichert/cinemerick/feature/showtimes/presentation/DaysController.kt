@@ -92,7 +92,7 @@ internal class DaysController(
         updateDay(date) { it.copy(maxTime = value) }
     }
 
-    private fun newDay(date: LocalDate): DayUi {
+    fun newDay(date: LocalDate): DayUi {
         val window = timeWindowController.window.value
         return DayUi(
             date = date,

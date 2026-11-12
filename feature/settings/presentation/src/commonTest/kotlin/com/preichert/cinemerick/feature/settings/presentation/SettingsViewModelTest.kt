@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
+import com.preichert.cinemerick.core.testing.FakeAssistantRepository
 import kotlin.test.Test
 import app.cash.turbine.test
 import assertk.assertThat
@@ -35,7 +36,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledTrueSwitchesToSystem() = runTest {
         val controller = ThemeController(FakeThemePreferences())
-        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
+        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = true, systemDark = false))
 
@@ -45,7 +46,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkTrueSwitchesToDark() = runTest {
         val controller = ThemeController(FakeThemePreferences())
-        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
+        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = true))
 
@@ -55,7 +56,7 @@ class SettingsViewModelTest {
     @Test
     fun onAutoToggledWithEnabledFalseAndSystemDarkFalseSwitchesToLight() = runTest {
         val controller = ThemeController(FakeThemePreferences())
-        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
+        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.onAction(SettingsAction.OnAutoToggled(enabled = false, systemDark = false))
 
@@ -65,7 +66,7 @@ class SettingsViewModelTest {
     @Test
     fun onThemeModeSelectedUpdatesMode() = runTest {
         val controller = ThemeController(FakeThemePreferences())
-        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
+        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.onAction(SettingsAction.OnThemeModeSelected(ThemeMode.DARK))
 
@@ -77,7 +78,7 @@ class SettingsViewModelTest {
         val controller = ThemeController(FakeThemePreferences())
         controller.setMode(ThemeMode.LIGHT)
 
-        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController())
+        val viewModel = SettingsViewModel(controller, AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.state.test {
             assertThat(awaitItem().themeMode).isEqualTo(ThemeMode.LIGHT)
@@ -88,7 +89,7 @@ class SettingsViewModelTest {
     fun onAnimationsToggledUpdatesControllerAndState() = runTest {
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
         val animations = AnimationController(FakeAnimationPreferences())
-        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), animations, timeWindow(), languageController())
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), animations, timeWindow(), languageController(), FakeAssistantRepository())
 
         viewModel.state.test {
             viewModel.onAction(SettingsAction.OnAnimationsToggled(false))
@@ -101,7 +102,7 @@ class SettingsViewModelTest {
     @Test
     fun validWindowChangesAreApplied() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController())
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController(), FakeAssistantRepository())
 
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(23 * 60))
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(18 * 60))
@@ -113,7 +114,7 @@ class SettingsViewModelTest {
     @Test
     fun invalidWindowChangesAreRejected() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController())
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController(), FakeAssistantRepository())
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(22 * 60))
 
         viewModel.onAction(SettingsAction.OnDefaultMinTimeChanged(23 * 60))
@@ -126,11 +127,46 @@ class SettingsViewModelTest {
     @Test
     fun noLimitClearsMax() = runTest {
         val window = timeWindow()
-        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController())
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), window, languageController(), FakeAssistantRepository())
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(23 * 60))
 
         viewModel.onAction(SettingsAction.OnDefaultMaxTimeChanged(null))
 
         assertThat(window.window.value.maxMinutes).isNull()
+    }
+
+    @Test
+    fun removingTheKeyAsksFirstThenRemovesIt() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository().apply { connect() }
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        viewModel.state.test {
+            assertThat(awaitItem().assistantKey?.lastFour).isEqualTo("1234")
+            viewModel.onAction(SettingsAction.OnRemoveKeyClick)
+            assertThat(awaitItem().isRemoveKeyDialogOpen).isEqualTo(true)
+
+            viewModel.onAction(SettingsAction.OnRemoveKeyConfirm)
+            val removed = awaitItem()
+            assertThat(removed.assistantKey).isEqualTo(null)
+            assertThat(removed.isRemoveKeyDialogOpen).isEqualTo(false)
+        }
+    }
+
+    @Test
+    fun keepingTheKeyClosesTheDialogOnly() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository().apply { connect() }
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        viewModel.state.test {
+            awaitItem()
+            viewModel.onAction(SettingsAction.OnRemoveKeyClick)
+            awaitItem()
+            viewModel.onAction(SettingsAction.OnRemoveKeyDismiss)
+            val kept = awaitItem()
+            assertThat(kept.isRemoveKeyDialogOpen).isEqualTo(false)
+            assertThat(kept.assistantKey?.lastFour).isEqualTo("1234")
+        }
     }
 }

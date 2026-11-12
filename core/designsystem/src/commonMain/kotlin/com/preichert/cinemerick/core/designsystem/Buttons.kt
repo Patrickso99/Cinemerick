@@ -1,7 +1,7 @@
 package com.preichert.cinemerick.core.designsystem
 
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -144,27 +144,33 @@ fun CinemerickTonalButton(
     }
 }
 
-/** Floating action on Results (Copy poll): primary fill, 56dp, with the L2 shadow. */
+/**
+ * Icon-only floating action button: 56dp circle with the L2 shadow, primary fill. [tonal] uses the primary container,
+ * for the second of two stacked buttons (the assistant above Copy poll).
+ */
 @Composable
-fun CinemerickExtendedFab(
-    text: String,
+fun CinemerickFab(
     icon: Painter,
+    contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    tonal: Boolean = false,
 ) {
     val colors = CinemerickTheme.colors
     val interaction = remember { MutableInteractionSource() }
-    ExtendedFloatingActionButton(
-        text = { Text(text, style = MaterialTheme.typography.titleSmall, maxLines = 1) },
-        icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp)) },
+    val container = if (tonal) colors.primaryContainer else colors.primary
+    val content = if (tonal) colors.onPrimaryContainer else colors.onPrimary
+    FloatingActionButton(
         onClick = onClick,
-        modifier = modifier.height(56.dp).pressScale(interaction),
-        shape = CinemerickFullShape,
-        containerColor = colors.primary,
-        contentColor = colors.onPrimary,
+        modifier = modifier.size(56.dp).pressScale(interaction),
+        shape = CircleShape,
+        containerColor = container,
+        contentColor = content,
         elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 12.dp, pressedElevation = 12.dp, focusedElevation = 12.dp, hoveredElevation = 12.dp),
         interactionSource = interaction,
-    )
+    ) {
+        Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(24.dp))
+    }
 }
 
 /** Circular icon button: 48dp hit, 22dp outline icon, always with a content description. */

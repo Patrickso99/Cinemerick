@@ -167,13 +167,18 @@ class ShowtimesViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private val voice = VoiceFakes()
+
     private fun viewModel(
         repository: ShowtimesRepository = FakeRepository,
         filmDetails: FilmDetailsRepository = FakeFilmDetailsRepository,
         savedStateHandle: SavedStateHandle = SavedStateHandle()
     ): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
-        return ShowtimesViewModel(repository, filmDetails, FakeFilterPreferences, controller, FakePersonDataSource, savedStateHandle = savedStateHandle)
+        return ShowtimesViewModel(
+            repository, filmDetails, FakeFilterPreferences, controller, FakePersonDataSource,
+            voice.speech, voice.interpreter, voice.assistant, voice.language, savedStateHandle = savedStateHandle,
+        )
     }
 
     private fun ShowtimesViewModel.day(date: LocalDate) = state.value.days.first { it.date == date }

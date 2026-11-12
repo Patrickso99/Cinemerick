@@ -4,5 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The assistant listens to your request for cinemas, days and films only while the voice sheet is open.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Your spoken request is turned into text to fill in the cinemas, days, times, formats and films.</string>
 </dict>
 </plist>

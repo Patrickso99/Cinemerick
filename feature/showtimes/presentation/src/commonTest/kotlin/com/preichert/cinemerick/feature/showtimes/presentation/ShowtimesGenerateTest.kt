@@ -87,9 +87,14 @@ class ShowtimesGenerateTest {
 
     private fun showing(time: String) = Showing("Mammina", day, LocalTime.parse(time), venue)
 
+    private val voice = VoiceFakes()
+
     private fun viewModel(repository: ShowtimesRepository): ShowtimesViewModel {
         Dispatchers.setMain(UnconfinedTestDispatcher(scheduler))
-        return ShowtimesViewModel(repository, FakeFilmDetailsRepository, selectedOnly(venue), controller, FakePersonDataSource)
+        return ShowtimesViewModel(
+            repository, FakeFilmDetailsRepository, selectedOnly(venue), controller, FakePersonDataSource,
+            voice.speech, voice.interpreter, voice.assistant, voice.language,
+        )
     }
 
     // The venue is selected from the start, so a toggle cannot remove it when it is a default.

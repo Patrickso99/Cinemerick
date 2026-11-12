@@ -15,13 +15,17 @@ sealed interface ShowtimesGraphRoutes {
 }
 
 fun NavGraphBuilder.showtimesGraph(
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToAssistantSettings: () -> Unit,
 ) {
     navigation<ShowtimesGraphRoutes.Graph>(
         startDestination = ShowtimesGraphRoutes.ShowtimesRoute
     ) {
         composable<ShowtimesGraphRoutes.ShowtimesRoute> {
-            ShowtimesRoot(onNavigateToSettings = onNavigateToSettings)
+            ShowtimesRoot(
+                onNavigateToSettings = onNavigateToSettings,
+                onNavigateToAssistantSettings = onNavigateToAssistantSettings,
+            )
         }
     }
 }

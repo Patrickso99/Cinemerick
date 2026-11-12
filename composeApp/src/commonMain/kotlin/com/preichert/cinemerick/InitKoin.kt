@@ -1,5 +1,6 @@
 package com.preichert.cinemerick
 
+import com.preichert.cinemerick.core.assistant.coreAssistantModule
 import com.preichert.cinemerick.core.data.coreDataModule
 import com.preichert.cinemerick.core.presentation.corePresentationModule
 import com.preichert.cinemerick.feature.showtimes.data.showtimesDataModule
@@ -17,6 +18,7 @@ fun initKoin(config: KoinAppDeclaration? = null) {
         config?.invoke(this)
         modules(
             coreDataModule,
+            coreAssistantModule,
             corePresentationModule,
             showtimesDataModule,
             showtimesPresentationModule,

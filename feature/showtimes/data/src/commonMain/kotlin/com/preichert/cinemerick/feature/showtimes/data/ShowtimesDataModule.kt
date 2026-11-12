@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.data
 
+import com.preichert.cinemerick.feature.showtimes.domain.CinemaRequestInterpreter
 import com.preichert.cinemerick.feature.showtimes.domain.FilmDetailsRepository
 import com.preichert.cinemerick.feature.showtimes.domain.FilmRemoteDataSource
 import com.preichert.cinemerick.feature.showtimes.domain.FilterPreferences
@@ -30,4 +31,5 @@ val showtimesDataModule = module {
 
     single<ShowtimesRepository> { MultiCinemaShowtimesRepository(getAll(), get()) }
     singleOf(::TmdbFirstFilmDetailsRepository) { bind<FilmDetailsRepository>() }
+    singleOf(::LlmCinemaRequestInterpreter) { bind<CinemaRequestInterpreter>() }
 }

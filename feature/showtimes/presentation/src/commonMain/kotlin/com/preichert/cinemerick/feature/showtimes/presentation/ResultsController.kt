@@ -127,8 +127,10 @@ internal class ResultsController(
         }
     }
 
-    // Forgets the fetched showings, so the next generate starts from nothing.
+    // Forgets the fetched showings and stops a fetch in flight, so the next generate starts from nothing.
     fun clear() {
+        generateJob?.cancel()
+        refreshJob?.cancel()
         lastFetch = null
         movieIdJob?.cancel()
     }

@@ -317,3 +317,29 @@ private fun SwitchRowOffDarkPreview() {
         CinemerickSwitchRow(title = "Smooth animations", checked = false, onCheckedChange = {})
     }
 }
+
+// Floating action buttons: Copy poll (primary) and the assistant (tonal), as stacked on Results.
+
+@Preview(name = "Fab primary")
+@Composable
+private fun FabPrimaryPreview() {
+    LightThemePreview {
+        CinemerickFab(icon = CinemerickIcons.Copy, contentDescription = "Copy poll", onClick = {})
+    }
+}
+
+@Preview(name = "Fab tonal (assistant)")
+@Composable
+private fun FabTonalPreview() {
+    LightThemePreview {
+        CinemerickFab(icon = CinemerickIcons.Assistant, contentDescription = "Ask the assistant", onClick = {}, tonal = true)
+    }
+}
+
+@Preview(name = "Fab tonal dark")
+@Composable
+private fun FabTonalDarkPreview() {
+    DarkThemePreview {
+        CinemerickFab(icon = CinemerickIcons.Assistant, contentDescription = "Ask the assistant", onClick = {}, tonal = true)
+    }
+}

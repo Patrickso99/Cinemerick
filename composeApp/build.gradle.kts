@@ -9,6 +9,7 @@ kotlin {
             implementation(projects.core.data)
             implementation(projects.core.presentation)
             implementation(projects.core.designsystem)
+            implementation(projects.core.assistant)
             implementation(projects.feature.showtimes.domain)
             implementation(projects.feature.showtimes.data)
             implementation(projects.feature.showtimes.presentation)

@@ -24,6 +24,11 @@ data class CinemerickColors(
     /** Something unavailable or gone wrong, e.g. the "sold out" badge. Material's error color. */
     val error: Color,
     val onError: Color,
+    /** Error text and outlines on the app surfaces: [error] is too dark to read on the dark background. */
+    val errorText: Color,
+    /** Something to check before going on, e.g. a cinema the assistant is not sure about. */
+    val warningContainer: Color,
+    val onWarningContainer: Color,
     /** 1dp stroke around chain badges and chips in dark theme: makes the dark chains (Cinemazero, Cinergia, UCI) visible. */
     val chainEdge: Color,
     /** Container of a control drawn over a picture (e.g. the close button on a backdrop), the same in both themes. */
@@ -47,6 +52,9 @@ val DarkCinemerickColors = CinemerickColors(
     scrim = Color(0xA806040C),
     error = Color(0xFFB3261E),
     onError = Color(0xFFFFFFFF),
+    errorText = Color(0xFFF2B8B5),
+    warningContainer = Color(0xFF5C3F06),
+    onWarningContainer = Color(0xFFFDF0D0),
     chainEdge = Color(0x47FFFFFF),
     overImageContainer = Color(0x8C0A0812),
     onOverImage = Color(0xFFFFFFFF),
@@ -67,6 +75,9 @@ val LightCinemerickColors = CinemerickColors(
     scrim = Color(0x6B140C32),
     error = Color(0xFFB3261E),
     onError = Color(0xFFFFFFFF),
+    errorText = Color(0xFFB3261E),
+    warningContainer = Color(0xFFFDF0D0),
+    onWarningContainer = Color(0xFF3D2A04),
     chainEdge = Color(0x00000000),
     overImageContainer = Color(0x8C0A0812),
     onOverImage = Color(0xFFFFFFFF),

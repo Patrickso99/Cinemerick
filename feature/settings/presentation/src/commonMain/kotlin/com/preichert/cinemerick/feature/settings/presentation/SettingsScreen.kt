@@ -84,6 +84,26 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.language
 import com.preichert.cinemerick.feature.settings.presentation.resources.language_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_credit_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.tmdb_logo
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.size
+import com.preichert.cinemerick.core.domain.assistant.SavedKey
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_add_key
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_add_key_description
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_cloud_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_key_summary
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_key_verified
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_change_key
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_key
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_privacy_cloud
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_privacy_none
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_language_hint
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_body
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_keep
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_confirm
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -91,6 +111,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsRoot(
     onNavigateBack: () -> Unit,
+    onAssistantKeyClick: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -100,7 +121,8 @@ fun SettingsRoot(
         state = state,
         systemDark = systemDark,
         onAction = viewModel::onAction,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onAssistantKeyClick = onAssistantKeyClick,
     )
 }
 
@@ -113,9 +135,18 @@ fun SettingsScreen(
     state: SettingsState,
     systemDark: Boolean,
     onAction: (SettingsAction) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onAssistantKeyClick: () -> Unit = {},
 ) {
     val backLabel = stringResource(Res.string.settings_back)
+    val key = state.assistantKey
+    if (state.isRemoveKeyDialogOpen && key != null) {
+        RemoveKeyDialog(
+            provider = key.provider.displayName,
+            onConfirm = { onAction(SettingsAction.OnRemoveKeyConfirm) },
+            onDismiss = { onAction(SettingsAction.OnRemoveKeyDismiss) },
+        )
+    }
     Scaffold(
         contentWindowInsets = WindowInsets(0)
     ) { _ ->
@@ -157,6 +188,13 @@ fun SettingsScreen(
                         onSelect = { onAction(SettingsAction.OnLanguageSelected(it)) },
                     )
                 }
+                SettingsGroup(label = stringResource(Res.string.assistant_title)) {
+                    AssistantSection(
+                        key = state.assistantKey,
+                        onKeyClick = onAssistantKeyClick,
+                        onRemoveClick = { onAction(SettingsAction.OnRemoveKeyClick) },
+                    )
+                }
                 SettingsGroup(label = stringResource(Res.string.tmdb_credit_title)) {
                     TmdbCreditSection()
                 }
@@ -169,7 +207,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsHeader(title: String, backLabel: String, onBack: () -> Unit) {
+internal fun SettingsHeader(title: String, backLabel: String, onBack: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,6 +460,84 @@ private fun TimeWindowSection(
             modifier = Modifier.padding(horizontal = 4.dp),
         )
     }
+}
+
+/**
+ * The voice assistant: the provider and its masked key with Change and Remove, or a row to add a key. The privacy note
+ * says where requests go, so the badge in the voice sheet is never the first time the user reads it.
+ */
+@Composable
+private fun AssistantSection(key: SavedKey?, onKeyClick: () -> Unit, onRemoveClick: () -> Unit) {
+    val colors = CinemerickTheme.colors
+    if (key == null) {
+        CinemerickSettingsRow(
+            title = stringResource(Res.string.assistant_add_key),
+            description = stringResource(Res.string.assistant_add_key_description),
+            onClick = onKeyClick,
+            trailing = { Icon(CinemerickIcons.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant) },
+        )
+    } else {
+        CinemerickSettingsRow(
+            title = stringResource(Res.string.assistant_cloud_title, key.provider.displayName),
+            description = stringResource(Res.string.assistant_key_summary, key.lastFour, key.model),
+            trailing = {
+                Text(
+                    text = stringResource(Res.string.assistant_key_verified),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.onPrimaryContainer,
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.extraLarge)
+                        .background(colors.primaryContainer)
+                        .padding(horizontal = Spacing.space2, vertical = Spacing.space1),
+                )
+            },
+        )
+        Row(
+            modifier = Modifier.padding(horizontal = Spacing.space2),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
+        ) {
+            TextButton(onClick = onKeyClick) {
+                Text(stringResource(Res.string.assistant_change_key), color = colors.primary, style = MaterialTheme.typography.labelLarge)
+            }
+            TextButton(onClick = onRemoveClick) {
+                Text(stringResource(Res.string.assistant_remove_key), color = colors.errorText, style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
+    ) {
+        Icon(if (key != null) CinemerickIcons.Cloud else CinemerickIcons.Lock, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
+            Text(
+                text = if (key != null) stringResource(Res.string.assistant_privacy_cloud, key.provider.displayName) else stringResource(Res.string.assistant_privacy_none),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+            Text(stringResource(Res.string.assistant_language_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        }
+    }
+}
+
+/** Removing the key needs a decision (T6): pasting it again is a chore, and the assistant stops working. */
+@Composable
+private fun RemoveKeyDialog(provider: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    val colors = CinemerickTheme.colors
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.assistant_remove_title, provider)) },
+        text = { Text(stringResource(Res.string.assistant_remove_body, provider)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text(stringResource(Res.string.assistant_remove_confirm), color = colors.errorText) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.assistant_remove_keep), color = colors.primary) }
+        },
+        containerColor = colors.surfaceContainerHigh,
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurfaceVariant,
+    )
 }
 
 private const val TMDB_URL = "https://www.themoviedb.org"

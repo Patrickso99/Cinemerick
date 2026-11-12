@@ -8,6 +8,7 @@ kotlin {
     }
     sourceSets.androidMain.dependencies {
         implementation(libs.androidx.appcompat)
+        implementation(libs.androidx.activity.compose)
     }
     sourceSets.commonMain.dependencies {
         implementation(projects.core.domain)

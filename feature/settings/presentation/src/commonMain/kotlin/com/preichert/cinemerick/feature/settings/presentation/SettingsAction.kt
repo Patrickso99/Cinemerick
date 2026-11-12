@@ -10,4 +10,7 @@ sealed interface SettingsAction {
     data class OnDefaultMinTimeChanged(val minutes: Int) : SettingsAction
     data class OnDefaultMaxTimeChanged(val minutes: Int?) : SettingsAction
     data class OnLanguageSelected(val language: AppLanguage) : SettingsAction
+    data object OnRemoveKeyClick : SettingsAction
+    data object OnRemoveKeyConfirm : SettingsAction
+    data object OnRemoveKeyDismiss : SettingsAction
 }

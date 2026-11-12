@@ -45,7 +45,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -58,7 +60,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.preichert.cinemerick.core.designsystem.CinemerickAdaptiveLayout
-import com.preichert.cinemerick.core.designsystem.CinemerickExtendedFab
+import com.preichert.cinemerick.core.designsystem.CinemerickFab
 import com.preichert.cinemerick.core.designsystem.CinemerickIconButton
 import com.preichert.cinemerick.core.designsystem.CinemerickTheme
 import com.preichert.cinemerick.core.designsystem.Spacing
@@ -71,20 +73,29 @@ import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.app_subtitle
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.copy_poll
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.assistant_fab
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_applied
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_undo
+import com.preichert.cinemerick.core.presentation.rememberMicPermissionController
+import org.jetbrains.compose.resources.getString
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.open_settings
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.withFrameNanos
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ShowtimesRoot(
     onNavigateToSettings: () -> Unit,
+    onNavigateToAssistantSettings: () -> Unit,
     viewModel: ShowtimesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val micPermission = rememberMicPermissionController()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     // LocalClipboard has no common way to build a plain-text entry in Compose 1.12, so the deprecated manager stays.
@@ -101,6 +112,20 @@ fun ShowtimesRoot(
             is ShowtimesEvent.ShowSnackbar -> scope.launch {
                 snackbarHostState.showSnackbar(event.message.asStringAsync())
             }
+            ShowtimesEvent.ShowVoiceUndo -> scope.launch {
+                // Once the search is over: the placeholder items are replaced by the results, which would move the list.
+                launch {
+                    viewModel.state.first { !it.isLoading && it.hasGenerated }
+                    withFrameNanos { }
+                    layoutState.showResults(animationsEnabled, jumpGapPx)
+                }
+                val result = snackbarHostState.showSnackbar(
+                    message = getString(Res.string.voice_applied),
+                    actionLabel = getString(Res.string.voice_undo),
+                    duration = SnackbarDuration.Long,
+                )
+                if (result == SnackbarResult.ActionPerformed) viewModel.onAction(ShowtimesAction.OnVoiceUndo)
+            }
             is ShowtimesEvent.ScrollToFilter -> scope.launch {
                 val found = layoutState.jumpTo(event.target, animationsEnabled, jumpGapPx)
                 // Layouts without chain cards (chips) still land on the Cinemas section.
@@ -115,10 +140,21 @@ fun ShowtimesRoot(
         state = state,
         onAction = viewModel::onAction,
         onSettingsClick = onNavigateToSettings,
+        // The microphone permission lives with the screen: the view model gets its status with the tap.
+        onAssistantClick = { viewModel.onAction(ShowtimesAction.OnAssistantClick(micPermission.status())) },
+        onAllowMic = { micPermission.request { viewModel.onAction(ShowtimesAction.OnVoiceMicResult(it)) } },
+        onOpenMicSettings = micPermission::openSettings,
+        onOpenAssistantSettings = {
+            viewModel.onAction(ShowtimesAction.OnVoiceDismiss)
+            onNavigateToAssistantSettings()
+        },
         snackbarHostState = snackbarHostState,
         layoutState = layoutState,
     )
 }
+
+// Room for the floating buttons (16dp margin, 56dp button) plus a 12dp gap, less the snackbar's own 12dp.
+private val SnackbarBesideFabEnd = 72.dp
 
 @Composable
 fun ShowtimesScreen(
@@ -127,6 +163,10 @@ fun ShowtimesScreen(
     onSettingsClick: () -> Unit,
     snackbarHostState: SnackbarHostState,
     layoutState: CinemerickLayoutState = rememberCinemerickLayoutState(),
+    onAssistantClick: () -> Unit = {},
+    onAllowMic: () -> Unit = {},
+    onOpenMicSettings: () -> Unit = {},
+    onOpenAssistantSettings: () -> Unit = {},
 ) {
     val configuration = currentDeviceConfiguration()
     val summary = remember(
@@ -152,7 +192,31 @@ fun ShowtimesScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        snackbarHost = { SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding()) }
+        // The assistant and Copy poll float at the bottom end on every layout, stacked with the assistant on top, except
+        // under the open summary panel. In the Scaffold's slot, so a snackbar rises above them instead of covering them.
+        floatingActionButton = {
+            if (!state.isFilterSummaryExpanded) {
+                Column(
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.space3),
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    CinemerickFab(
+                        icon = CinemerickIcons.Assistant,
+                        contentDescription = stringResource(Res.string.assistant_fab),
+                        onClick = onAssistantClick,
+                        tonal = true,
+                    )
+                    if (state.pollText.isNotEmpty()) {
+                        CinemerickFab(
+                            icon = CinemerickIcons.Copy,
+                            contentDescription = stringResource(Res.string.copy_poll),
+                            onClick = { onAction(ShowtimesAction.OnCopyClick) },
+                        )
+                    }
+                }
+            }
+        },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
             state.calendar?.let { calendar ->
@@ -274,18 +338,29 @@ fun ShowtimesScreen(
                 summaryBarExpanded = state.isFilterSummaryExpanded,
                 onSummaryBarDismiss = { onAction(ShowtimesAction.OnFilterSummaryDismiss) },
             )
-            // Copy poll floats at the bottom end on every layout, except under the open summary panel.
-            if (state.pollText.isNotEmpty() && !state.isFilterSummaryExpanded) {
-                CinemerickExtendedFab(
-                    text = stringResource(Res.string.copy_poll),
-                    icon = CinemerickIcons.Copy,
-                    onClick = { onAction(ShowtimesAction.OnCopyClick) },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(end = Spacing.space4, bottom = Spacing.space4),
+            state.voice?.let { voice ->
+                VoiceSheet(
+                    voice = voice,
+                    provider = state.assistantProvider,
+                    filters = summary,
+                    onAction = onAction,
+                    onAllowMic = onAllowMic,
+                    onOpenMicSettings = onOpenMicSettings,
+                    onOpenAssistantSettings = onOpenAssistantSettings,
                 )
             }
+            // The snackbar sits beside the lowest floating button, on its line, so it never covers them. Without the
+            // buttons (summary panel open) it takes the whole width.
+            val fabsShown = !state.isFilterSummaryExpanded
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    // The snackbar has 12dp of its own around it: these bring it to 16dp from the edge, centred on the
+                    // 56dp button that sits 16dp above the bottom.
+                    .padding(start = Spacing.space1, bottom = Spacing.space2, end = if (fabsShown) SnackbarBesideFabEnd else Spacing.space1),
+            )
         }
     }
 }

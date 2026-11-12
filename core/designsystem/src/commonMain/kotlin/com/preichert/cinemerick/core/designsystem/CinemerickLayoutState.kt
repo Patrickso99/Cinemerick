@@ -94,6 +94,23 @@ class CinemerickLayoutState internal constructor(listIndex: Int, listOffset: Int
         return true
     }
 
+    /**
+     * Brings the first result just under the bar, on the phone layout where the results follow the filters in one
+     * list (a search started away from the Search button, e.g. by voice). Elsewhere the results are always in view.
+     */
+    suspend fun showResults(animate: Boolean, gapPx: Float) {
+        if (activeScrollable !== listState) return
+        val index = FiltersItemIndex + 1
+        if (listState.layoutInfo.totalItemsCount <= index) return
+        if (animate) listState.animateScrollToItem(index) else listState.scrollToItem(index)
+        // The summary bar shows up once the header is gone: the first result moves down to clear it.
+        withFrameNanos { }
+        val viewportTop = viewport?.takeIf { it.isAttached }?.positionInRoot()?.y ?: return
+        val barBottom = obstruction?.takeIf { it.isAttached }?.boundsInRoot()?.bottom ?: viewportTop
+        val delta = -(maxOf(viewportTop, barBottom) - viewportTop + gapPx)
+        if (animate) listState.animateScrollBy(delta) else listState.scrollBy(delta)
+    }
+
     // The target becomes focusable on the next composition, then takes the focus.
     private suspend fun moveFocusTo(key: Any) {
         focusHeld = false

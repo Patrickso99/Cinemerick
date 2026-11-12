@@ -73,8 +73,11 @@ class ShowtimesScreenStateTest {
         override suspend fun find(id: Int): Result<PersonDetails?, DataError.Network> = Result.Success(null)
     }
 
+    private val voice = VoiceFakes()
+
     private fun viewModel() = ShowtimesViewModel(
         repository, filmDetails, preferences, TimeWindowController(FakeTimeWindowPreferences()), persons,
+        voice.speech, voice.interpreter, voice.assistant, voice.language,
         savedStateHandle = SavedStateHandle()
     )
 

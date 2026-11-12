@@ -19,6 +19,7 @@ A **Kotlin Multiplatform** cinema showtimes aggregator that fetches real-time sc
 - 🖼️ **Film posters**: Each film shows its poster (UCI's when both cinemas are selected, otherwise The Space's), loaded with Coil
 - 📖 **Film details**: Tap a film for synopsis, tagline, genres, saga, director and cast (with photos and characters), trailer, runtime, year, original title and language, production countries and companies, budget and box office (when known), Italian release date, a backdrop with a gallery and the TMDB score. Details come from [TMDB](https://www.themoviedb.org) in Italian whatever the language of the app (a synopsis or trailer TMDB only has in another language is not shown); films TMDB does not recognise (concerts, live events, rassegne) fall back to what the cinemas publish, and a TMDB result is never mixed with cinema data
 - 🎟️ **Showtime status**: Sold-out showings are marked
+- 🎙️ **Voice assistant**: Tap the assistant button and say (or type) what you want, in Italian or English: cinemas, days, a time window per day, formats and films, e.g. "The Space Silea and UCI Marcon on Thursday from 5 to 8 pm, 2D only". A review sheet shows what was understood, asks about cinemas it is not sure of ("Notorius Fiume" → Notorious · Fiume Veneto), skips names it cannot match, and keeps the filters that were not mentioned; Search applies it and Undo puts the previous filters back. The request is read by a cloud provider with your own API key (OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter), kept in the system's secure storage (Keystore, Keychain); several keys can be saved and switched with one tap. Speech recognition runs on the device on Android and iOS; desktop takes typed requests
 - 📋 **Copy-to-clipboard**: Generate poll text and copy it with one tap; the poll text stays in Italian
 - 🌐 **Language choice**: English (default) or Italiano, selected in Settings and applied per platform
 - 🌓 **Theme choice**: Auto (follows the system), Light or Dark, selected in Settings
@@ -51,6 +52,7 @@ Cinemerick follows a **modular Kotlin Multiplatform** structure:
 | `:core:data` | HTTP client with server-error retries, settings preferences, `TmdbConfig` (TMDB token) |
 | `:core:presentation` | `UiText`, controllers (theme, language, animations, time window) |
 | `:core:designsystem` | Theme, typography, shapes, adaptive layouts, components, `DeviceConfiguration` |
+| `:core:assistant` | Voice assistant engines: cloud providers over Ktor, API keys in secure storage, platform speech recognition |
 | `:core:testing` | Test helpers: in-memory settings and preference fakes |
 | `:feature:showtimes:domain` | Models, repository interfaces, filtering and formatting |
 | `:feature:showtimes:data` | Cinema data sources, HTML parsers, TMDB lookup, cache, merging |
@@ -108,6 +110,10 @@ Typography uses the Plus Jakarta Sans font, bundled in `:core:designsystem`.
 - Gradle wrapper (`./gradlew`, Gradle 9.6.0); no separate Gradle install needed
 - Android SDK 37 (compile), API 26 (min)
 - Xcode with the iOS 16.0+ SDK (for iOS)
+
+### Voice assistant (optional)
+
+The assistant needs an API key from one of the supported providers, added in the app under Settings › Voice assistant. API access is billed by the provider separately from any chat subscription (e.g. Claude Pro does not include API credit); Google Gemini offers a free tier. Nothing is configured at build time.
 
 ### TMDB access token (optional)
 

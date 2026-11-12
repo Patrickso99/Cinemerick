@@ -2,6 +2,18 @@ package com.preichert.cinemerick.core.designsystem
 
 import com.preichert.cinemerick.core.designsystem.resources.Res
 import com.preichert.cinemerick.core.designsystem.resources.ic_add
+import com.preichert.cinemerick.core.designsystem.resources.ic_assistant
+import com.preichert.cinemerick.core.designsystem.resources.ic_mic
+import com.preichert.cinemerick.core.designsystem.resources.ic_mic_off
+import com.preichert.cinemerick.core.designsystem.resources.ic_keyboard
+import com.preichert.cinemerick.core.designsystem.resources.ic_edit
+import com.preichert.cinemerick.core.designsystem.resources.ic_key
+import com.preichert.cinemerick.core.designsystem.resources.ic_cloud
+import com.preichert.cinemerick.core.designsystem.resources.ic_retry
+import com.preichert.cinemerick.core.designsystem.resources.ic_question
+import com.preichert.cinemerick.core.designsystem.resources.ic_lock
+import com.preichert.cinemerick.core.designsystem.resources.ic_eye
+import com.preichert.cinemerick.core.designsystem.resources.ic_eye_off
 import com.preichert.cinemerick.core.designsystem.resources.ic_alert
 import com.preichert.cinemerick.core.designsystem.resources.ic_arrow_back
 import com.preichert.cinemerick.core.designsystem.resources.ic_arrow_up_right
@@ -50,4 +62,18 @@ object CinemerickIcons {
     val Film: Painter @Composable get() = painterResource(Res.drawable.ic_film)
     val Clock: Painter @Composable get() = painterResource(Res.drawable.ic_clock)
     val ArrowUpRight: Painter @Composable get() = painterResource(Res.drawable.ic_arrow_up_right)
+
+    // Voice assistant. Assistant is the microphone with the AI spark, for the assistant button only.
+    val Assistant: Painter @Composable get() = painterResource(Res.drawable.ic_assistant)
+    val Mic: Painter @Composable get() = painterResource(Res.drawable.ic_mic)
+    val MicOff: Painter @Composable get() = painterResource(Res.drawable.ic_mic_off)
+    val Keyboard: Painter @Composable get() = painterResource(Res.drawable.ic_keyboard)
+    val Edit: Painter @Composable get() = painterResource(Res.drawable.ic_edit)
+    val Key: Painter @Composable get() = painterResource(Res.drawable.ic_key)
+    val Cloud: Painter @Composable get() = painterResource(Res.drawable.ic_cloud)
+    val Retry: Painter @Composable get() = painterResource(Res.drawable.ic_retry)
+    val Question: Painter @Composable get() = painterResource(Res.drawable.ic_question)
+    val Lock: Painter @Composable get() = painterResource(Res.drawable.ic_lock)
+    val Eye: Painter @Composable get() = painterResource(Res.drawable.ic_eye)
+    val EyeOff: Painter @Composable get() = painterResource(Res.drawable.ic_eye_off)
 }

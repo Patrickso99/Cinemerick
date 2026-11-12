@@ -14,6 +14,7 @@ import com.preichert.cinemerick.core.designsystem.LocalAnimationsEnabled
 import com.preichert.cinemerick.core.designsystem.Motion
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.preichert.cinemerick.feature.settings.presentation.navigation.navigateToAssistantKey
 import com.preichert.cinemerick.feature.settings.presentation.navigation.navigateToSettings
 import com.preichert.cinemerick.feature.settings.presentation.navigation.settingsGraph
 import com.preichert.cinemerick.feature.showtimes.presentation.navigation.showtimesGraph
@@ -44,7 +45,10 @@ fun NavigationRoot(
             if (animationsEnabled) slideOutHorizontally(slide) { it / 4 } + fadeOut(fade) + scaleOut(scale, targetScale = 0.96f) else ExitTransition.None
         }
     ) {
-        showtimesGraph(onNavigateToSettings = navController::navigateToSettings)
+        showtimesGraph(
+            onNavigateToSettings = navController::navigateToSettings,
+            onNavigateToAssistantSettings = navController::navigateToAssistantKey,
+        )
         settingsGraph(navController = navController)
     }
 }

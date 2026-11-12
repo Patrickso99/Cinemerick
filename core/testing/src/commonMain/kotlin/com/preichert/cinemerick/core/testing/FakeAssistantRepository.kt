@@ -1,0 +1,58 @@
+package com.preichert.cinemerick.core.testing
+
+import com.preichert.cinemerick.core.domain.EmptyResult
+import com.preichert.cinemerick.core.domain.Result
+import com.preichert.cinemerick.core.domain.assistant.AssistantEngine
+import com.preichert.cinemerick.core.domain.assistant.AssistantError
+import com.preichert.cinemerick.core.domain.assistant.AssistantRepository
+import com.preichert.cinemerick.core.domain.assistant.AssistantStatus
+import com.preichert.cinemerick.core.domain.assistant.CloudCredentials
+import com.preichert.cinemerick.core.domain.assistant.CloudProvider
+import com.preichert.cinemerick.core.domain.assistant.SavedKey
+import kotlinx.coroutines.flow.MutableStateFlow
+
+/** An assistant that answers [answer] and accepts a key unless [saveResult] says otherwise. Starts without a key. */
+class FakeAssistantRepository(
+    var answer: Result<String, AssistantError> = Result.Success("{}"),
+    var saveResult: EmptyResult<AssistantError> = Result.Success(Unit),
+) : AssistantRepository {
+    override val status = MutableStateFlow<AssistantStatus>(AssistantStatus.NeedsSetup)
+    override val savedKey = MutableStateFlow<SavedKey?>(null)
+    override val savedKeys = MutableStateFlow<Map<CloudProvider, SavedKey>>(emptyMap())
+
+    var lastSystem: String? = null
+    var lastUser: String? = null
+    val savedCredentials = mutableListOf<CloudCredentials>()
+
+    /** Sets the assistant up as if a key for [provider] had been saved. */
+    fun connect(provider: CloudProvider = CloudProvider.ANTHROPIC, key: String = "sk-ant-test1234") {
+        val saved = SavedKey(provider, key.takeLast(4), provider.defaultModel)
+        status.value = AssistantStatus.Ready(AssistantEngine.CLOUD, provider)
+        savedKey.value = saved
+        savedKeys.value = savedKeys.value + (provider to saved)
+    }
+
+    override fun activate(provider: CloudProvider) {
+        val saved = savedKeys.value[provider] ?: return
+        status.value = AssistantStatus.Ready(AssistantEngine.CLOUD, provider)
+        savedKey.value = saved
+    }
+
+    override suspend fun complete(system: String, user: String): Result<String, AssistantError> {
+        lastSystem = system
+        lastUser = user
+        return answer
+    }
+
+    override suspend fun saveKey(credentials: CloudCredentials): EmptyResult<AssistantError> {
+        savedCredentials += credentials
+        if (saveResult is Result.Success) connect(credentials.provider, credentials.apiKey)
+        return saveResult
+    }
+
+    override fun removeKey() {
+        savedKey.value?.let { savedKeys.value = savedKeys.value - it.provider }
+        status.value = AssistantStatus.NeedsSetup
+        savedKey.value = null
+    }
+}

@@ -1,5 +1,6 @@
 package com.preichert.cinemerick.feature.showtimes.presentation
 
+import com.preichert.cinemerick.core.presentation.MicPermissionStatus
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.FilmImage
 import com.preichert.cinemerick.feature.showtimes.domain.FilmPerson
@@ -50,4 +51,23 @@ sealed interface ShowtimesAction {
     data object OnFilterSummaryDismiss : ShowtimesAction
     data class OnFilterSummaryTargetClick(val target: FilterTarget) : ShowtimesAction
     data object OnFilterSummaryUpdateClick : ShowtimesAction
+
+    // Voice assistant
+    data class OnAssistantClick(val mic: MicPermissionStatus) : ShowtimesAction
+    data class OnVoiceMicResult(val status: MicPermissionStatus) : ShowtimesAction
+    data object OnVoiceListen : ShowtimesAction
+    data object OnVoiceStopListening : ShowtimesAction
+    data object OnVoiceType : ShowtimesAction
+    data class OnVoiceTextChange(val text: String) : ShowtimesAction
+    data object OnVoiceInterpret : ShowtimesAction
+    data object OnVoiceDismiss : ShowtimesAction
+    data class OnVoiceVenueConfirm(val spoken: String, val venue: Venue) : ShowtimesAction
+    data class OnVoiceVenueCandidates(val spoken: String) : ShowtimesAction
+    data class OnVoiceVenueIgnore(val spoken: String) : ShowtimesAction
+    data class OnVoiceVenueRemove(val venue: Venue) : ShowtimesAction
+    data class OnVoiceDayRemove(val date: LocalDate) : ShowtimesAction
+    data object OnVoiceFormatsRemove : ShowtimesAction
+    data class OnVoiceFilmRemove(val title: String) : ShowtimesAction
+    data object OnVoiceSearch : ShowtimesAction
+    data object OnVoiceUndo : ShowtimesAction
 }
