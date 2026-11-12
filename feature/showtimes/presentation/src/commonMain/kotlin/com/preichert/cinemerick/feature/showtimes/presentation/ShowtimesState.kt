@@ -2,6 +2,8 @@ package com.preichert.cinemerick.feature.showtimes.presentation
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import com.preichert.cinemerick.core.domain.assistant.AssistantStatus
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import com.preichert.cinemerick.core.presentation.UiText
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.DetailsSource
@@ -52,8 +54,10 @@ data class ShowtimesState(
     val isFilterSummaryExpanded: Boolean = false,
     // The voice sheet, while it is open.
     val voice: VoiceUi? = null,
-    // The provider that answers the assistant, for the badge in the voice sheet; null until one is set up.
-    val assistantProvider: String? = null,
+    // What answers the assistant, for the badge in the voice sheet and the setup sheet.
+    val assistantStatus: AssistantStatus = AssistantStatus.NeedsSetup,
+    // The AI of the system on this device, for the setup sheet.
+    val systemAi: SystemAiState = SystemAiState(),
 ) {
     val canClear: Boolean get() = !isLoading && (days.isNotEmpty() || filmFilter.isNotEmpty() || hasGenerated || selectedVenues.isNotEmpty())
 }

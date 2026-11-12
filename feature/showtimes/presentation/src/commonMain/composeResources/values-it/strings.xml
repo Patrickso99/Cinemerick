@@ -227,11 +227,19 @@
     <string name="voice_error_answer">Non riesco a leggere la risposta</string>
     <string name="voice_error_answer_body">Riprova, oppure di’ la richiesta in un altro modo.</string>
     <string name="voice_setup_title">Configura l’assistente</string>
-    <string name="voice_setup_body">Per capire le richieste l’assistente ha bisogno di un’AI. Collega una tua chiave API: OpenAI, Anthropic, Gemini, Grok, Mistral od OpenRouter. Il testo di ogni richiesta viene inviato al provider che scegli.</string>
+    <string name="voice_setup_body">Per capire le richieste l’assistente ha bisogno di un’AI. Scegli come farla funzionare; puoi cambiarlo quando vuoi in Impostazioni.</string>
     <string name="voice_setup_key">Chiave API</string>
-    <string name="voice_setup_key_body">Usa il tuo account con uno dei sei provider.</string>
+    <string name="voice_setup_key_body">OpenAI, Anthropic, Gemini, Grok, Mistral od OpenRouter. Il testo della richiesta viene inviato al provider.</string>
     <string name="voice_setup_later">Non ora</string>
     <string name="voice_applied">Filtri impostati dalla voce</string>
     <string name="voice_undo">Annulla</string>
     <string name="voice_typing_title">Scrivi la richiesta</string>
+    <string name="voice_setup_system_download_title">Scarica %1$s</string>
+    <string name="voice_setup_system_download_body">L’AI del telefono, gratuita e sul dispositivo. Google la scarica una volta sola.</string>
+    <string name="voice_setup_system_downloading_title">Scarico %1$s…</string>
+    <string name="voice_setup_system_downloading_body">%1$s finora. Puoi chiudere: continua in background.</string>
+    <string name="voice_setup_system_enable_title">%1$s è spenta</string>
+    <string name="voice_setup_system_enable_body">Attivala nelle impostazioni del sistema per usare l’assistente sul dispositivo.</string>
+    <string name="voice_setup_system_preparing_title">%1$s non è ancora pronta</string>
+    <string name="voice_setup_system_preparing_body">Il sistema la sta preparando. Riprova tra qualche minuto.</string>
 </resources>

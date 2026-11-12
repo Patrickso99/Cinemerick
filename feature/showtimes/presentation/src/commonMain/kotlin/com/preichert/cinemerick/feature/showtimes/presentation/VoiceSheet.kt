@@ -64,6 +64,8 @@ import com.preichert.cinemerick.core.designsystem.LocalAnimationsEnabled
 import com.preichert.cinemerick.core.designsystem.Spacing
 import com.preichert.cinemerick.core.designsystem.rememberSyncedTextFieldState
 import com.preichert.cinemerick.core.domain.assistant.AssistantError
+import com.preichert.cinemerick.core.domain.assistant.SystemAiAvailability
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import com.preichert.cinemerick.feature.showtimes.domain.Chain
 import com.preichert.cinemerick.feature.showtimes.domain.Venue
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.Res
@@ -131,6 +133,14 @@ import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_s
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_key
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_key_body
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_later
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_download_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_download_body
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_downloading_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_downloading_body
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_enable_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_enable_body
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_preparing_title
+import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_system_preparing_body
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_setup_title
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_speak
 import com.preichert.cinemerick.feature.showtimes.presentation.resources.voice_stop
@@ -159,7 +169,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun VoiceSheet(
     voice: VoiceUi,
-    provider: String?,
+    engine: EngineUi?,
+    systemAi: SystemAiState,
     filters: FilterSummaryUi,
     onAction: (ShowtimesAction) -> Unit,
     onAllowMic: () -> Unit,
@@ -168,14 +179,15 @@ internal fun VoiceSheet(
 ) {
     val dismiss = { onAction(ShowtimesAction.OnVoiceDismiss) }
     CinemerickBottomSheet(onDismissRequest = dismiss) {
-        VoiceSheetContent(voice, provider, filters, onAction, onAllowMic, onOpenMicSettings, onOpenAssistantSettings)
+        VoiceSheetContent(voice, engine, systemAi, filters, onAction, onAllowMic, onOpenMicSettings, onOpenAssistantSettings)
     }
 }
 
 @Composable
 private fun VoiceSheetContent(
     voice: VoiceUi,
-    provider: String?,
+    engine: EngineUi?,
+    systemAi: SystemAiState,
     filters: FilterSummaryUi,
     onAction: (ShowtimesAction) -> Unit,
     onAllowMic: () -> Unit,
@@ -189,7 +201,7 @@ private fun VoiceSheetContent(
             .navigationBarsPadding()
             .imePadding()
     ) {
-        SheetHeader(title = stringResource(voice.titleRes()), provider = provider.takeIf { voice !is VoiceUi.Setup }, onClose = close)
+        SheetHeader(title = stringResource(voice.titleRes()), engine = engine.takeIf { voice !is VoiceUi.Setup }, onClose = close)
         Column(
             modifier = Modifier
                 .weight(1f, fill = false)
@@ -198,7 +210,7 @@ private fun VoiceSheetContent(
             verticalArrangement = Arrangement.spacedBy(Spacing.space4),
         ) {
             when (voice) {
-                VoiceUi.Setup -> SetupBody(onOpenAssistantSettings)
+                VoiceUi.Setup -> SetupBody(systemAi, onSystemAiDownload = { onAction(ShowtimesAction.OnSystemAiDownload) }, onOpenAssistantSettings)
                 VoiceUi.MicRationale -> MicRationaleBody()
                 is VoiceUi.MicDenied -> MicDeniedBody(voice.text, onOpenMicSettings) { onAction(ShowtimesAction.OnVoiceTextChange(it)) }
                 is VoiceUi.Listening -> ListeningBody(voice) { onAction(ShowtimesAction.OnVoiceStopListening) }
@@ -212,11 +224,11 @@ private fun VoiceSheetContent(
                 }
                 is VoiceUi.Failed -> {
                     Transcript(voice.text, onAction)
-                    FailureNotice(voice.error, provider)
+                    FailureNotice(voice.error, engine?.name.orEmpty())
                 }
             }
         }
-        SheetActions(voice, provider, onAction, onAllowMic, onOpenAssistantSettings, close)
+        SheetActions(voice, onAction, onAllowMic, onOpenAssistantSettings, close)
     }
 }
 
@@ -233,7 +245,7 @@ private fun VoiceUi.titleRes(): StringResource = when (this) {
 }
 
 @Composable
-private fun SheetHeader(title: String, provider: String?, onClose: () -> Unit) {
+private fun SheetHeader(title: String, engine: EngineUi?, onClose: () -> Unit) {
     val colors = CinemerickTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = Spacing.space4, end = Spacing.space2),
@@ -246,7 +258,7 @@ private fun SheetHeader(title: String, provider: String?, onClose: () -> Unit) {
             color = colors.onSurface,
             modifier = Modifier.weight(1f).semantics { heading() },
         )
-        if (provider != null) EngineBadge(provider)
+        if (engine != null) EngineBadge(engine)
         CinemerickIconButton(
             icon = CinemerickIcons.Close,
             contentDescription = stringResource(Res.string.voice_close),
@@ -257,11 +269,11 @@ private fun SheetHeader(title: String, provider: String?, onClose: () -> Unit) {
     }
 }
 
-/** Where the request goes: "Cloud · Anthropic" makes it visible that the text leaves the phone. */
+/** Where the request goes: "Cloud · Anthropic" makes it visible that the text leaves the phone; "On device" that it does not. */
 @Composable
-private fun EngineBadge(provider: String?) {
+private fun EngineBadge(engine: EngineUi) {
     val colors = CinemerickTheme.colors
-    val label = if (provider != null) stringResource(Res.string.voice_engine_cloud, provider) else stringResource(Res.string.voice_engine_device)
+    val label = if (engine.onDevice) stringResource(Res.string.voice_engine_device) else stringResource(Res.string.voice_engine_cloud, engine.name)
     Row(
         modifier = Modifier
             .clip(CircleShape)
@@ -271,8 +283,8 @@ private fun EngineBadge(provider: String?) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.space1),
     ) {
-        Icon(if (provider != null) CinemerickIcons.Cloud else CinemerickIcons.Lock, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(14.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = if (provider != null) colors.onSurface else colors.onSurfaceVariant, maxLines = 1)
+        Icon(if (engine.onDevice) CinemerickIcons.Lock else CinemerickIcons.Cloud, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(14.dp))
+        Text(label, style = MaterialTheme.typography.labelSmall, color = if (engine.onDevice) colors.onSurfaceVariant else colors.onSurface, maxLines = 1)
     }
 }
 
@@ -385,15 +397,56 @@ private fun MicDeniedBody(text: String, onOpenSettings: () -> Unit, onTextChange
 }
 
 @Composable
-private fun SetupBody(onOpenAssistantSettings: () -> Unit) {
+private fun SetupBody(systemAi: SystemAiState, onSystemAiDownload: () -> Unit, onOpenAssistantSettings: () -> Unit) {
     val colors = CinemerickTheme.colors
     Text(stringResource(Res.string.voice_setup_body), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+    // The AI of the system comes first: it is free and nothing leaves the phone.
+    val name = systemAi.name.orEmpty()
+    when (systemAi.availability) {
+        SystemAiAvailability.DOWNLOADABLE -> SetupChoice(
+            icon = CinemerickIcons.Assistant,
+            title = stringResource(Res.string.voice_setup_system_download_title, name),
+            body = stringResource(Res.string.voice_setup_system_download_body),
+            onClick = onSystemAiDownload,
+        )
+        SystemAiAvailability.DOWNLOADING -> Notice(
+            icon = CinemerickIcons.Assistant,
+            title = stringResource(Res.string.voice_setup_system_downloading_title, name),
+            body = stringResource(Res.string.voice_setup_system_downloading_body, (systemAi.downloadedBytes ?: 0L).toMegabytesText()),
+            tone = NoticeTone.INFO,
+        )
+        SystemAiAvailability.NEEDS_ENABLING -> Notice(
+            icon = CinemerickIcons.Alert,
+            title = stringResource(Res.string.voice_setup_system_enable_title, name),
+            body = stringResource(Res.string.voice_setup_system_enable_body),
+            tone = NoticeTone.WARNING,
+        )
+        SystemAiAvailability.NOT_READY -> Notice(
+            icon = CinemerickIcons.Question,
+            title = stringResource(Res.string.voice_setup_system_preparing_title, name),
+            body = stringResource(Res.string.voice_setup_system_preparing_body),
+            tone = NoticeTone.INFO,
+        )
+        SystemAiAvailability.UNSUPPORTED, SystemAiAvailability.AVAILABLE -> Unit
+    }
+    SetupChoice(
+        icon = CinemerickIcons.Key,
+        title = stringResource(Res.string.voice_setup_key),
+        body = stringResource(Res.string.voice_setup_key_body),
+        onClick = onOpenAssistantSettings,
+    )
+}
+
+/** One way to get the assistant going: an icon, what it is, and a chevron. The whole card is the touch target. */
+@Composable
+private fun SetupChoice(icon: Painter, title: String, body: String, onClick: () -> Unit) {
+    val colors = CinemerickTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.large)
             .background(colors.surface)
-            .clickable(role = Role.Button, onClick = onOpenAssistantSettings)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(Spacing.space4),
         horizontalArrangement = Arrangement.spacedBy(Spacing.space3),
         verticalAlignment = Alignment.CenterVertically,
@@ -402,15 +455,22 @@ private fun SetupBody(onOpenAssistantSettings: () -> Unit) {
             modifier = Modifier.size(40.dp).clip(MaterialTheme.shapes.small).background(colors.primaryContainer),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(CinemerickIcons.Key, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(Res.string.voice_setup_key), style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
-            Text(stringResource(Res.string.voice_setup_key_body), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.titleSmall, color = colors.onSurface)
+            Text(body, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
         }
         Icon(CinemerickIcons.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant)
     }
 }
+
+/** "Mar 15 dic": the weekday, the day and the month, so a date months away is not read as one of this month. */
+@Composable
+private fun LocalDate.reviewLabel(): String =
+    "${stringResource(dayOfWeek.shortNameResource())} $day ${month.displayName().take(3).lowercase()}"
+
+private fun Long.toMegabytesText(): String = "${this / 1_000_000L} MB"
 
 // ---------- Text ----------
 
@@ -545,7 +605,7 @@ private fun ReviewBody(voice: VoiceUi.Review, filters: FilterSummaryUi, onAction
             DayRows(days) { onAction(ShowtimesAction.OnVoiceDayRemove(it)) }
         }
     } else {
-        val current = filters.days.map { "${stringResource(it.date.dayOfWeek.shortNameResource())} ${it.date.day}" }
+        val current = filters.days.map { it.date.reviewLabel() }
             .joinToString(", ").ifEmpty { stringResource(Res.string.voice_no_days) }
         Unchanged(Res.string.voice_group_days, stringResource(Res.string.voice_unchanged_days, current))
     }
@@ -649,7 +709,7 @@ private fun DayRows(days: List<DayUi>, onRemove: (LocalDate) -> Unit) {
             .border(1.dp, colors.outlineVariant, MaterialTheme.shapes.medium),
     ) {
         days.forEach { day ->
-            val label = "${stringResource(day.date.dayOfWeek.shortNameResource())} ${day.date.day}"
+            val label = day.date.reviewLabel()
             val window = listOf(day.minTime, day.maxTime).let { (from, to) ->
                 if (from.isBlank() && to.isBlank()) anyTime else "${from.ifBlank { "00:00" }}–${to.ifBlank { "24:00" }}"
             }
@@ -780,8 +840,7 @@ private fun Notice(
 }
 
 @Composable
-private fun FailureNotice(error: AssistantError, provider: String?) {
-    val name = provider.orEmpty()
+private fun FailureNotice(error: AssistantError, name: String) {
     when (error) {
         AssistantError.INVALID_KEY -> Notice(CinemerickIcons.Key, stringResource(Res.string.voice_error_key, name), stringResource(Res.string.voice_error_key_body), NoticeTone.ERROR)
         AssistantError.OFFLINE -> Notice(CinemerickIcons.Cloud, stringResource(Res.string.voice_error_offline), stringResource(Res.string.voice_error_offline_body), NoticeTone.WARNING)
@@ -796,7 +855,6 @@ private fun FailureNotice(error: AssistantError, provider: String?) {
 @Composable
 private fun SheetActions(
     voice: VoiceUi,
-    provider: String?,
     onAction: (ShowtimesAction) -> Unit,
     onAllowMic: () -> Unit,
     onOpenAssistantSettings: () -> Unit,
@@ -886,8 +944,8 @@ private val previewReview = VoiceReviewUi(
 )
 
 @Composable
-private fun PreviewSheet(voice: VoiceUi, provider: String? = "Anthropic") {
-    VoiceSheetContent(voice, provider, previewFilters, {}, {}, {}, {})
+private fun PreviewSheet(voice: VoiceUi, engine: EngineUi? = EngineUi("Anthropic", onDevice = false), systemAi: SystemAiState = SystemAiState()) {
+    VoiceSheetContent(voice, engine, systemAi, previewFilters, {}, {}, {}, {})
 }
 
 @Preview(name = "Listening, waiting")
@@ -961,4 +1019,28 @@ private fun VoiceOfflineDarkPreview() = DarkThemePreview { PreviewSheet(VoiceUi.
 
 @Preview(name = "Setup")
 @Composable
-private fun VoiceSetupPreview() = LightThemePreview { PreviewSheet(VoiceUi.Setup, provider = null) }
+private fun VoiceSetupPreview() = LightThemePreview { PreviewSheet(VoiceUi.Setup, engine = null) }
+
+@Preview(name = "Setup, Gemini Nano to download")
+@Composable
+private fun VoiceSetupDownloadablePreview() = LightThemePreview {
+    PreviewSheet(VoiceUi.Setup, engine = null, systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADABLE))
+}
+
+@Preview(name = "Setup, downloading, dark")
+@Composable
+private fun VoiceSetupDownloadingPreview() = DarkThemePreview {
+    PreviewSheet(VoiceUi.Setup, engine = null, systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADING, downloadedBytes = 412_000_000L))
+}
+
+@Preview(name = "Setup, Apple Intelligence off")
+@Composable
+private fun VoiceSetupNeedsEnablingPreview() = LightThemePreview {
+    PreviewSheet(VoiceUi.Setup, engine = null, systemAi = SystemAiState("Apple Intelligence", SystemAiAvailability.NEEDS_ENABLING))
+}
+
+@Preview(name = "Review, on device")
+@Composable
+private fun VoiceReviewOnDevicePreview() = LightThemePreview {
+    PreviewSheet(VoiceUi.Review(PREVIEW_REQUEST, previewReview), engine = EngineUi("Gemini Nano", onDevice = true))
+}

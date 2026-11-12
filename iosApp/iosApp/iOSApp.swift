@@ -4,6 +4,7 @@ import ComposeApp
 @main
 struct iOSApp: App {
     init() {
+        AppleIntelligence.register()
         InitKoinKt.doInitKoin(config: nil)
     }
 

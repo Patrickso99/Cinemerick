@@ -341,7 +341,8 @@ fun ShowtimesScreen(
             state.voice?.let { voice ->
                 VoiceSheet(
                     voice = voice,
-                    provider = state.assistantProvider,
+                    engine = state.engineUi(),
+                    systemAi = state.systemAi,
                     filters = summary,
                     onAction = onAction,
                     onAllowMic = onAllowMic,

@@ -24,6 +24,7 @@ androidMinSdk = "26"
 androidTargetSdk = "37"
 assertk = "0.28.1"
 turbine = "1.2.1"
+mlkit-genai-prompt = "1.0.0-beta4"
 
 [libraries]
 # build-logic classpath
@@ -67,6 +68,9 @@ ktor-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
 # settings (key-value persistence)
 settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
+
+# on-device AI of the system
+mlkit-genai-prompt = { module = "com.google.mlkit:genai-prompt", version.ref = "mlkit-genai-prompt" }
 
 # logging
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }

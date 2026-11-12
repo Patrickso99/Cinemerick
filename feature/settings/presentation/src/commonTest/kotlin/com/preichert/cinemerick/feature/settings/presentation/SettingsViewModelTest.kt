@@ -12,6 +12,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import com.preichert.cinemerick.core.testing.FakeAssistantRepository
+import com.preichert.cinemerick.core.domain.assistant.AssistantEngine
+import com.preichert.cinemerick.core.domain.assistant.SystemAiAvailability
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import kotlin.test.Test
 import app.cash.turbine.test
 import assertk.assertThat
@@ -147,7 +150,8 @@ class SettingsViewModelTest {
             assertThat(awaitItem().isRemoveKeyDialogOpen).isEqualTo(true)
 
             viewModel.onAction(SettingsAction.OnRemoveKeyConfirm)
-            val removed = awaitItem()
+            // The assistant updates its engine and its key one after the other: the last state is the one that counts.
+            val removed = expectMostRecentItem()
             assertThat(removed.assistantKey).isEqualTo(null)
             assertThat(removed.isRemoveKeyDialogOpen).isEqualTo(false)
         }
@@ -168,5 +172,61 @@ class SettingsViewModelTest {
             assertThat(kept.isRemoveKeyDialogOpen).isEqualTo(false)
             assertThat(kept.assistantKey?.lastFour).isEqualTo("1234")
         }
+    }
+
+    @Test
+    fun theAssistantSectionShowsTheSystemAiAndWhichEngineAnswers() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository().apply {
+            connect()
+            systemAi.value = SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADABLE)
+        }
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        viewModel.state.test {
+            val state = awaitItem()
+            assertThat(state.systemAi).isEqualTo(SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADABLE))
+            assertThat(state.activeEngine).isEqualTo(AssistantEngine.CLOUD)
+            assertThat(state.selectedEngine).isEqualTo(AssistantEngine.CLOUD)
+        }
+    }
+
+    @Test
+    fun aChosenEngineThatIsNotReadyStaysSelectedInTheRadio() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository().apply {
+            systemAi.value = SystemAiState("Apple Intelligence", SystemAiAvailability.NEEDS_ENABLING)
+            chosenEngine.value = AssistantEngine.SYSTEM
+        }
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        viewModel.state.test {
+            val state = awaitItem()
+            assertThat(state.activeEngine).isNull()
+            assertThat(state.selectedEngine).isEqualTo(AssistantEngine.SYSTEM)
+        }
+    }
+
+    @Test
+    fun choosingAnEngineAndDownloadingAreForwardedToTheAssistant() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository().apply { connect() }
+        val viewModel = SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        viewModel.onAction(SettingsAction.OnEngineSelect(AssistantEngine.SYSTEM))
+        viewModel.onAction(SettingsAction.OnSystemAiDownload)
+
+        assertThat(assistant.chosenEngine.value).isEqualTo(AssistantEngine.SYSTEM)
+        assertThat(assistant.downloads).isEqualTo(1)
+    }
+
+    @Test
+    fun theSystemAiIsAskedAgainEveryTimeSettingsOpens() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
+        val assistant = FakeAssistantRepository()
+
+        SettingsViewModel(ThemeController(FakeThemePreferences()), AnimationController(FakeAnimationPreferences()), timeWindow(), languageController(), assistant)
+
+        assertThat(assistant.refreshes).isEqualTo(1)
     }
 }

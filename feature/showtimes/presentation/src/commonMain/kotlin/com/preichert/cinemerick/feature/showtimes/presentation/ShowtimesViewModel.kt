@@ -85,9 +85,14 @@ class ShowtimesViewModel(
         filterPersistence.track(viewModelScope, _state)
         viewModelScope.launch {
             assistant.status.collect { status ->
-                _state.update { it.copy(assistantProvider = (status as? AssistantStatus.Ready)?.provider?.displayName) }
+                _state.update { it.copy(assistantStatus = status) }
+                // The setup sheet was waiting for an engine (a download that ended, Apple Intelligence just turned on).
+                if (status is AssistantStatus.Ready) voice.continueAfterSetup()
             }
         }
+        viewModelScope.launch { assistant.systemAi.collect { ai -> _state.update { it.copy(systemAi = ai) } } }
+        // The system AI may have been turned on or off while the app was away: asked again at every start.
+        viewModelScope.launch { assistant.refreshSystemAi() }
     }
 
     fun onAction(action: ShowtimesAction) {
@@ -138,7 +143,11 @@ class ShowtimesViewModel(
                 _state.update { it.copy(isFilterSummaryExpanded = false) }
                 results.generate(silent = false)
             }
-            is ShowtimesAction.OnAssistantClick -> voice.open(action.mic)
+            is ShowtimesAction.OnAssistantClick -> {
+                voice.open(action.mic)
+                viewModelScope.launch { assistant.refreshSystemAi() }
+            }
+            ShowtimesAction.OnSystemAiDownload -> assistant.downloadSystemAi()
             is ShowtimesAction.OnVoiceMicResult -> voice.onMicResult(action.status)
             ShowtimesAction.OnVoiceListen -> voice.listen()
             ShowtimesAction.OnVoiceStopListening -> voice.stopListening()

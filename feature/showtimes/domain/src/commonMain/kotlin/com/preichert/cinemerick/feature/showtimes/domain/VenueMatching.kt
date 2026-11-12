@@ -37,12 +37,15 @@ private val fillerWords = setOf("cinema", "cinemas", "multisala", "di", "a", "al
  */
 fun matchVenue(mention: VenueMention, catalog: Map<Chain, List<Venue>>, preferred: Set<Venue> = emptySet()): VenueMatch {
     val spoken = normalize(mention.spoken)
-    val chain = mention.chain ?: chainIn(spoken)
+    // The user's words win over the model's reading of them: a small model attaches the wrong chain and place to a name.
+    val spokenChain = chainIn(spoken)
+    val modelContradicts = spokenChain != null && mention.chain != null && spokenChain != mention.chain
+    val chain = spokenChain ?: mention.chain
     val chainSaidExactly = chain != null && chainAliases.getValue(chain).any { containsWords(spoken, it) }
     val pool = if (chain != null) catalog[chain].orEmpty() else catalog.values.flatten()
     if (pool.isEmpty()) return VenueMatch.NotFound
 
-    val placeWords = words(mention.place ?: placeIn(spoken, chain))
+    val placeWords = words(mention.place.takeUnless { modelContradicts } ?: placeIn(spoken, chain))
     if (placeWords.isEmpty()) {
         if (chain == null) return VenueMatch.NotFound
         val best = pool.firstOrNull { it in preferred } ?: pool.first()
@@ -62,6 +65,35 @@ fun matchVenue(mention: VenueMention, catalog: Map<Chain, List<Venue>>, preferre
         score >= NEAR -> VenueMatch.Close(best, scored.map { it.first }.take(MAX_CANDIDATES))
         else -> VenueMatch.NotFound
     }
+}
+
+/**
+ * A small model sometimes puts several cinemas in one mention ("the space silea uci marcon notorius fiume"). A new
+ * cinema starts at each chain name (or a near spelling of it); a mention with one chain at most is left as it is. The
+ * pieces keep the words as said and have no chain or place of their own: those are read from the words when matching.
+ */
+fun splitVenueMention(mention: VenueMention): List<VenueMention> {
+    val words = mention.spoken.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    val chains = words.map { chainOfWord(normalize(it)) }
+    val starts = words.indices.filter { index ->
+        // A chain name of two words ("uci cinemas") starts once.
+        chains[index] != null && !(index > 0 && chains[index - 1] == chains[index])
+    }
+    if (starts.size < 2) return listOf(mention)
+    return starts.mapIndexed { i, start ->
+        // "the" belongs to the name that follows ("the space").
+        val from = if (start > 0 && normalize(words[start - 1]) == "the" && i > 0) start - 1 else start
+        val to = starts.getOrNull(i + 1)?.let { next -> if (next > 0 && normalize(words[next - 1]) == "the") next - 1 else next } ?: words.size
+        VenueMention(spoken = words.subList(if (i == 0) 0 else from, to).joinToString(" "))
+    }
+}
+
+// The chain a single word names, exactly or nearly; words that are not part of a name never do.
+private fun chainOfWord(key: String): Chain? {
+    if (key in fillerWords) return null
+    return chainAliases.entries.firstOrNull { (_, aliases) ->
+        aliases.flatMap { it.split(' ') }.filter { it !in fillerWords }.any { alias -> key == alias || isNear(key, alias) }
+    }?.key
 }
 
 // The share of place words found in the venue's name or region: exact or a prefix counts fully, a near spelling less.

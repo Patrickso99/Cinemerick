@@ -9,12 +9,17 @@ import com.preichert.cinemerick.core.presentation.ThemeController
 import com.preichert.cinemerick.core.presentation.TimeWindow
 import com.preichert.cinemerick.core.presentation.TimeWindowController
 import com.preichert.cinemerick.core.domain.ThemeMode
+import com.preichert.cinemerick.core.domain.assistant.AssistantEngine
 import com.preichert.cinemerick.core.domain.assistant.AssistantRepository
+import com.preichert.cinemerick.core.domain.assistant.AssistantStatus
+import com.preichert.cinemerick.core.domain.assistant.SavedKey
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val themeController: ThemeController,
@@ -26,12 +31,21 @@ class SettingsViewModel(
 
     private val isRemoveKeyDialogOpen = MutableStateFlow(false)
 
-    val state: StateFlow<SettingsState> = combine(
-        combine(themeController.mode, animationController.isEnabled, timeWindowController.window, languageController.language, ::toState),
-        assistant.savedKey,
-        isRemoveKeyDialogOpen,
-    ) { state, key, dialogOpen ->
-        state.copy(assistantKey = key, isRemoveKeyDialogOpen = dialogOpen && key != null)
+    private val settings = combine(
+        themeController.mode,
+        animationController.isEnabled,
+        timeWindowController.window,
+        languageController.language,
+        ::toState
+    )
+
+    // What the assistant section shows, from the four things that decide it.
+    private val assistantParts = combine(assistant.savedKey, assistant.systemAi, assistant.status, assistant.chosenEngine) { key, systemAi, status, chosen ->
+        AssistantParts(key, systemAi, (status as? AssistantStatus.Ready)?.engine, chosen)
+    }
+
+    val state: StateFlow<SettingsState> = combine(settings, assistantParts, isRemoveKeyDialogOpen) { state, parts, dialogOpen ->
+        state.withAssistant(parts).copy(isRemoveKeyDialogOpen = dialogOpen && parts.key != null)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
@@ -40,8 +54,25 @@ class SettingsViewModel(
             animationController.isEnabled.value,
             timeWindowController.window.value,
             languageController.language.value,
-        ).copy(assistantKey = assistant.savedKey.value)
+        ).withAssistant(
+            AssistantParts(
+                assistant.savedKey.value,
+                assistant.systemAi.value,
+                (assistant.status.value as? AssistantStatus.Ready)?.engine,
+                assistant.chosenEngine.value,
+            )
+        )
     )
+
+    init {
+        // The system AI may have been turned on or off in the system settings since the last time.
+        viewModelScope.launch { assistant.refreshSystemAi() }
+    }
+
+    private class AssistantParts(val key: SavedKey?, val systemAi: SystemAiState, val active: AssistantEngine?, val chosen: AssistantEngine?)
+
+    private fun SettingsState.withAssistant(parts: AssistantParts) =
+        copy(assistantKey = parts.key, systemAi = parts.systemAi, activeEngine = parts.active, chosenEngine = parts.chosen)
 
     private fun toState(themeMode: ThemeMode, animationsEnabled: Boolean, window: TimeWindow, language: AppLanguage) = SettingsState(
         themeMode = themeMode,
@@ -71,6 +102,8 @@ class SettingsViewModel(
             // The dialog blocks invalid windows; the controller rejects them as a safety net.
             is SettingsAction.OnDefaultMinTimeChanged -> timeWindowController.setMin(action.minutes)
             is SettingsAction.OnDefaultMaxTimeChanged -> timeWindowController.setMax(action.minutes)
+            is SettingsAction.OnEngineSelect -> assistant.selectEngine(action.engine)
+            SettingsAction.OnSystemAiDownload -> assistant.downloadSystemAi()
             SettingsAction.OnRemoveKeyClick -> isRemoveKeyDialogOpen.value = true
             SettingsAction.OnRemoveKeyDismiss -> isRemoveKeyDialogOpen.value = false
             SettingsAction.OnRemoveKeyConfirm -> {

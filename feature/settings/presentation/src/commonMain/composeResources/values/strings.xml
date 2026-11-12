@@ -22,7 +22,6 @@
     <string name="language_english">English</string>
     <string name="language_italiano">Italiano</string>
     <string name="assistant_title">Voice assistant</string>
-    <string name="assistant_add_key">Add an API key</string>
     <string name="assistant_add_key_description">OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter</string>
     <string name="assistant_cloud_title">Cloud · %1$s</string>
     <string name="assistant_key_summary">Key …%1$s · %2$s</string>
@@ -57,4 +56,13 @@
     <string name="key_use_saved">Use this key</string>
     <string name="key_in_use">In use</string>
     <string name="key_replace">Or paste a new key</string>
+    <string name="assistant_cloud_row_title">Cloud with an API key</string>
+    <string name="assistant_system_available">On the device · free · nothing is sent out</string>
+    <string name="assistant_system_downloadable">On the device · download once</string>
+    <string name="assistant_system_downloading">Downloading · %1$s</string>
+    <string name="assistant_system_needs_enabling">Turn it on in the system settings</string>
+    <string name="assistant_system_not_ready">The system is preparing it</string>
+    <string name="assistant_system_unsupported">Not available on this device</string>
+    <string name="assistant_system_download">Download</string>
+    <string name="assistant_privacy_device">On the device: the request never leaves the phone.</string>
 </resources>

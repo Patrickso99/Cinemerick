@@ -2,6 +2,7 @@ package com.preichert.cinemerick.feature.settings.presentation
 
 import com.preichert.cinemerick.core.domain.AppLanguage
 import com.preichert.cinemerick.core.domain.ThemeMode
+import com.preichert.cinemerick.core.domain.assistant.AssistantEngine
 
 sealed interface SettingsAction {
     data class OnAutoToggled(val enabled: Boolean, val systemDark: Boolean) : SettingsAction
@@ -10,6 +11,8 @@ sealed interface SettingsAction {
     data class OnDefaultMinTimeChanged(val minutes: Int) : SettingsAction
     data class OnDefaultMaxTimeChanged(val minutes: Int?) : SettingsAction
     data class OnLanguageSelected(val language: AppLanguage) : SettingsAction
+    data class OnEngineSelect(val engine: AssistantEngine) : SettingsAction
+    data object OnSystemAiDownload : SettingsAction
     data object OnRemoveKeyClick : SettingsAction
     data object OnRemoveKeyConfirm : SettingsAction
     data object OnRemoveKeyDismiss : SettingsAction

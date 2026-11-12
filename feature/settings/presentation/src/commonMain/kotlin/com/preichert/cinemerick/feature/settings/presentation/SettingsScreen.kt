@@ -88,9 +88,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.size
-import com.preichert.cinemerick.core.domain.assistant.SavedKey
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_title
-import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_add_key
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_add_key_description
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_cloud_title
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_key_summary
@@ -104,6 +102,24 @@ import com.preichert.cinemerick.feature.settings.presentation.resources.assistan
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_body
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_keep
 import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_remove_confirm
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import com.preichert.cinemerick.core.domain.assistant.AssistantEngine
+import com.preichert.cinemerick.core.domain.assistant.SystemAiAvailability
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_cloud_row_title
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_available
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_downloadable
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_downloading
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_needs_enabling
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_not_ready
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_unsupported
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_system_download
+import com.preichert.cinemerick.feature.settings.presentation.resources.assistant_privacy_device
+import com.preichert.cinemerick.core.domain.assistant.CloudProvider
+import com.preichert.cinemerick.core.domain.assistant.SavedKey
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -189,11 +205,7 @@ fun SettingsScreen(
                     )
                 }
                 SettingsGroup(label = stringResource(Res.string.assistant_title)) {
-                    AssistantSection(
-                        key = state.assistantKey,
-                        onKeyClick = onAssistantKeyClick,
-                        onRemoveClick = { onAction(SettingsAction.OnRemoveKeyClick) },
-                    )
+                    AssistantSection(state = state, onAction = onAction, onKeyClick = onAssistantKeyClick)
                 }
                 SettingsGroup(label = stringResource(Res.string.tmdb_credit_title)) {
                     TmdbCreditSection()
@@ -463,24 +475,66 @@ private fun TimeWindowSection(
 }
 
 /**
- * The voice assistant: the provider and its masked key with Change and Remove, or a row to add a key. The privacy note
- * says where requests go, so the badge in the voice sheet is never the first time the user reads it.
+ * The voice assistant: which engine answers. The AI of the system comes first (free, and nothing leaves the phone), then
+ * the cloud with the user's own key (provider and masked key, Change and Remove). A radio marks the engine in use. The
+ * note at the end says where requests go, so the badge in the voice sheet is never the first time the user reads it.
  */
 @Composable
-private fun AssistantSection(key: SavedKey?, onKeyClick: () -> Unit, onRemoveClick: () -> Unit) {
+private fun AssistantSection(
+    state: SettingsState,
+    onAction: (SettingsAction) -> Unit,
+    onKeyClick: () -> Unit,
+) {
     val colors = CinemerickTheme.colors
-    if (key == null) {
-        CinemerickSettingsRow(
-            title = stringResource(Res.string.assistant_add_key),
-            description = stringResource(Res.string.assistant_add_key_description),
-            onClick = onKeyClick,
-            trailing = { Icon(CinemerickIcons.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant) },
+    val key = state.assistantKey
+    val systemAi = state.systemAi
+    val selected = state.selectedEngine
+
+    val systemName = systemAi.name
+    if (systemName != null) {
+        val ready = systemAi.availability == SystemAiAvailability.AVAILABLE
+        val downloadable = systemAi.availability == SystemAiAvailability.DOWNLOADABLE
+        EngineRow(
+            title = systemName,
+            description = when (systemAi.availability) {
+                SystemAiAvailability.AVAILABLE -> stringResource(Res.string.assistant_system_available)
+                SystemAiAvailability.DOWNLOADABLE -> stringResource(Res.string.assistant_system_downloadable)
+                SystemAiAvailability.DOWNLOADING ->
+                    stringResource(Res.string.assistant_system_downloading, "${(systemAi.downloadedBytes ?: 0L) / 1_000_000L} MB")
+                SystemAiAvailability.NEEDS_ENABLING -> stringResource(Res.string.assistant_system_needs_enabling)
+                SystemAiAvailability.NOT_READY -> stringResource(Res.string.assistant_system_not_ready)
+                SystemAiAvailability.UNSUPPORTED -> stringResource(Res.string.assistant_system_unsupported)
+            },
+            selected = selected == AssistantEngine.SYSTEM,
+            enabled = ready || downloadable,
+            onClick = {
+                if (downloadable) onAction(SettingsAction.OnSystemAiDownload) else onAction(SettingsAction.OnEngineSelect(AssistantEngine.SYSTEM))
+            },
+            trailing = if (downloadable) {
+                {
+                    TextButton(onClick = { onAction(SettingsAction.OnSystemAiDownload) }) {
+                        Text(stringResource(Res.string.assistant_system_download), color = colors.primary, style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            } else {
+                null
+            },
         )
-    } else {
-        CinemerickSettingsRow(
-            title = stringResource(Res.string.assistant_cloud_title, key.provider.displayName),
-            description = stringResource(Res.string.assistant_key_summary, key.lastFour, key.model),
-            trailing = {
+    }
+
+    EngineRow(
+        title = if (key != null) stringResource(Res.string.assistant_cloud_title, key.provider.displayName) else stringResource(Res.string.assistant_cloud_row_title),
+        description = if (key != null) stringResource(Res.string.assistant_key_summary, key.lastFour, key.model) else stringResource(Res.string.assistant_add_key_description),
+        selected = selected == AssistantEngine.CLOUD,
+        enabled = true,
+        // With a key the row switches to the cloud; without one there is nothing to switch to yet, so it asks for it.
+        onClick = if (key != null) {
+            { onAction(SettingsAction.OnEngineSelect(AssistantEngine.CLOUD)) }
+        } else {
+            onKeyClick
+        },
+        trailing = if (key != null) {
+            {
                 Text(
                     text = stringResource(Res.string.assistant_key_verified),
                     style = MaterialTheme.typography.labelMedium,
@@ -490,33 +544,82 @@ private fun AssistantSection(key: SavedKey?, onKeyClick: () -> Unit, onRemoveCli
                         .background(colors.primaryContainer)
                         .padding(horizontal = Spacing.space2, vertical = Spacing.space1),
                 )
-            },
-        )
+            }
+        } else {
+            { Icon(CinemerickIcons.ChevronRight, contentDescription = null, tint = colors.onSurfaceVariant) }
+        },
+    )
+    if (key != null) {
         Row(
-            modifier = Modifier.padding(horizontal = Spacing.space2),
+            modifier = Modifier.padding(start = 56.dp, end = Spacing.space2),
             horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
         ) {
             TextButton(onClick = onKeyClick) {
                 Text(stringResource(Res.string.assistant_change_key), color = colors.primary, style = MaterialTheme.typography.labelLarge)
             }
-            TextButton(onClick = onRemoveClick) {
+            TextButton(onClick = { onAction(SettingsAction.OnRemoveKeyClick) }) {
                 Text(stringResource(Res.string.assistant_remove_key), color = colors.errorText, style = MaterialTheme.typography.labelLarge)
             }
         }
     }
+
     Row(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(Spacing.space2),
     ) {
-        Icon(if (key != null) CinemerickIcons.Cloud else CinemerickIcons.Lock, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+        val onDevice = state.activeEngine == AssistantEngine.SYSTEM
+        val cloud = state.activeEngine == AssistantEngine.CLOUD && key != null
+        Icon(if (cloud) CinemerickIcons.Cloud else CinemerickIcons.Lock, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.space1)) {
             Text(
-                text = if (key != null) stringResource(Res.string.assistant_privacy_cloud, key.provider.displayName) else stringResource(Res.string.assistant_privacy_none),
+                text = when {
+                    onDevice -> stringResource(Res.string.assistant_privacy_device)
+                    cloud -> stringResource(Res.string.assistant_privacy_cloud, key.provider.displayName)
+                    else -> stringResource(Res.string.assistant_privacy_none)
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
             )
             Text(stringResource(Res.string.assistant_language_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
+    }
+}
+
+/**
+ * One engine to choose from: a radio, its name and state, and what goes at the end (a badge, a button, a chevron). The
+ * whole row is the touch target and a radio button for the screen reader; a row that cannot be chosen is dimmed.
+ */
+@Composable
+private fun EngineRow(
+    title: String,
+    description: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    trailing: (@Composable () -> Unit)?,
+) {
+    val colors = CinemerickTheme.colors
+    val textAlpha = if (enabled) 1f else 0.5f
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 64.dp)
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.space3),
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            enabled = enabled,
+            colors = RadioButtonDefaults.colors(selectedColor = colors.primary, unselectedColor = colors.onSurfaceVariant),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface.copy(alpha = textAlpha))
+            Text(description, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant.copy(alpha = textAlpha))
+        }
+        trailing?.invoke()
     }
 }
 
@@ -583,7 +686,7 @@ private fun AboutRow() {
     )
 }
 
-@Preview
+@Preview(heightDp = 2200)
 @Composable
 private fun SettingsScreenLightPreview() {
     LightThemePreview {
@@ -596,7 +699,7 @@ private fun SettingsScreenLightPreview() {
     }
 }
 
-@Preview
+@Preview(heightDp = 2200)
 @Composable
 private fun SettingsScreenDarkPreview() {
     DarkThemePreview {
@@ -606,5 +709,83 @@ private fun SettingsScreenDarkPreview() {
             onAction = {},
             onNavigateBack = {},
         )
+    }
+}
+
+private val previewKey = SavedKey(CloudProvider.GEMINI, "pHik", "gemini-2.5-flash")
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsSystemAiReadyPreview() {
+    LightThemePreview {
+        SettingsScreen(
+            state = SettingsState(
+                systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.AVAILABLE),
+                activeEngine = AssistantEngine.SYSTEM,
+                chosenEngine = AssistantEngine.SYSTEM,
+            ),
+            systemDark = false, onAction = {}, onNavigateBack = {},
+        )
+    }
+}
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsSystemAiDownloadablePreview() {
+    LightThemePreview {
+        SettingsScreen(
+            state = SettingsState(systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADABLE)),
+            systemDark = false, onAction = {}, onNavigateBack = {},
+        )
+    }
+}
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsSystemAiDownloadingDarkPreview() {
+    DarkThemePreview {
+        SettingsScreen(
+            state = SettingsState(
+                systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.DOWNLOADING, downloadedBytes = 412_000_000L),
+                assistantKey = previewKey, activeEngine = AssistantEngine.CLOUD, chosenEngine = AssistantEngine.CLOUD,
+            ),
+            systemDark = true, onAction = {}, onNavigateBack = {},
+        )
+    }
+}
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsSystemAiOffPreview() {
+    LightThemePreview {
+        SettingsScreen(
+            state = SettingsState(
+                systemAi = SystemAiState("Apple Intelligence", SystemAiAvailability.NEEDS_ENABLING),
+                chosenEngine = AssistantEngine.SYSTEM,
+            ),
+            systemDark = false, onAction = {}, onNavigateBack = {},
+        )
+    }
+}
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsSystemAiUnsupportedWithKeyPreview() {
+    LightThemePreview {
+        SettingsScreen(
+            state = SettingsState(
+                systemAi = SystemAiState("Gemini Nano", SystemAiAvailability.UNSUPPORTED),
+                assistantKey = previewKey, activeEngine = AssistantEngine.CLOUD, chosenEngine = AssistantEngine.CLOUD,
+            ),
+            systemDark = false, onAction = {}, onNavigateBack = {},
+        )
+    }
+}
+
+@Preview(heightDp = 2200)
+@Composable
+private fun SettingsDesktopNoSystemAiPreview() {
+    DarkThemePreview {
+        SettingsScreen(state = SettingsState(), systemDark = true, onAction = {}, onNavigateBack = {})
     }
 }

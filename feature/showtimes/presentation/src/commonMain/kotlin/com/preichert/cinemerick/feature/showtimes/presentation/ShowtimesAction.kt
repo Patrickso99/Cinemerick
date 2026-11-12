@@ -70,4 +70,5 @@ sealed interface ShowtimesAction {
     data class OnVoiceFilmRemove(val title: String) : ShowtimesAction
     data object OnVoiceSearch : ShowtimesAction
     data object OnVoiceUndo : ShowtimesAction
+    data object OnSystemAiDownload : ShowtimesAction
 }

@@ -13,6 +13,8 @@ import com.preichert.cinemerick.core.domain.DataError
 import com.preichert.cinemerick.core.domain.Result
 import com.preichert.cinemerick.core.domain.assistant.AssistantError
 import com.preichert.cinemerick.core.domain.assistant.SpeechError
+import com.preichert.cinemerick.core.domain.assistant.SystemAiAvailability
+import com.preichert.cinemerick.core.domain.assistant.SystemAiState
 import com.preichert.cinemerick.core.domain.assistant.SpeechEvent
 import com.preichert.cinemerick.core.presentation.LanguageController
 import com.preichert.cinemerick.core.presentation.MicPermissionStatus
@@ -393,12 +395,89 @@ class VoiceAssistantTest {
     }
 
     @Test
-    fun providerOfTheAssistantIsShownInTheState() = runTest {
+    fun theSheetNamesTheEngineThatAnswers() = runTest {
         val viewModel = viewModel()
-        assertThat(viewModel.state.value.assistantProvider).isEqualTo("Anthropic")
+        assertThat(viewModel.state.value.engineUi()).isEqualTo(EngineUi("Anthropic", onDevice = false))
+
+        assistant.useSystemAi("Gemini Nano")
+        assertThat(viewModel.state.value.engineUi()).isEqualTo(EngineUi("Gemini Nano", onDevice = true))
 
         assistant.removeKey()
-        assertThat(viewModel.state.value.assistantProvider).isNull()
+        assertThat(viewModel.state.value.engineUi()).isNull()
+    }
+
+    @Test
+    fun theSystemAiOfTheDeviceIsPassedToTheScreen() = runTest {
+        val viewModel = viewModel()
+
+        assistant.systemAi.value = SystemAiState("Apple Intelligence", SystemAiAvailability.NEEDS_ENABLING)
+
+        assertThat(viewModel.state.value.systemAi).isEqualTo(SystemAiState("Apple Intelligence", SystemAiAvailability.NEEDS_ENABLING))
+    }
+
+    @Test
+    fun theSystemAiIsAskedAtStartAndAgainEveryTimeTheAssistantIsOpened() = runTest {
+        val viewModel = viewModel()
+        assertThat(assistant.refreshes).isEqualTo(1)
+
+        viewModel.onAction(ShowtimesAction.OnAssistantClick(MicPermissionStatus.GRANTED))
+
+        assertThat(assistant.refreshes).isEqualTo(2)
+    }
+
+    @Test
+    fun theSetupSheetMovesOnToListeningOnceAnEngineIsReady() = runTest {
+        assistant.removeKey()
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnAssistantClick(MicPermissionStatus.GRANTED))
+        assertThat(viewModel.voice()).isEqualTo(VoiceUi.Setup)
+
+        assistant.useSystemAi()
+
+        assertThat(viewModel.voice()).isEqualTo(VoiceUi.Listening())
+    }
+
+    @Test
+    fun theSetupSheetAsksForTheMicrophoneFirstWhenItWasNotGrantedYet() = runTest {
+        assistant.removeKey()
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnAssistantClick(MicPermissionStatus.NOT_GRANTED))
+
+        assistant.useSystemAi()
+
+        assertThat(viewModel.voice()).isEqualTo(VoiceUi.MicRationale)
+    }
+
+    @Test
+    fun anEngineBecomingReadyDoesNotDisturbWhatTheUserIsDoing() = runTest {
+        val viewModel = viewModel()
+        viewModel.onAction(ShowtimesAction.OnAssistantClick(MicPermissionStatus.BLOCKED))
+        viewModel.onAction(ShowtimesAction.OnVoiceTextChange("Hope"))
+
+        assistant.useSystemAi()
+
+        assertThat(viewModel.voice()).isEqualTo(VoiceUi.MicDenied("Hope"))
+    }
+
+    @Test
+    fun anEngineThatDisappearsWhileReadingChecksTheSystemAndShowsTheSetup() = runTest {
+        interpreter.result = Result.Failure(AssistantError.NO_ENGINE)
+        val before = assistant.refreshes
+
+        val viewModel = interpretTyped("Hope")
+
+        assertThat(viewModel.voice()).isEqualTo(VoiceUi.Setup)
+        // At start, when the sheet opened, and when the engine answered that it was gone.
+        assertThat(assistant.refreshes).isEqualTo(before + 3)
+    }
+
+    @Test
+    fun downloadingTheSystemAiIsPassedToTheAssistant() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.onAction(ShowtimesAction.OnSystemAiDownload)
+
+        assertThat(assistant.downloads).isEqualTo(1)
     }
 
     private fun interpretTyped(text: String): ShowtimesViewModel = viewModel().also { typeAndRead(it, text) }

@@ -8,7 +8,7 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-/** Provides the secure key store and the speech recognizer of each platform. */
+/** Provides what differs by platform: the secure key store, the speech recognizer and the AI of the system. */
 expect val coreAssistantPlatformModule: Module
 
 val coreAssistantModule = module {
@@ -16,5 +16,5 @@ val coreAssistantModule = module {
 
     singleOf(::SettingsAssistantPreferences) { bind<AssistantPreferences>() }
     singleOf(::KtorCloudLlmDataSource) { bind<CloudLlmRemoteDataSource>() }
-    singleOf(::CloudAssistantRepository) { bind<AssistantRepository>() }
+    single<AssistantRepository> { EngineSwitchingAssistantRepository(get(), get(), get(), get()) }
 }

@@ -37,8 +37,12 @@ internal class VoiceController(
 ) {
     private var job: Job? = null
 
+    // The microphone as it was when the assistant button was tapped, to go on after a setup that took a while.
+    private var lastMic = MicPermissionStatus.NOT_GRANTED
+
     /** The assistant button: set up first, then the microphone, then listening (or typing where there is no speech). */
     fun open(mic: MicPermissionStatus) {
+        lastMic = mic
         when {
             assistant.status.value is AssistantStatus.NeedsSetup -> show(VoiceUi.Setup)
             !speech.isAvailable -> show(VoiceUi.Typing(""))
@@ -46,6 +50,11 @@ internal class VoiceController(
             mic == MicPermissionStatus.BLOCKED -> show(VoiceUi.MicDenied(""))
             else -> show(VoiceUi.MicRationale)
         }
+    }
+
+    // An engine became ready while the setup sheet is open: the sheet moves on to what the user came for.
+    fun continueAfterSetup() {
+        if (read().voice == VoiceUi.Setup) open(lastMic)
     }
 
     fun onMicResult(status: MicPermissionStatus) {
@@ -111,8 +120,13 @@ internal class VoiceController(
             val catalog = async { showtimesRepository.getVenues() }
             val result = interpreter.interpret(text, today())
             val voice = when (result) {
-                is Result.Failure ->
-                    if (result.error == AssistantError.NO_ENGINE) VoiceUi.Setup else VoiceUi.Failed(text, result.error)
+                is Result.Failure -> if (result.error == AssistantError.NO_ENGINE) {
+                    // The engine that answered is gone (Apple Intelligence turned off): the setup sheet says why.
+                    assistant.refreshSystemAi()
+                    VoiceUi.Setup
+                } else {
+                    VoiceUi.Failed(text, result.error)
+                }
                 is Result.Success -> {
                     val request = result.data
                     if (request.isEmpty) {

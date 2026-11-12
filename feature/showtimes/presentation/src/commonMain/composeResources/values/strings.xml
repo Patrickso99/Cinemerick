@@ -224,11 +224,19 @@
     <string name="voice_error_answer">The answer couldn’t be read</string>
     <string name="voice_error_answer_body">Try again, or say the request in a different way.</string>
     <string name="voice_setup_title">Set up the assistant</string>
-    <string name="voice_setup_body">To understand your requests the assistant needs an AI. Connect your own API key: OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter. The text of each request is sent to the provider you choose.</string>
+    <string name="voice_setup_body">To understand your requests the assistant needs an AI. Choose how it works; you can change it any time in Settings.</string>
     <string name="voice_setup_key">API key</string>
-    <string name="voice_setup_key_body">Use your account with one of the six providers.</string>
+    <string name="voice_setup_key_body">OpenAI, Anthropic, Gemini, Grok, Mistral or OpenRouter. The request text is sent to the provider.</string>
     <string name="voice_setup_later">Not now</string>
     <string name="voice_applied">Filters set by voice</string>
     <string name="voice_undo">Undo</string>
     <string name="voice_typing_title">Type your request</string>
+    <string name="voice_setup_system_download_title">Download %1$s</string>
+    <string name="voice_setup_system_download_body">The AI of the phone, free and on the device. Google downloads it once.</string>
+    <string name="voice_setup_system_downloading_title">Downloading %1$s…</string>
+    <string name="voice_setup_system_downloading_body">%1$s so far. You can close this: it goes on in the background.</string>
+    <string name="voice_setup_system_enable_title">%1$s is off</string>
+    <string name="voice_setup_system_enable_body">Turn it on in the system settings to use the assistant on your device.</string>
+    <string name="voice_setup_system_preparing_title">%1$s is not ready yet</string>
+    <string name="voice_setup_system_preparing_body">The system is preparing it. Try again in a few minutes.</string>
 </resources>

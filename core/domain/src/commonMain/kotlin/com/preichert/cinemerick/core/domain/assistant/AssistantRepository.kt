@@ -2,6 +2,7 @@ package com.preichert.cinemerick.core.domain.assistant
 
 import com.preichert.cinemerick.core.domain.EmptyResult
 import com.preichert.cinemerick.core.domain.Result
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -17,6 +18,21 @@ interface AssistantRepository {
     /** Every provider with a key saved on this device, active or not: switching to one needs no new key. */
     val savedKeys: StateFlow<Map<CloudProvider, SavedKey>>
 
+    /** The AI the system offers on this device, and whether it is ready. */
+    val systemAi: StateFlow<SystemAiState>
+
+    /** The engine the user chose, or null before any choice: then the system AI is used where it is available. */
+    val chosenEngine: StateFlow<AssistantEngine?>
+
+    /** Asks the system again whether its AI is ready: the user may have turned it on in the settings meanwhile. */
+    suspend fun refreshSystemAi()
+
+    /** Starts the download of the system AI. It goes on while the screen that asked for it is closed. */
+    fun downloadSystemAi()
+
+    /** Makes [engine] the one that answers. A system engine that is not ready yet is kept until it is. */
+    fun selectEngine(engine: AssistantEngine)
+
     /** Asks the active engine for one answer to [user], following [system]. */
     suspend fun complete(system: String, user: String): Result<String, AssistantError>
 
@@ -28,6 +44,20 @@ interface AssistantRepository {
 
     /** Removes the active provider's key; the other saved keys stay. */
     fun removeKey()
+}
+
+/** The AI the operating system provides, run on the device. */
+interface SystemAiDataSource {
+    /** How the AI is called, or null on a platform that has none. */
+    val name: String?
+
+    suspend fun availability(): SystemAiAvailability
+
+    /** Downloads the AI; only [SystemAiAvailability.DOWNLOADABLE] ones can be. */
+    fun download(): Flow<SystemAiDownload>
+
+    /** Asks for one answer to [user], following [system]. */
+    suspend fun complete(system: String, user: String): Result<String, AssistantError>
 }
 
 /** One-shot calls to a provider's API. */
@@ -47,6 +77,10 @@ interface ApiKeyLocalDataSource {
 
 /** Assistant choices that are not secret. */
 interface AssistantPreferences {
+    /** The engine the user chose, or null if they never did. */
+    fun engine(): AssistantEngine?
+    fun setEngine(engine: AssistantEngine?)
+
     fun provider(): CloudProvider?
     fun setProvider(provider: CloudProvider?)
     fun model(provider: CloudProvider): String?

@@ -22,7 +22,6 @@
     <string name="language_english">English</string>
     <string name="language_italiano">Italiano</string>
     <string name="assistant_title">Assistente vocale</string>
-    <string name="assistant_add_key">Aggiungi una chiave API</string>
     <string name="assistant_add_key_description">OpenAI, Anthropic, Gemini, Grok, Mistral od OpenRouter</string>
     <string name="assistant_cloud_title">Cloud · %1$s</string>
     <string name="assistant_key_summary">Chiave …%1$s · %2$s</string>
@@ -57,4 +56,13 @@
     <string name="key_use_saved">Usa questa chiave</string>
     <string name="key_in_use">In uso</string>
     <string name="key_replace">Oppure incolla una nuova chiave</string>
+    <string name="assistant_cloud_row_title">Cloud con chiave API</string>
+    <string name="assistant_system_available">Sul dispositivo · gratuita · niente viene inviato</string>
+    <string name="assistant_system_downloadable">Sul dispositivo · da scaricare una volta</string>
+    <string name="assistant_system_downloading">Download in corso · %1$s</string>
+    <string name="assistant_system_needs_enabling">Attivala nelle impostazioni del sistema</string>
+    <string name="assistant_system_not_ready">Il sistema la sta preparando</string>
+    <string name="assistant_system_unsupported">Non disponibile su questo dispositivo</string>
+    <string name="assistant_system_download">Scarica</string>
+    <string name="assistant_privacy_device">Sul dispositivo: la richiesta non lascia il telefono.</string>
 </resources>
