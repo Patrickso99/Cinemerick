@@ -149,3 +149,10 @@ Accessibility: FAB "Chiedi all'assistente"; sheet is a dialog, focus on the stop
 
 ## Open questions
 - Which model per cloud provider (fixed small default vs. user choice)? Not designed: the app picks a fast default.
+
+## Superseded on 2026-11-12
+Commit 079d76a changed the engines in the app, and docs/design/assistant-connect revised the provider list. The points below no longer hold. The design.html of this folder was not rebuilt, so it still shows them.
+- Gemma 4 E2B download (lines 19, 28, 31, 40 and the setup choice in item 23): the on-device AI is Gemini Nano on Android and Apple Intelligence on iOS/macOS. Nothing is downloaded by the app. There is no Gemma in the code.
+- Provider list in the key screen (item 36, six radios) and in the setup choice (item 23): all six providers take an API key only (revision 3 of docs/design/assistant-connect/brief.md, 2026-11-12). No account login is offered.
+- Settings engine selector (Sul dispositivo / Gemma / Cloud): now the on-device row (Gemini Nano or Apple Intelligence) and the Cloud row.
+- Still valid: privacy note, engine badge in the voice sheet (now with the provider mark, see assistant-connect), T6 for removing a key, keys in secure storage.

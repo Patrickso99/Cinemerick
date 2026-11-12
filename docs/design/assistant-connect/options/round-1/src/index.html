@@ -1,0 +1,86 @@
+<title>Cinemerick · Provider · Round 1</title>
+<!-- tokens: ../option-a.tokens.json scope=.opt-a id=opt-a -->
+<!-- tokens: ../option-b.tokens.json scope=.opt-b id=opt-b -->
+<!-- tokens: ../option-c.tokens.json scope=.opt-c id=opt-c -->
+<style><!-- include: viewer.css --></style>
+<style><!-- include: components.css --></style>
+<style><!-- include: options.css --></style>
+<script>window.DESIGN = { app: "Cinemerick · Account assistente · Round 1", mode: "options", themes: ["light", "dark"] };</script>
+<div class="v-options">
+  <section class="v-section">
+    <h2>Tre forme, gli stessi token</h2>
+    <p>Colori, Plus Jakarta Sans e raggi sono quelli dell’app. Cambia solo la carta del provider. In tutte e tre: marchio proprio, OpenAI / Anthropic / Google con account e chiave, gli altri tre solo chiave, un solo modo per provider. Anthropic è già collegata (cl•••@studio.it) ed è quella in uso. Grok ha una chiave verificata, non in uso.</p>
+  </section>
+
+  <section class="v-section" id="compare">
+    <h2>Affiancate · chiaro</h2>
+    <div class="v-pair">
+      <div class="opt-a" data-tokens="opt-a"><p class="state-cap">A · Carta</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-a.html --></div></div></div>
+      <div class="opt-b" data-tokens="opt-b"><p class="state-cap">B · Elenco</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-b.html --></div></div></div>
+      <div class="opt-c" data-tokens="opt-c"><p class="state-cap">C · Affiancate</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-c.html --></div></div></div>
+    </div>
+    <h2>Affiancate · scuro</h2>
+    <div class="v-pair">
+      <div class="opt-a" data-tokens="opt-a"><p class="state-cap">A · Carta</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-a.html --></div></div></div>
+      <div class="opt-b" data-tokens="opt-b"><p class="state-cap">B · Elenco</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-b.html --></div></div></div>
+      <div class="opt-c" data-tokens="opt-c"><p class="state-cap">C · Affiancate</p><div class="v-frame clip" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-c.html --></div></div></div>
+    </div>
+  </section>
+
+  <section class="v-option opt-a" data-tokens="opt-a" id="opt-a">
+    <header>
+      <h2>A · Carta</h2>
+      <p>Per chi apre Impostazioni una volta e deve vedere subito il pulsante. Ogni provider è una carta; «Collega account» è largo quanto la carta, «Chiave API» sta sotto, più quieto.</p>
+      <p class="v-label">Familiare · calma · chiara · Plus Jakarta Sans · Lucide</p>
+    </header>
+    <div class="v-section">
+      <div class="v-pair">
+        <div><p class="state-cap">Chiaro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-a.html --></div></div></div>
+        <div><p class="state-cap">Scuro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-a.html --></div></div></div>
+      </div>
+      <div class="v-pros"><div><b>Punti di forza</b><ul><li>«Collega account» è l’unica azione piena della carta</li><li>La mail e «Account» stanno sulla stessa riga del nome</li><li>Si legge anche senza conoscere Impostazioni</li></ul></div><div><b>Limiti</b><ul><li>Con sei provider si scorre: in un telefono si vedono i primi due</li><li>Due pulsanti «Collega account» hanno lo stesso peso, perché nessun provider è consigliato</li></ul></div></div>
+    </div>
+    <div class="v-section"><h2>Componenti</h2><!-- include: parts/specimen.html --></div>
+  </section>
+
+  <section class="v-option opt-b" data-tokens="opt-b" id="opt-b">
+    <header>
+      <h2>B · Elenco</h2>
+      <p>Per restare nella lista che Impostazioni ha già. Niente carte: marchio, nome, stato, e le azioni sulla riga. I sei provider stanno in uno schermo.</p>
+      <p class="v-label">Compatta · diretta · sobria · Plus Jakarta Sans · Lucide</p>
+    </header>
+    <div class="v-section">
+      <div class="v-pair">
+        <div><p class="state-cap">Chiaro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-b.html --></div></div></div>
+        <div><p class="state-cap">Scuro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-b.html --></div></div></div>
+      </div>
+      <div class="v-pros"><div><b>Punti di forza</b><ul><li>Tutti i provider si vedono senza scorrere</li><li>È la stessa grammatica della sezione Assistente</li><li>Le etichette di gruppo separano account e sola chiave</li></ul></div><div><b>Limiti</b><ul><li>«Collega account» è un pulsante tra il testo, meno isolato che in A</li><li>La riga di Anthropic ha due azioni testuali vicine a «In uso»</li></ul></div></div>
+    </div>
+    <div class="v-section"><h2>Componenti</h2><!-- include: parts/specimen.html --></div>
+  </section>
+
+  <section class="v-option opt-c" data-tokens="opt-c" id="opt-c">
+    <header>
+      <h2>C · Affiancate</h2>
+      <p>La scelta è la carta. Account e chiave sono due piastrelle: quella piena è «Collega account», quella quieta è la chiave. Per Grok, Mistral e OpenRouter la piastrella è una sola.</p>
+      <p class="v-label">Esplicita · decisa · netta · Plus Jakarta Sans · Lucide</p>
+    </header>
+    <div class="v-section">
+      <div class="v-pair">
+        <div><p class="state-cap">Chiaro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="light"><div class="app"><!-- include: parts/screen-c.html --></div></div></div>
+        <div><p class="state-cap">Scuro, schermata intera</p><div class="v-frame" data-viewport="phone" data-theme-panel="dark"><div class="app"><!-- include: parts/screen-c.html --></div></div></div>
+      </div>
+      <div class="v-pros"><div><b>Punti di forza</b><ul><li>Si capisce che sono due strade, non due link sotto un titolo</li><li>L’account collegato resta visibile dentro la sua piastrella</li><li>I provider solo-chiave non mostrano un’azione account vuota</li></ul></div><div><b>Limiti</b><ul><li>Le piastrelle occupano altezza: i sei provider non stanno in uno schermo</li><li>È un modulo nuovo, non una riga di Impostazioni</li></ul></div></div>
+    </div>
+    <div class="v-section"><h2>Componenti</h2><!-- include: parts/specimen.html --></div>
+  </section>
+
+  <section class="v-section opt-a" data-tokens="opt-a" id="foundations">
+    <h2>Token condivisi</h2>
+    <p>Le tre forme puntano agli stessi ruoli. Il contrasto è quello dell’app, già portato a WCAG 2.2 AA. I marchi OpenAI, Anthropic, Gemini e Mistral usano il colore del gestore, non un ruolo dell’interfaccia: OpenAI segue il colore del testo, come Grok e OpenRouter.</p>
+    <div class="v-section"><h2>Contrasto</h2><div data-render="contrast"></div></div>
+    <div class="v-section"><h2>Tipografia</h2><div class="v-card" data-render="type" data-sample="Collega account · cl•••@studio.it"></div></div>
+    <div class="v-section"><h2>Forma e icone</h2><div data-render="radius"></div><div data-render="icons" data-names="chevron-left,key-round,user-round,cloud,check,circle-alert"></div></div>
+  </section>
+</div>
+<script><!-- include: viewer.js --></script>

@@ -1,0 +1,49 @@
+<section class="v-page" data-page="voice" data-title="Foglio vocale" data-group="Account">
+  <h1>Foglio vocale · setup e badge</h1>
+  <p class="v-lead">Due punti del foglio vocale che cambiano con il modo di collegamento: la scelta quando non c'è ancora nessun motore, e il badge che dice chi risponde. Il badge usa lo stesso marchio della carta.</p>
+
+  <article class="v-screen" data-screen="setup" data-title="Setup" data-purpose="Scegliere come risponde l'assistente quando nessun motore è pronto.">
+    <div class="v-state" data-state="choice" data-label="Scelta" data-trigger="Il microfono è toccato senza nessun motore pronto" data-note="Nessuna opzione è segnalata come consigliata. Chiave API porta alle carte.">
+      <div class="app"><div class="column">
+        <header class="topbar"><div class="title">Assistente vocale</div></header>
+        <div class="scroll">
+          <div class="sheet" role="dialog" aria-labelledby="setup-t" style="position:static;max-height:none;border-radius:var(--radius-lg)">
+            <h2 id="setup-t">Come risponde l'assistente</h2>
+            <p>Serve un motore per capire la richiesta. Scegline uno.</p>
+            <div class="sheet-stack">
+            <article class="card elevated pcard">
+              <div class="who"><div class="text"><strong>Chiave API</strong><span class="sub">OpenAI, Anthropic, Google Gemini, xAI Grok, Mistral, OpenRouter. Una chiave basta.</span></div></div>
+              <button class="btn block" type="button" data-goto="providers/cards/empty">Scegli provider</button>
+            </article>
+            <article class="card elevated pcard">
+              <div class="who"><div class="text"><strong>Gemini Nano</strong><span class="sub">Sul dispositivo · gratuita · niente lascia il telefono</span></div></div>
+              <button class="btn outline block" type="button">Scarica</button>
+            </article>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </article>
+
+  <article class="v-screen" data-screen="badge" data-title="Badge" data-purpose="Dire chi risponde, con il marchio del provider.">
+    <div class="v-state" data-state="openai-key" data-label="Chiave OpenAI" data-trigger="Il motore è OpenAI con la chiave" data-note="Il badge ha il marchio di OpenAI, come sulla carta.">
+      <div class="app"><div class="column">
+        <header class="topbar"><div class="title">Ascolto</div><span class="tag"><span class="mark sm openai"><!-- include: ../parts/m-openai.html --></span>Cloud · OpenAI</span></header>
+        <div class="scroll"><p class="sub">Parla. La richiesta va a OpenAI con la tua chiave.</p></div>
+      </div></div>
+    </div>
+    <div class="v-state" data-state="anthropic-key" data-label="Chiave Anthropic" data-trigger="Il motore è Anthropic con la chiave" data-note="Stesso formato del badge di OpenAI, con il marchio arancione.">
+      <div class="app"><div class="column">
+        <header class="topbar"><div class="title">Ascolto</div><span class="tag"><span class="mark sm anthropic"><!-- include: ../parts/m-anthropic.html --></span>Cloud · Anthropic</span></header>
+        <div class="scroll"><p class="sub">Parla. La richiesta va ad Anthropic con la tua chiave.</p></div>
+      </div></div>
+    </div>
+    <div class="v-state" data-state="on-device" data-label="Sul dispositivo" data-trigger="Il motore è Gemini Nano" data-note="Nessun marchio: non esce nulla dal telefono.">
+      <div class="app"><div class="column">
+        <header class="topbar"><div class="title">Ascolto</div><span class="tag">Sul dispositivo</span></header>
+        <div class="scroll"><p class="sub">Parla. La richiesta resta sul telefono.</p></div>
+      </div></div>
+    </div>
+  </article>
+</section>

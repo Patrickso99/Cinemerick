@@ -1,0 +1,184 @@
+<section class="v-page" data-page="providers" data-title="Carte provider" data-group="Account">
+  <h1>Carte provider</h1>
+  <p class="v-lead">A · Carta. Un provider, una carta, una chiave API. Nessun provider si collega con un account: OpenAI e Google Gemini restano chiave API, dopo la verifica del 2026-11-12.</p>
+
+  <article class="v-screen" data-screen="cards" data-title="Carte" data-purpose="Salvare una chiave per un provider, oppure sceglierne una da usare.">
+    <div class="v-state" data-state="mixed" data-label="Misto" data-trigger="Uso normale: Anthropic con chiave in uso, Grok con chiave verificata" data-note="Una sola chiave è in uso. Le altre restano salvate, pronte da usare. Rimuovere la chiave in uso chiede conferma (T6).">
+      <div class="app"><div class="column"><!-- include: ../parts/top.html -->
+        <div class="scroll">
+          <p class="sub">Ogni provider ha una chiave API. Le chiavi restano nel portachiavi del sistema.</p>
+          <p class="sec">Chiave API</p>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><div class="text"><strong>OpenAI</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><div class="text"><strong>Anthropic</strong><span class="sub">Chiave …3f9a · claude-opus-5-5</span></div><span class="tag inuse">In uso</span></div>
+            <div class="quiet"><button class="btn secondary" type="button" data-goto="key/entry/pristine">Cambia</button><button class="btn danger-text" type="button" data-open="#remove-key">Rimuovi chiave</button></div>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><div class="text"><strong>xAI Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
+            <div class="quiet"><button class="btn secondary" type="button" data-goto="providers/cards/mixed">Usa</button></div>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><div class="text"><strong>Mistral</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-router.html --></span><div class="text"><strong>OpenRouter</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+        </div>
+        <div class="overlay" id="remove-key" data-overlay hidden role="presentation">
+          <div class="dialog" role="alertdialog" aria-labelledby="rk-t" aria-describedby="rk-d">
+            <h2 id="rk-t">Rimuovere la chiave Anthropic?</h2>
+            <p id="rk-d">L'assistente Cloud smette di funzionare finché non ne aggiungi una.</p>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Tieni chiave</button>
+              <button class="btn danger" type="button" data-goto="providers/cards/empty">Rimuovi chiave</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="empty" data-label="Primo uso" data-trigger="Nessuna chiave salvata" data-note="Sei carte, tutte con Chiave API. Nessuna è in uso finché non ne salvi una.">
+      <div class="app"><div class="column"><!-- include: ../parts/top.html -->
+        <div class="scroll">
+          <p class="sub">Ogni provider ha una chiave API. Le chiavi restano nel portachiavi del sistema.</p>
+          <p class="sec">Chiave API</p>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><div class="text"><strong>OpenAI</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><div class="text"><strong>Anthropic</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><div class="text"><strong>Mistral</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-router.html --></span><div class="text"><strong>OpenRouter</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="saved" data-label="Chiave salvata" data-trigger="Appena salvata una chiave OpenAI" data-note="T3. La carta mostra Verificata. Non diventa in uso da sola: si tocca Usa.">
+      <div class="app"><div class="column"><!-- include: ../parts/top.html -->
+        <div class="scroll">
+          <p class="sub">Ogni provider ha una chiave API. Le chiavi restano nel portachiavi del sistema.</p>
+          <p class="sec">Chiave API</p>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><div class="text"><strong>OpenAI</strong><span class="sub">Chiave …7c1e · gpt-5-mini</span></div><span class="tag ok">Verificata</span></div>
+            <div class="quiet"><button class="btn secondary" type="button" data-goto="providers/cards/mixed">Usa</button></div>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><div class="text"><strong>Anthropic</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><div class="text"><strong>xAI Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
+            <div class="quiet"><button class="btn secondary" type="button" data-goto="providers/cards/mixed">Usa</button></div>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><div class="text"><strong>Mistral</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-router.html --></span><div class="text"><strong>OpenRouter</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+        </div>
+        <div class="snackbar-host"><div class="snackbar" role="status"><span class="msg">Chiave OpenAI salvata</span><button class="btn text" type="button" data-goto="providers/cards/mixed">Usa</button></div></div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="offline" data-label="Offline" data-trigger="Nessuna rete aprendo le carte" data-note="T4 finché manca la rete. Le carte restano leggibili; la verifica di una nuova chiave richiede internet.">
+      <div class="app"><div class="column"><!-- include: ../parts/top.html -->
+        <div class="scroll">
+          <p class="sub">Ogni provider ha una chiave API. Le chiavi restano nel portachiavi del sistema.</p>
+          <div class="callout warning" role="status"><div class="body"><strong>Sei offline</strong>Verificare una chiave richiede internet. Le chiavi già salvate restano.</div></div>
+          <p class="sec">Chiave API</p>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><div class="text"><strong>OpenAI</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><div class="text"><strong>Anthropic</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><div class="text"><strong>Mistral</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-router.html --></span><div class="text"><strong>OpenRouter</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="stress" data-label="Testo lungo" data-trigger="Chiave lunga e testo al 200%" data-note="Il nome del modello va a capo sulla carta. Le chiavi restano visibili con l'ultima parte, i pulsanti alti 48 dp.">
+      <div class="app stress"><div class="column"><!-- include: ../parts/top.html -->
+        <div class="scroll">
+          <p class="sub">Ogni provider ha una chiave API. Le chiavi restano nel portachiavi del sistema.</p>
+          <p class="sec">Chiave API</p>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><div class="text"><strong>OpenAI</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><div class="text"><strong>Anthropic</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><div class="text"><strong>Mistral</strong><span class="sub">Nessuna chiave</span></div></div>
+            <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
+          </article>
+          <article class="card elevated pcard">
+            <div class="who"><span class="mark mono"><!-- include: ../parts/m-router.html --></span><div class="text"><strong>OpenRouter</strong><span class="sub">Chiave …8d21 · openai/gpt-5-mini-con-nome-molto-lungo</span></div><span class="tag inuse">In uso</span></div>
+            <div class="quiet"><button class="btn secondary" type="button" data-goto="key/entry/pristine">Cambia</button><button class="btn danger-text" type="button" data-open="#remove-key">Rimuovi chiave</button></div>
+          </article>
+        </div>
+      </div></div>
+    </div>
+
+  </article>
+</section>

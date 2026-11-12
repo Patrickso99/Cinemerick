@@ -1,0 +1,31 @@
+<section class="v-page" data-page="key" data-title="Chiave API" data-group="Account">
+  <h1>Chiave API</h1>
+  <p class="v-lead">Una sola schermata per le sei chiavi API, con lo stesso formato. I chip usano gli stessi marchi delle carte. Nessun provider si collega con un account.</p>
+
+  <article class="v-screen" data-screen="entry" data-title="Inserimento" data-purpose="Salvare una chiave verificata.">
+    <div class="v-state" data-state="pristine" data-label="Vuota" data-trigger="Si apre Chiave API su Grok" data-note="Il chip selezionato è xAI Grok. Gli altri cinque sono sempre disponibili: si cambia con un tap.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="providers/cards/mixed"><!-- include: ../parts/back.html --></button><div class="title">Chiave API</div></header>
+        <div class="scroll field-block">
+          <div>
+            <p class="sec">Provider</p>
+            <div class="chips">
+              <button class="chip" type="button"><span class="mark sm openai"><!-- include: ../parts/m-openai.html --></span>OpenAI</button>
+              <button class="chip" type="button"><span class="mark sm anthropic"><!-- include: ../parts/m-anthropic.html --></span>Anthropic</button>
+              <button class="chip" type="button"><span class="mark sm gemini"><!-- include: ../parts/m-gemini.html --></span>Google Gemini</button>
+              <button class="chip is-selected" type="button"><span class="mark sm mono"><!-- include: ../parts/m-grok.html --></span>xAI Grok</button>
+              <button class="chip" type="button"><span class="mark sm mistral"><!-- include: ../parts/m-mistral.html --></span>Mistral</button>
+              <button class="chip" type="button"><span class="mark sm mono"><!-- include: ../parts/m-router.html --></span>OpenRouter</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="key">Chiave Grok</label>
+            <div class="control"><input id="key" type="password" placeholder="xai-" aria-describedby="key-help"></div>
+            <p class="help" id="key-help">Resta nel portachiavi del sistema. Qui si vedono solo le ultime quattro cifre.</p>
+          </div>
+          <button class="btn block" type="button">Salva</button>
+        </div>
+      </div></div>
+    </div>
+  </article>
+</section>

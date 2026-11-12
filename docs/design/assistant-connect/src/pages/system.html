@@ -1,0 +1,67 @@
+<section class="v-page" data-page="ds" data-title="Sistema" data-group="Fondamenta">
+  <h1>Sistema</h1>
+  <p class="v-lead">Gli stessi token dell'app. Questa pagina tiene i pezzi usati dalle carte: pulsanti, campo, chip, avviso, snackbar, dialogo, e i marchi dei provider.</p>
+
+  <div class="v-section"><h2>Contrasto</h2><div data-render="contrast"></div></div>
+  <div class="v-section"><h2>Tipografia</h2><div class="v-card" data-render="type" data-sample="Chiave …3f9a · claude-opus-5-5"></div></div>
+
+  <div class="v-section"><h2>Pulsante</h2>
+    <p>Su ogni carta provider il pulsante pieno è Chiave API nello stato vuoto, e Usa per una chiave salvata. Rimuovi chiave è distruttivo. Altezza 48 dp, raggio pieno.</p>
+    <div class="v-specimen app">
+      <figure><button class="btn" type="button">Chiave API</button><figcaption>primario</figcaption></figure>
+      <figure><button class="btn is-focus" type="button">Chiave API</button><figcaption>focus</figcaption></figure>
+      <figure><button class="btn is-loading" type="button" aria-busy="true">Verifica…</button><figcaption>attesa</figcaption></figure>
+      <figure><button class="btn" type="button" disabled>Chiave API</button><figcaption>disabilitato</figcaption></figure>
+      <figure><button class="btn outline" type="button">Chiave API</button><figcaption>chiave</figcaption></figure>
+      <figure><button class="btn text" type="button">Annulla</button><figcaption>testo</figcaption></figure>
+      <figure><button class="btn danger-text" type="button">Rimuovi chiave</button><figcaption>distruttivo</figcaption></figure>
+      <figure><button class="btn danger" type="button">Rimuovi chiave</button><figcaption>conferma</figcaption></figure>
+    </div>
+    <p class="v-note">Area di tocco almeno 48 dp. Il focus è un anello da 2 px, diverso dal hover.</p>
+  </div>
+
+  <div class="v-section"><h2>Campo</h2>
+    <p>L'errore sta sotto il campo (T1), con il nome del provider e cosa fare.</p>
+    <div class="v-specimen app">
+      <figure>
+        <div class="field is-error">
+          <label>Chiave Grok</label>
+          <div class="control"><input value="xai-incompleta" readonly aria-invalid="true"></div>
+          <p class="help">xAI non ha accettato questa chiave. Controlla di averla copiata intera.</p>
+        </div>
+        <figcaption>errore</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="v-section"><h2>Marchi</h2>
+    <p>Segno del gestore. OpenAI segue il colore del testo, come Grok e OpenRouter: chiaro in tema scuro, scuro in tema chiaro. La piastrella è la stessa per tutti.</p>
+    <div class="v-specimen app">
+      <figure><span class="mark openai"><!-- include: ../parts/m-openai.html --></span><figcaption>OpenAI</figcaption></figure>
+      <figure><span class="mark anthropic"><!-- include: ../parts/m-anthropic.html --></span><figcaption>Anthropic</figcaption></figure>
+      <figure><span class="mark gemini"><!-- include: ../parts/m-gemini.html --></span><figcaption>Gemini</figcaption></figure>
+      <figure><span class="mark mono"><!-- include: ../parts/m-grok.html --></span><figcaption>Grok</figcaption></figure>
+      <figure><span class="mark mistral"><!-- include: ../parts/m-mistral.html --></span><figcaption>Mistral</figcaption></figure>
+      <figure><span class="mark mono"><!-- include: ../parts/m-router.html --></span><figcaption>OpenRouter</figcaption></figure>
+    </div>
+    <p class="v-note">Il marchio è decorativo: il nome del provider è testo accanto. Piastrella 40 dp.</p>
+  </div>
+
+  <div class="v-section"><h2>Errori di questo flusso</h2>
+    <p>T2 e T5 non servono: il modulo della chiave è corto, e le carte sono già sul telefono. T1 sotto il campo, T3 per un fatto appena successo, T4 finché la condizione dura, T6 se serve una decisione.</p>
+    <div class="v-specimen app">
+      <figure><div class="callout info" role="status"><div class="body"><strong>In attesa di OpenAI</strong>L'accesso è aperto nel browser.</div></div><figcaption>T4</figcaption></figure>
+      <figure><div class="callout warning" role="status"><div class="body"><strong>Sei offline</strong>Verificare una chiave richiede internet.</div></div><figcaption>T4</figcaption></figure>
+      <figure><div class="snackbar" role="status"><span class="msg">Chiave OpenAI salvata</span></div><figcaption>T3</figcaption></figure>
+      <figure><div class="snackbar" role="status"><span class="msg">OpenAI non ha completato l'accesso</span><button class="btn text" type="button">Riprova</button></div><figcaption>T3</figcaption></figure>
+      <figure>
+        <div class="dialog" style="position:relative;width:300px" role="alertdialog">
+          <h2>Rimuovere la chiave OpenAI?</h2>
+          <p>L'assistente Cloud smette di funzionare finché non ne aggiungi una.</p>
+          <div class="actions"><button class="btn text" type="button">Tieni</button><button class="btn danger" type="button">Rimuovi chiave</button></div>
+        </div>
+        <figcaption>T6</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>

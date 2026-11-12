@@ -1,0 +1,41 @@
+<section class="v-page" data-page="settings" data-title="Impostazioni" data-group="Account">
+  <h1>Impostazioni</h1>
+  <p class="v-lead">La sezione Assistente vocale ha una riga Cloud. Il marchio e le parole sono gli stessi della carta: il provider e la chiave mascherata.</p>
+
+  <article class="v-screen" data-screen="cloud" data-title="Riga Cloud" data-purpose="Aprire le carte, oppure scegliere il cloud se una chiave è già in uso.">
+
+    <div class="v-state" data-state="none" data-label="Niente salvato" data-trigger="Nessuna chiave salvata" data-note="Il tap sulla riga apre le carte. Sul dispositivo è selezionato, se c'è.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro"><!-- include: ../parts/back.html --></button><div class="title">Impostazioni</div></header>
+        <p class="group">Assistente vocale</p>
+        <button class="engine" type="button" aria-pressed="true"><span class="radio on" aria-hidden="true"></span><span class="text"><strong>Gemini Nano</strong><span class="sub">Sul dispositivo · gratuita · niente viene inviato</span></span></button>
+        <button class="engine" type="button" data-goto="providers/cards/empty"><span class="radio" aria-hidden="true"></span><span class="text"><strong>Cloud con chiave API</strong><span class="sub">OpenAI, Anthropic, Google Gemini, Grok…</span></span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 6l6 6-6 6" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></button>
+        <div class="note"><span>Sul dispositivo: la richiesta non lascia il telefono. Parli in italiano o in inglese: la lingua viene riconosciuta da sola.</span></div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="key" data-label="Chiave in uso" data-trigger="La chiave Anthropic è il motore scelto" data-note="Stessa riga, con il marchio, il provider e le ultime quattro cifre. Ogni provider può essere la chiave in uso.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro"><!-- include: ../parts/back.html --></button><div class="title">Impostazioni</div></header>
+        <p class="group">Assistente vocale</p>
+        <button class="engine" type="button"><span class="radio" aria-hidden="true"></span><span class="text"><strong>Gemini Nano</strong><span class="sub">Sul dispositivo · gratuita · niente viene inviato</span></span></button>
+        <button class="engine" type="button" aria-pressed="true"><span class="radio on" aria-hidden="true"></span><span class="mark sm anthropic"><!-- include: ../parts/m-anthropic.html --></span><span class="text"><strong>Cloud · Anthropic</strong><span class="sub clip">Chiave …3f9a · claude-opus-5-5</span></span><span class="tag ok">Verificata</span></button>
+        <div class="engine-actions">
+          <button class="btn text" type="button" data-goto="key/entry/pristine">Cambia</button>
+          <button class="btn danger-text" type="button" data-open="#settings-remove">Rimuovi chiave</button>
+        </div>
+        <div class="note"><span>Il testo di ogni richiesta viene inviato ad Anthropic con la tua chiave, secondo le condizioni del tuo account Anthropic.</span></div>
+        <div class="overlay" id="settings-remove" data-overlay hidden role="presentation"><div class="dialog" role="alertdialog" aria-labelledby="sr-t" aria-describedby="sr-d"><h2 id="sr-t">Rimuovere la chiave Anthropic?</h2><p id="sr-d">L'assistente Cloud smette di funzionare finché non ne aggiungi una.</p><div class="actions"><button class="btn text" type="button" data-close>Tieni chiave</button><button class="btn danger" type="button" data-goto="settings/cloud/none">Rimuovi chiave</button></div></div></div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="stress" data-label="Nome lungo" data-trigger="Modello con nome lungo" data-note="Una riga sola, con ellissi. Sulla carta il nome va a capo.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro"><!-- include: ../parts/back.html --></button><div class="title">Impostazioni</div></header>
+        <p class="group">Assistente vocale</p>
+        <button class="engine" type="button" aria-pressed="true"><span class="radio on" aria-hidden="true"></span><span class="mark sm mono"><!-- include: ../parts/m-router.html --></span><span class="text"><strong>Cloud · OpenRouter</strong><span class="sub clip">Chiave …8d21 · openai/gpt-5-mini-con-nome-molto-lungo</span></span></button>
+      </div></div>
+    </div>
+
+  </article>
+</section>

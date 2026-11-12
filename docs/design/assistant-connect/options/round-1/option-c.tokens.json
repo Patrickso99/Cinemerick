@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "name": "Affiancate",
+    "rationale": "Same Cinemerick tokens. Bolder form: account and API key are two tiles on the card.",
+    "themes": [
+      "light",
+      "dark"
+    ]
+  },
+  "primitives": {
+    "color": {
+      "ink": {
+        "0": "#ffffff",
+        "50": "#faf8ff",
+        "100": "#f3f0fc",
+        "150": "#eae5f8",
+        "200": "#e2dcf3",
+        "500": "#77718f",
+        "600": "#5e5878",
+        "800": "#2d2750",
+        "850": "#24203d",
+        "880": "#2e2946",
+        "900": "#15121f",
+        "950": "#0d0b14",
+        "text": "#1b1730",
+        "textd": "#ece9f7",
+        "varc": "#a9a3c2",
+        "400": "#8f89ab"
+      },
+      "violet": {
+        "100": "#e7e0ff",
+        "150": "#e7deff",
+        "300": "#a78bfa",
+        "600": "#5b3fd6",
+        "800": "#3a2c7a",
+        "900": "#2a1670",
+        "950": "#1a0f3d"
+      },
+      "red": {
+        "100": "#fde3e1",
+        "300": "#f2b8b5",
+        "600": "#b3261e",
+        "800": "#7a1810",
+        "900": "#4d0f0a"
+      },
+      "amber": {
+        "100": "#fdf0d0",
+        "800": "#5c3f06",
+        "900": "#3d2a04"
+      },
+      "green": {
+        "100": "#dcf3e2",
+        "800": "#1d5631",
+        "900": "#10331c"
+      }
+    }
+  },
+  "color": {
+    "light": {
+      "background": "{ink.50}",
+      "on-background": "{ink.text}",
+      "surface": "{ink.0}",
+      "on-surface": "{ink.text}",
+      "on-surface-variant": "{ink.600}",
+      "surface-container": "{ink.100}",
+      "surface-container-high": "{ink.150}",
+      "outline": "{ink.500}",
+      "outline-variant": "{ink.200}",
+      "primary": "{violet.600}",
+      "on-primary": "{ink.0}",
+      "primary-container": "{violet.100}",
+      "on-primary-container": "{violet.900}",
+      "error": "{red.600}",
+      "on-error": "{ink.0}",
+      "error-container": "{red.100}",
+      "on-error-container": "{red.900}",
+      "warning-container": "{amber.100}",
+      "on-warning-container": "{amber.900}",
+      "success-container": "{green.100}",
+      "on-success-container": "{green.900}",
+      "info-container": "{violet.100}",
+      "on-info-container": "{violet.900}",
+      "inverse-surface": "{ink.800}",
+      "on-inverse-surface": "{ink.50}",
+      "inverse-primary": "{violet.300}",
+      "focus-ring": "{violet.600}",
+      "scrim": "{ink.950}",
+      "chain-notorious": "#a4a5a6",
+      "chain-space": "#e8650a",
+      "chain-uci": "#1f3f7a",
+      "chain-zero": "#032129",
+      "chain-cristallo": "#d22d27",
+      "chain-edge": "#00000000"
+    },
+    "dark": {
+      "background": "{ink.950}",
+      "on-background": "{ink.textd}",
+      "surface": "{ink.900}",
+      "on-surface": "{ink.textd}",
+      "on-surface-variant": "{ink.varc}",
+      "surface-container": "{ink.850}",
+      "surface-container-high": "{ink.800}",
+      "outline": "{ink.400}",
+      "outline-variant": "{ink.880}",
+      "primary": "{violet.300}",
+      "on-primary": "{violet.950}",
+      "primary-container": "{violet.800}",
+      "on-primary-container": "{violet.150}",
+      "error": "{red.300}",
+      "on-error": "{red.900}",
+      "error-container": "{red.800}",
+      "on-error-container": "{red.100}",
+      "warning-container": "{amber.800}",
+      "on-warning-container": "{amber.100}",
+      "success-container": "{green.800}",
+      "on-success-container": "{green.100}",
+      "info-container": "{violet.800}",
+      "on-info-container": "{violet.150}",
+      "inverse-surface": "{ink.textd}",
+      "on-inverse-surface": "{ink.text}",
+      "inverse-primary": "{violet.600}",
+      "focus-ring": "{violet.300}",
+      "scrim": "{ink.950}",
+      "chain-notorious": "#a4a5a6",
+      "chain-space": "#e8650a",
+      "chain-uci": "#1f3f7a",
+      "chain-zero": "#032129",
+      "chain-cristallo": "#d22d27",
+      "chain-edge": "#ffffff47"
+    }
+  },
+  "contrast": [
+    {
+      "fg": "on-surface-variant",
+      "bg": [
+        "surface-container",
+        "surface-container-high"
+      ],
+      "use": "text"
+    },
+    {
+      "fg": "primary",
+      "bg": [
+        "surface",
+        "surface-container",
+        "background"
+      ],
+      "use": "text"
+    },
+    {
+      "fg": "on-surface",
+      "bg": [
+        "surface-container-high"
+      ],
+      "use": "text"
+    }
+  ],
+  "font": {
+    "body": {
+      "family": "Plus Jakarta Sans",
+      "fallback": "system-ui, sans-serif",
+      "google": "Plus Jakarta Sans:wght@500;600;700;800"
+    }
+  },
+  "type": {
+    "display": {
+      "font": "body",
+      "size": 32,
+      "line": 40,
+      "weight": 800,
+      "tracking": -0.6
+    },
+    "headline": {
+      "font": "body",
+      "size": 24,
+      "line": 32,
+      "weight": 800,
+      "tracking": -0.3
+    },
+    "title": {
+      "font": "body",
+      "size": 18,
+      "line": 24,
+      "weight": 700
+    },
+    "title-sm": {
+      "font": "body",
+      "size": 15,
+      "line": 20,
+      "weight": 700
+    },
+    "body": {
+      "font": "body",
+      "size": 16,
+      "line": 24,
+      "weight": 500
+    },
+    "body-sm": {
+      "font": "body",
+      "size": 14,
+      "line": 20,
+      "weight": 500
+    },
+    "label": {
+      "font": "body",
+      "size": 14,
+      "line": 20,
+      "weight": 700
+    },
+    "caption": {
+      "font": "body",
+      "size": 12,
+      "line": 16,
+      "weight": 700,
+      "tracking": 0.4
+    }
+  },
+  "space": {
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "5": 20,
+    "6": 24,
+    "8": 32,
+    "12": 48
+  },
+  "radius": {
+    "xs": 8,
+    "sm": 12,
+    "md": 16,
+    "lg": 20,
+    "xl": 28,
+    "full": 9999
+  },
+  "size": {
+    "control": 48,
+    "touch": 48
+  },
+  "elevation": {
+    "light": {
+      "1": "0 1px 2px rgba(27,23,48,.08), 0 1px 3px rgba(27,23,48,.06)",
+      "2": "0 4px 14px rgba(27,23,48,.12)",
+      "3": "0 10px 30px rgba(27,23,48,.18)"
+    },
+    "dark": {
+      "1": "0 1px 2px rgba(0,0,0,.5)",
+      "2": "0 4px 14px rgba(0,0,0,.55)",
+      "3": "0 10px 30px rgba(0,0,0,.6)"
+    }
+  },
+  "icons": {
+    "set": "lucide",
+    "version": "0.460.0",
+    "stroke": 2
+  }
+}
