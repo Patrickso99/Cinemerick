@@ -23,8 +23,8 @@ enum class CloudProvider(
 ) {
     OPENAI("OpenAI", "gpt-5-mini", "sk-", "https://platform.openai.com/api-keys"),
     ANTHROPIC("Anthropic", "claude-opus-5-5", "sk-ant-", "https://console.anthropic.com/settings/keys"),
-    GEMINI("Google Gemini", "gemini-2.5-flash", "AIza", "https://aistudio.google.com/apikey"),
-    GROK("xAI Grok", "grok-3-mini", "xai-", "https://console.x.ai"),
+    GEMINI("Gemini", "gemini-2.5-flash", "AIza", "https://aistudio.google.com/apikey"),
+    GROK("Grok", "grok-3-mini", "xai-", "https://console.x.ai"),
     MISTRAL("Mistral", "mistral-small-latest", "", "https://console.mistral.ai/api-keys"),
     OPENROUTER("OpenRouter", "openai/gpt-5-mini", "sk-or-", "https://openrouter.ai/keys"),
 }

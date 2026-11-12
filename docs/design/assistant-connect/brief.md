@@ -1,13 +1,13 @@
 # Design brief: Cinemerick · Chiave API dell'assistente
 
-Status: revision 3, 2026-11-12. All six providers are API-key only. The account route is removed from the design. Revision 1 (approved the same day) had OpenAI, Anthropic and Google Gemini as account-only; revision 2 moved Anthropic to key-only after a feasibility check; revision 3 moves OpenAI and Google Gemini to key-only too, because the official pages do not open account access to them for a commercial app.
+Status: revision 4, 2026-11-12 (adds the model picker). Revision 3 below. All six providers are API-key only. The account route is removed from the design. Revision 1 (approved the same day) had OpenAI, Anthropic and Gemini as account-only; revision 2 moved Anthropic to key-only after a feasibility check; revision 3 moves OpenAI and Gemini to key-only too, because the official pages do not open account access to them for a commercial app.
 Artifacts: options file docs/design/assistant-connect/options/round-1/options.html (history) · design file docs/design/assistant-connect/design.html. No published URL: this session has no Artifact publisher.
 
 Extends the existing Assistente (docs/design/voice-search and the Settings screen already in the app). Does not replace the filter-summary brief in docs/design/brief.md. Visual direction stays the app's: tokens from docs/design/tokens.json, Plus Jakarta Sans, Material 3. Phase 2 explores the form of the provider cards, not a new palette.
 
 ## Product
 - What it is: KMP cinema showtimes aggregator. In Settings › Assistente vocale the user chooses what answers the voice request: the on-device AI (Gemini Nano on Android, Apple Intelligence on iOS), or a cloud provider with the user's own API key.
-- Providers: OpenAI, Anthropic, Google Gemini, xAI Grok, Mistral, OpenRouter. All six take an API key. None takes an account login.
+- Providers: OpenAI, Anthropic, Gemini, Grok, Mistral, OpenRouter. All six take an API key. None takes an account login.
 - Users and context of use: one-handed on the phone, planning a cinema night; opens Settings only to set the assistant up once.
 - Platforms / viewports: phone portrait, phone landscape, tablet, desktop (same as the voice-search design).
 - Themes: light + dark, existing tokens, follows the app setting (Auto/Light/Dark).
@@ -20,8 +20,8 @@ Extends the existing Assistente (docs/design/voice-search and the Settings scree
 - Fixed brand assets: app tokens, Plus Jakarta Sans. Provider marks are the providers' own, same tile size on every card, chip, and on the Cloud row:
   - OpenAI: mark follows the text color (white-gray on dark, dark on light).
   - Anthropic: orange mark.
-  - Google Gemini: the multicolor mark.
-  - xAI Grok, Mistral, OpenRouter: each its own mark.
+  - Gemini: the multicolor mark.
+  - Grok, Mistral, OpenRouter: each its own mark.
 - Before shipping: use each provider's official mark under its brand guidelines.
 
 ## Content
@@ -40,7 +40,7 @@ Extends the existing Assistente (docs/design/voice-search and the Settings scree
 ## Screen inventory
 | Feature | Screen | Primary action / question | Notes |
 |---|---|---|---|
-| Settings | Assistente, riga Cloud | Open the cards, or select the cloud engine when a key is in use | No key: chevron, subtitle «OpenAI, Anthropic, Google Gemini…». Key in use: mark + «Cloud · provider» + masked key + Verificata. Trailing: Cambia, Rimuovi chiave |
+| Settings | Assistente, riga Cloud | Open the cards, or select the cloud engine when a key is in use | No key: chevron, subtitle «OpenAI, Anthropic, Gemini…». Key in use: mark + «Cloud · provider» + masked key + Verificata. Trailing: Cambia, Rimuovi chiave |
 | Assistant key | Carte provider | Save a key for one provider, or choose the one in use | Six cards, one group «Chiave API». Empty: «Chiave API». Saved: «Usa». In use: «In uso», Cambia, Rimuovi chiave |
 | Assistant key | Schermata chiave API | Save a valid key | Existing screen. Six chips with their marks. Verifies the key before saving |
 | Settings | Rimuovi chiave | Confirm removal | T6, the same dialog on the cards and in Settings |
@@ -70,10 +70,12 @@ Phone portrait, Settings › Carte provider.
 
 ## Decisions log
 - 2026-11-12 · Separate brief under docs/design/assistant-connect/. Filter-summary and voice-search briefs stay as they are. Existing tokens; phase 2 was the card form, not a new palette. · user
-- 2026-11-12 · Revision 1: OpenAI, Anthropic, Google Gemini as account-only; Grok, Mistral, OpenRouter as key-only · user
+- 2026-11-12 · Revision 1: OpenAI, Anthropic, Gemini as account-only; Grok, Mistral, OpenRouter as key-only · user
 - 2026-11-12 · Revision 2: Anthropic key-only, because Anthropic does not allow subscription sign-in from third-party apps · user (decided «Anthropic solo chiave API»)
-- 2026-11-12 · Revision 3: OpenAI and Google Gemini key-only too. The official pages do not open account access to them for this app (see Judgment calls). The account route is removed from all screens · user (decided «altrimenti API KEY» for OpenAI and Gemini)
+- 2026-11-12 · Revision 3: OpenAI and Gemini key-only too. The official pages do not open account access to them for this app (see Judgment calls). The account route is removed from all screens · user (decided «altrimenti API KEY» for OpenAI and Gemini)
 - 2026-11-12 · Setup senza motore and the engine badge with the mark are part of the design, as in voice-search · assistant
+
+- 2026-11-12 · Revision 4: the model is chosen per provider from a sheet, not fixed to the default. Sample on Chiave API is Gemini (was Grok), as the user's example. Consigliato is one tag per provider; the rest are relative tags (Più veloce, Più economico, Più potente, Più costoso, Adatto all'app) and a speed/cost line. No per-token prices in the UI: the sources found disagree, so prices are left to the provider page · user (request), assistant (tags, no prices)
 
 ## Provider marks
 - Source: the provider files supplied 2026-11-12. OpenAI: `openai.svg` (follows text color, `currentColor`). Anthropic: `anthropic.svg` (#D97757). Gemini: `google-gemini.svg` (gradient `#9168c0` → `#5684d1` → `#1ba1e3`). Mistral: `mistral-ai.svg` (multicolor blocks).
@@ -83,7 +85,7 @@ Phone portrait, Settings › Carte provider.
 ## Judgment calls
 - Account route removed for all six. The reasons are the official pages, read 2026-11-12:
   - OpenAI «Sign in with ChatGPT» plan usage: the quickstart says it is «currently available to selected commercial partners through a limited trial», and the cookbook says plan usage is «available to open-source projects, personal projects that run locally, and selected private apps». A closed-source commercial app needs an OpenAI waitlist or representative contact. Mobile is not mentioned. Sources: developers.openai.com/siwc/quickstart, developers.openai.com/cookbook/articles/sign-in-with-chatgpt.
-  - Google Gemini: the OAuth page (now at aistudio.google.com/docs/oauth) is a quickstart that «uses a simplified authentication approach that is appropriate for a testing environment». It says nothing about end users spending their own quota; calls are tied to a project through `x-goog-user-project`. Google's own advice is that an API key is the easiest way to authenticate. Not viable as an account login for this app.
+  - Gemini: the OAuth page (now at aistudio.google.com/docs/oauth) is a quickstart that «uses a simplified authentication approach that is appropriate for a testing environment». It says nothing about end users spending their own quota; calls are tied to a project through `x-goog-user-project`. Google's own advice is that an API key is the easiest way to authenticate. Not viable as an account login for this app.
   - Anthropic: subscription sign-in from third-party apps is banned (clarified February 2026, enforced from 4 April 2026). Sources: press coverage only; the Anthropic terms were not read.
 - Keys are stored in the platform secure store, shown only as the last four characters.
 - Removing a key is T6: pasting it again is a chore, and the assistant stops working.
@@ -94,6 +96,32 @@ The earlier account states (sheet, waiting, return, failed, disconnect, unlinked
 
 ## Options history
 - Round 1 (form, same app tokens): A Carta, B Elenco, C Affiancate → **A Carta chosen** (2026-11-12). Round 1 predates the account rules and is history only; options.html still shows the account buttons.
+
+
+## Model picker (revision 4)
+Page `pages/model.html`, opened from the «Modello» row under the key field on Chiave API (`key/entry/pristine`). A bottom sheet in flow, same as the voice sheet. The row shows the model in use and its tag.
+
+Sheet anatomy: title «Modello di <provider>», one line of help, a radio list (one row per model: name, one-line fit, tags, a line «Velocità · Costo»), then «Annulla» and «Usa questo modello». The model in use is marked «In uso»; «Consigliato» appears once per provider.
+
+States:
+1. Lista (Gemini, sample): three models, flash marked Consigliato and Adatto all'app.
+2. ID libero (OpenRouter): three recommended models, a search field and a free ID field with help «Copia l'ID dalla pagina del modello su openrouter.ai/models». The catalogue is too big for a list.
+3. Non disponibile (T1): pro chosen with a key that has no access. The error sits under the list in the error color, names the model and says the current one stays in use.
+4. Stress 200%: long OpenRouter ID wraps, buttons stay at 48 dp. Known limit: at 200% the sheet runs past the frame's bottom edge; implementation must cap the sheet height and scroll its list.
+
+Tags are relative, not prices: Più veloce, Più economico, Più potente, Più costoso, Adatto all'app, Consigliato. No per-token price is shown, because the sources found disagree and change over time. Check the provider page before shipping.
+
+Model catalogue (sources read 2026-11-12; IDs to verify before shipping):
+| Provider | Models shown (speed/cost, fit) | Verified? |
+|---|---|---|
+| OpenAI | gpt-5-nano (più veloce, più economico) · gpt-5-mini (Consigliato, Adatto all'app, default) · gpt-5 (più potente, più costoso) | gpt-5-mini ID is in the code. Search found a newer lineup (GPT-5.5/5.6 names), so confirm the list on developers.openai.com before shipping. |
+| Anthropic | claude-haiku-5-5 (più veloce, più economico) · claude-sonnet-5-5 (Consigliato, Adatto all'app) · claude-opus-5-5 (default in code, più potente) · claude-fable-5-2 (più potente, più costoso) | Yes: IDs and prices come from the claude-api reference (cached 2026-11-03). Opus 5.5 is the default in code, so it stays the default in this list. Haiku is recommended for speed; Sonnet is the recommended balance. Verify Haiku's suitability against real showtime questions. |
+| Gemini | gemini-2.5-flash-lite (più veloce, più economico) · gemini-2.5-flash (Consigliato, Adatto all'app, default) · gemini-2.5-pro (più potente, più costoso) | IDs in the code and the search agree. Prices conflict across sources, so none are shown. |
+| Grok | grok-3-mini (Consigliato, più economico, default in code) · grok-4.3 (più potente) | grok-3-mini is in code. grok-4.3 found in one source only; confirm on docs.x.ai/docs/models. Model names conflict across sources. |
+| Mistral | mistral-small-latest (Consigliato, più economico, default in code) · mistral-medium-3-5 (più potente) | Medium 3.5 ID is in Mistral's docs; small-latest is in code. Large was not verified and is left out. |
+| OpenRouter | openai/gpt-5-mini (Consigliato, default) · anthropic/claude-haiku-5-5 (più veloce) · anthropic/claude-sonnet-5-5 (più potente) | openai/gpt-5-mini confirmed on openrouter.ai. The Claude IDs follow the `anthropic/…` pattern but are unconfirmed. ID field is free for everything else. |
+
+Open before implementation: the verification column above.
 
 ## Open questions
 - If OpenAI later opens «Sign in with ChatGPT» to commercial apps, reopen the OpenAI card. The design of the card would change, not the rest of the flow.

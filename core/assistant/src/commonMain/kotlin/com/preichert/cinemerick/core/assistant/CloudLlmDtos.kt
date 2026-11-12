@@ -49,7 +49,7 @@ internal data class AnthropicResponseDto(
 @Serializable
 internal data class AnthropicBlockDto(val type: String, val text: String? = null)
 
-// Google Gemini generateContent.
+// Gemini generateContent.
 
 @Serializable
 internal data class GeminiRequestDto(

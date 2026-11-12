@@ -1,0 +1,133 @@
+<section class="v-page" data-page="model" data-title="Modello" data-group="Account">
+  <h1>Modello</h1>
+  <p class="v-lead">Ogni provider ha un modello predefinito. Qui si sceglie quello che risponde, con una lista che dice cosa cambia: velocità, costo, adatto a questa app. Nessun prezzo per token: cambia nel tempo, e il dettaglio sta sulla pagina del provider.</p>
+
+  <article class="v-screen" data-screen="scelta" data-title="Scelta modello" data-purpose="Cambiare il modello di un provider la cui chiave è già salvata.">
+    <div class="v-state" data-state="lista" data-label="Gemini · lista" data-trigger="Tocco su Modello sotto la chiave Gemini" data-note="Il consiglio compare una sola volta, su gemini-2.5-flash. Il modello in uso è già selezionato: niente sorprese al salvataggio.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><!-- include: ../parts/back.html --></button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave Gemini</label><div class="control"><input type="password" value="AIzaSy••••••••5d2k" readonly aria-label="Chiave Gemini salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m1-t" aria-describedby="m1-d">
+            <h2 id="m1-t">Modello di Gemini</h2>
+            <p id="m1-d">Scegli quello che risponde. Cambia la velocità e il costo, non la qualità delle risposte sugli orari.</p>
+            <div class="model-list" role="radiogroup" aria-labelledby="m1-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash-lite</strong><span class="sub">Il più rapido e il meno costoso. Risponde su orari e film senza attese.</span><span class="tags"><span class="tag">Più veloce</span><span class="tag">Più economico</span></span><span class="sub">Velocità alta · Costo basso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>gemini-2.5-flash</strong><span class="sub">Veloce e preciso: copre le richieste del foglio vocale senza attese evidenti.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span><span class="sub">Velocità alta · Costo basso-medio · In uso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-pro</strong><span class="sub">Ragiona più a fondo. Più lento e più costoso: utile per richieste lunghe o ambigue.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span><span class="sub">Velocità media · Costo alto</span></span>
+              </button>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="altro-id" data-label="OpenRouter · ID libero" data-trigger="Tocco su Modello sotto la chiave OpenRouter" data-note="OpenRouter ha centinaia di modelli: la lista mostra i consigliati, la ricerca e il campo ID coprono il resto. Un ID sbagliato si segnala dopo il salvataggio, non qui." >
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><!-- include: ../parts/back.html --></button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave OpenRouter</label><div class="control"><input type="password" value="sk-or-••••••••8d21" readonly aria-label="Chiave OpenRouter salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m2-t">
+            <h2 id="m2-t">Modello di OpenRouter</h2>
+            <p>Consigliati per questa app. Per tutti gli altri, cerca o incolla l'ID.</p>
+            <div class="field">
+              <label for="m2-q">Cerca modello</label>
+              <div class="control"><input id="m2-q" type="search" placeholder="gpt, claude, gemini…"></div>
+            </div>
+            <div class="model-list" role="radiogroup" aria-labelledby="m2-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>openai/gpt-5-mini</strong><span class="sub">Predefinito del provider. Buon equilibrio tra risposta e costo.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>anthropic/claude-haiku-5-5</strong><span class="sub">Rapido, per risposte brevi e frequenti.</span><span class="tags"><span class="tag">Più veloce</span></span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>anthropic/claude-sonnet-5-5</strong><span class="sub">Più accurato su richieste ambigue. Più costoso.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span></span>
+              </button>
+            </div>
+            <div class="field">
+              <label for="m2-id">Oppure scrivi l'ID</label>
+              <div class="control"><input id="m2-id" type="text" placeholder="provider/modello" aria-describedby="m2-help"></div>
+              <p class="help" id="m2-help">Copia l'ID dalla pagina del modello su openrouter.ai/models.</p>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="non-disponibile" data-label="Modello non disponibile" data-trigger="Gemini 2.5 Pro scelto con una chiave che non vi accede" data-note="T1: l'errore sta sotto la lista, legato al modello che lo causa. Il modello in uso resta attivo finché non ne scegli un altro.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><!-- include: ../parts/back.html --></button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave Gemini</label><div class="control"><input type="password" value="AIzaSy••••••••5d2k" readonly aria-label="Chiave Gemini salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m3-t" aria-describedby="m3-d">
+            <h2 id="m3-t">Modello di Gemini</h2>
+            <p id="m3-d">Scegli quello che risponde. Cambia la velocità e il costo, non la qualità delle risposte sugli orari.</p>
+            <div class="model-list" role="radiogroup" aria-labelledby="m3-t" aria-describedby="m3-err">
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash-lite</strong><span class="sub">Il più rapido e il meno costoso. Risponde su orari e film senza attese.</span><span class="tags"><span class="tag">Più veloce</span><span class="tag">Più economico</span></span><span class="sub">Velocità alta · Costo basso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash</strong><span class="sub">Veloce e preciso: copre le richieste del foglio vocale senza attese evidenti.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span><span class="sub">Velocità alta · Costo basso-medio · In uso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="true" aria-describedby="m3-err">
+                <span class="radio on"></span>
+                <span class="text"><strong>gemini-2.5-pro</strong><span class="sub">Ragiona più a fondo. Più lento e più costoso: utile per richieste lunghe o ambigue.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span><span class="sub">Velocità media · Costo alto</span></span>
+              </button>
+            </div>
+            <div class="field is-error" id="m3-err">
+              <p class="help" role="alert">Questa chiave non ha accesso a gemini-2.5-pro. Scegline un altro: il modello in uso resta gemini-2.5-flash.</p>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="stress" data-label="Stress 200%" data-trigger="Testo ingrandito, ID lungo su OpenRouter" data-note="Le righe si allungano e i tag vanno a capo. L'ID lungo va a capo, non si taglia. I pulsanti restano a 48 dp.">
+      <div class="app stress"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><!-- include: ../parts/back.html --></button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave OpenRouter</label><div class="control"><input type="password" value="sk-or-••••••••8d21" readonly aria-label="Chiave OpenRouter salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m4-t">
+            <h2 id="m4-t">Modello di OpenRouter</h2>
+            <div class="model-list" role="radiogroup" aria-labelledby="m4-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>openai/gpt-5-mini-con-nome-molto-lungo</strong><span class="sub">Predefinito del provider.</span><span class="tags"><span class="tag inuse">Consigliato</span></span></span>
+              </button>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </article>
+</section>

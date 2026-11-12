@@ -17,7 +17,7 @@ phase 2 explores the form of the voice sheet and its entry point, not palettes.
 ## AI engine (only what the user sees)
 - Default engine is the platform's own AI: Gemini Nano on Android, Apple Intelligence on iOS/macOS. No download.
 - Where it is missing (older phones, Windows, Linux): the user can download Gemma 4 E2B (~2,6 GB, one-time, resumable) or connect an API key.
-- Cloud providers: OpenAI, Anthropic, Google Gemini, xAI Grok, Mistral, OpenRouter (covers Llama, DeepSeek…). Cursor excluded: no model API of its own.
+- Cloud providers: OpenAI, Anthropic, Gemini, Grok, Mistral, OpenRouter (covers Llama, DeepSeek…). Cursor excluded: no model API of its own.
 - Even with native AI available the user can switch engine in Settings; native is preselected.
 - Privacy: Settings shows "La richiesta viene inviata a <provider>" for cloud; the voice sheet shows a small badge "Sul dispositivo" / "Cloud · Anthropic". No blocking consent dialog.
 

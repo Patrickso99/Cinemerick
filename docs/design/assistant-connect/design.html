@@ -311,6 +311,20 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
 .app.stress .topbar { position: sticky; top: 0; }
 
 .sheet-stack { display: grid; gap: var(--space-3); }
+
+.model-row { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 64px; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); background: var(--color-surface-container); color: var(--color-on-surface); text-align: left; cursor: pointer; }
+.model-row .text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.model-row .text strong { font: var(--type-body); overflow-wrap: anywhere; }
+.model-list { display: grid; gap: var(--space-1); }
+.model-opt { display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; min-height: 64px; padding: var(--space-3) var(--space-2); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--color-on-surface); text-align: left; cursor: pointer; }
+.model-opt[aria-checked="true"] { background: var(--color-surface-container); }
+.model-opt .radio { margin-top: 2px; }
+.model-opt .text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.model-opt .text > strong { font: var(--type-body); overflow-wrap: anywhere; }
+.model-opt .tags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+.sheet-wrap { position: static; display: block; padding: 0; background: transparent; }
+.sheet-wrap .sheet { position: static; max-height: none; border-radius: var(--radius-xl, var(--radius-lg)) var(--radius-xl, var(--radius-lg)) 0 0; box-shadow: var(--elevation-3); }
 </style>
 <script>window.DESIGN = { app: "Cinemerick · Account assistente", mode: "design", themes: ["light", "dark"], viewports: ["phone", "tablet", "desktop"] };</script>
 <div class="v-app">
@@ -409,7 +423,7 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
 </button><div class="title">Impostazioni</div></header>
         <p class="group">Assistente vocale</p>
         <button class="engine" type="button" aria-pressed="true"><span class="radio on" aria-hidden="true"></span><span class="text"><strong>Gemini Nano</strong><span class="sub">Sul dispositivo · gratuita · niente viene inviato</span></span></button>
-        <button class="engine" type="button" data-goto="providers/cards/empty"><span class="radio" aria-hidden="true"></span><span class="text"><strong>Cloud con chiave API</strong><span class="sub">OpenAI, Anthropic, Google Gemini, Grok…</span></span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 6l6 6-6 6" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></button>
+        <button class="engine" type="button" data-goto="providers/cards/empty"><span class="radio" aria-hidden="true"></span><span class="text"><strong>Cloud con chiave API</strong><span class="sub">OpenAI, Anthropic, Gemini, Grok…</span></span><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 6l6 6-6 6" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg></button>
         <div class="note"><span>Sul dispositivo: la richiesta non lascia il telefono. Parli in italiano o in inglese: la lingua viene riconosciuta da sola.</span></div>
       </div></div>
     </div>
@@ -453,7 +467,7 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
 
     <section class="v-page" data-page="providers" data-title="Carte provider" data-group="Account">
   <h1>Carte provider</h1>
-  <p class="v-lead">A · Carta. Un provider, una carta, una chiave API. Nessun provider si collega con un account: OpenAI e Google Gemini restano chiave API, dopo la verifica del 2026-11-12.</p>
+  <p class="v-lead">A · Carta. Un provider, una carta, una chiave API. Nessun provider si collega con un account: OpenAI e Gemini restano chiave API, dopo la verifica del 2026-11-12.</p>
 
   <article class="v-screen" data-screen="cards" data-title="Carte" data-purpose="Salvare una chiave per un provider, oppure sceglierne una da usare.">
     <div class="v-state" data-state="mixed" data-label="Misto" data-trigger="Uso normale: Anthropic con chiave in uso, Grok con chiave verificata" data-note="Una sola chiave è in uso. Le altre restano salvate, pronte da usare. Rimuovere la chiave in uso chiede conferma (T6).">
@@ -478,12 +492,12 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span><div class="text"><strong>xAI Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
+</span><div class="text"><strong>Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
             <div class="quiet"><button class="btn secondary" type="button" data-goto="providers/cards/mixed">Usa</button></div>
           </article>
           <article class="card elevated pcard">
@@ -539,12 +553,12 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Grok</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
@@ -590,12 +604,12 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span><div class="text"><strong>xAI Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
+</span><div class="text"><strong>Grok</strong><span class="sub">Chiave …9c4e · grok-3-mini</span></div><span class="tag ok">Verificata</span></div>
             <div class="quiet"><button class="btn secondary" type="button" data-goto="providers/cards/mixed">Usa</button></div>
           </article>
           <article class="card elevated pcard">
@@ -643,12 +657,12 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Grok</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
@@ -694,12 +708,12 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span><div class="text"><strong>Google Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Gemini</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
             <div class="who"><span class="mark mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span><div class="text"><strong>xAI Grok</strong><span class="sub">Nessuna chiave</span></div></div>
+</span><div class="text"><strong>Grok</strong><span class="sub">Nessuna chiave</span></div></div>
             <button class="btn outline block" type="button" data-goto="key/entry/pristine">Chiave API</button>
           </article>
           <article class="card elevated pcard">
@@ -731,7 +745,7 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
   <p class="v-lead">Una sola schermata per le sei chiavi API, con lo stesso formato. I chip usano gli stessi marchi delle carte. Nessun provider si collega con un account.</p>
 
   <article class="v-screen" data-screen="entry" data-title="Inserimento" data-purpose="Salvare una chiave verificata.">
-    <div class="v-state" data-state="pristine" data-label="Vuota" data-trigger="Si apre Chiave API su Grok" data-note="Il chip selezionato è xAI Grok. Gli altri cinque sono sempre disponibili: si cambia con un tap.">
+    <div class="v-state" data-state="pristine" data-label="Vuota" data-trigger="Si apre Chiave API su Gemini" data-note="Il chip selezionato è Gemini. Sotto la chiave, il Modello apre la lista con velocità, costo e consiglio. Gli altri cinque provider sono sempre disponibili: si cambia con un tap.">
       <div class="app"><div class="column">
         <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="providers/cards/mixed"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
 </button><div class="title">Chiave API</div></header>
@@ -743,10 +757,10 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
 </span>OpenAI</button>
               <button class="chip" type="button"><span class="mark sm anthropic"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQ4IiBoZWlnaHQ9IjI0OCIgdmlld0JveD0iMCAwIDI0OCAyNDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik01Mi40Mjg1IDE2Mi44NzNMOTguNzg0NCAxMzYuODc5TDk5LjU0ODUgMTM0LjYwMkw5OC43ODQ0IDEzMy4zMzRIOTYuNDkyMUw4OC43MjM3IDEzMi44NjJMNjIuMjM0NiAxMzIuMTUzTDM5LjMxMTMgMTMxLjIwN0wxNy4wMjQ5IDEzMC4wMjZMMTEuNDIxNCAxMjguODQ0TDYuMiAxMjEuODczTDYuNzA5NCAxMTguNDQ3TDExLjQyMTQgMTE1LjI1N0wxOC4xNzEgMTE1Ljg0N0wzMy4wNzExIDExNi45MTFMNTUuNDg1IDExOC40NDdMNzEuNjU4NiAxMTkuMzkyTDk1LjcyOCAxMjEuODczSDk5LjU0ODVMMTAwLjA1OCAxMjAuMzM3TDk4Ljc4NDQgMTE5LjM5Mkw5Ny43NjU2IDExOC40NDdMNzQuNTg3NyAxMDIuNzMyTDQ5LjQ5OTUgODYuMTkwNUwzNi4zODIzIDc2LjYyTDI5LjM3NzkgNzEuNzc1N0wyNS44MTIxIDY3LjI4NThMMjQuMjgzOSA1Ny4zNjA4TDMwLjY1MTUgNTAuMjcxNkwzOS4zMTEzIDUwLjg2MjNMNDEuNDc2MyA1MS40NTMxTDUwLjI2MzYgNTguMTg3OUw2OC45ODQyIDcyLjcyMDlMOTMuNDM1NyA5MC42ODA0TDk3LjAwMTUgOTMuNjM0M0w5OC40Mzc0IDkyLjY2NTJMOTguNjU3MSA5MS45ODAxTDk3LjAwMTUgODkuMjYyNUw4My43NTcgNjUuMjc3Mkw2OS42MjEgNDAuODE5Mkw2My4yNTM0IDMwLjY1NzlMNjEuNTk3OCAyNC42MzJDNjAuOTU2NSAyMi4xMDMyIDYwLjU3OSAyMC4wMTExIDYwLjU3OSAxNy40MjQ2TDY3LjgzODEgNy40OTk2NUw3MS45MTMzIDYuMTk5OTVMODEuNzE5MyA3LjQ5OTY1TDg1Ljc5NDYgMTEuMDQ0M0w5MS45MDc0IDI0Ljk4NjVMMTAxLjcxNCA0Ni44NDUxTDExNi45OTYgNzYuNjJMMTIxLjQ1MyA4NS40ODE2TDEyMy44NzMgOTMuNjM0M0wxMjQuNzY0IDk2LjExNTVIMTI2LjI5MlY5NC42OTc2TDEyNy41NjYgNzcuOTE5N0wxMjkuODU4IDU3LjM2MDhMMTMyLjE1IDMwLjg5NDJMMTMyLjkxNSAyMy40NTA1TDEzNi42MDggMTQuNDcwOEwxNDMuOTk0IDkuNjI2NDNMMTQ5LjcyNSAxMi4zNDRMMTU0LjQzNyAxOS4wNzg4TDE1My44IDIzLjQ1MDVMMTUwLjk5OCA0MS42NDYzTDE0NS41MjIgNzAuMTIxNUwxNDEuOTU3IDg5LjI2MjVIMTQzLjk5NEwxNDYuNDE0IDg2Ljc4MTNMMTU2LjA5MyA3NC4wMjA2TDE3Mi4yNjYgNTMuNjk4TDE3OS4zOTggNDUuNjYzNUwxODcuODAzIDM2LjgwMkwxOTMuMTUyIDMyLjU0ODRIMjAzLjM0TDIxMC43MjYgNDMuNjU0OUwyMDcuNDE1IDU1LjExNTlMMTk2Ljk3MiA2OC4zNDkyTDE4OC4zMTIgNzkuNTczOUwxNzUuODk2IDk2LjIwOTVMMTY4LjE5MSAxMDkuNTg1TDE2OC44ODIgMTEwLjY4OUwxNzAuNzM4IDExMC41M0wxOTguNzU1IDEwNC41MDRMMjEzLjkxIDEwMS43ODdMMjMxLjk5NCA5OC43MTQ5TDI0MC4xNDQgMTAyLjQ5NkwyNDEuMDM2IDEwNi4zOTVMMjM3Ljg1MiAxMTQuMzExTDIxOC40OTUgMTE5LjAzN0wxOTUuODI2IDEyMy42NDVMMTYyLjA3IDEzMS41OTJMMTYxLjY5NiAxMzEuODkzTDE2Mi4xMzcgMTMyLjU0N0wxNzcuMzYgMTMzLjkyNUwxODMuODU1IDEzNC4yNzlIMTk5Ljc3NEwyMjkuNDQ3IDEzNi41MjRMMjM3LjIxNSAxNDEuNjA1TDI0MS44IDE0Ny44NjdMMjQxLjAzNiAxNTIuNzExTDIyOS4wNjUgMTU4LjczN0wyMTMuMDE5IDE1NC45NTZMMTc1LjQ1IDE0NS45NzdMMTYyLjU4NyAxNDIuNzg3SDE2MC44MDVWMTQzLjg1TDE3MS41MDIgMTU0LjM2NkwxOTEuMjQyIDE3Mi4wODlMMjE1LjgyIDE5NS4wMTFMMjE3LjA5NCAyMDAuNjgyTDIxMy45MSAyMDUuMTcyTDIxMC41OTkgMjA0LjY5OUwxODguOTQ5IDE4OC4zOTRMMTgwLjU0NCAxODEuMDY5TDE2MS42OTYgMTY1LjExOEgxNjAuNDIyVjE2Ni43NzJMMTY0Ljc1MiAxNzMuMTUyTDE4Ny44MDMgMjA3Ljc3MUwxODguOTQ5IDIxOC40MDVMMTg3LjI5NCAyMjEuODMyTDE4MS4zMDggMjIzLjk1OUwxNzQuODEzIDIyMi43NzdMMTYxLjE4NyAyMDMuNzU0TDE0Ny4zMDUgMTgyLjQ4NkwxMzYuMDk4IDE2My4zNDVMMTM0Ljc0NSAxNjQuMkwxMjguMDc1IDIzNS40MkwxMjUuMDE5IDIzOS4wODJMMTE3Ljg4NyAyNDEuOEwxMTEuOTAyIDIzNy4zMUwxMDguNzE4IDIyOS45ODRMMTExLjkwMiAyMTUuNDUyTDExNS43MjIgMTk2LjU0N0wxMTguNzc5IDE4MS41NDFMMTIxLjU4IDE2Mi44NzNMMTIzLjI5MSAxNTYuNjM2TDEyMy4xNCAxNTYuMjE5TDEyMS43NzMgMTU2LjQ0OUwxMDcuNjk5IDE3NS43NTJMODYuMzA0IDIwNC42OTlMNjkuMzY2MyAyMjIuNzc3TDY1LjI5MSAyMjQuNDMxTDU4LjI4NjcgMjIwLjc2OEw1OC45MjM1IDIxNC4yN0w2Mi44NzEzIDIwOC40OEw4Ni4zMDQgMTc4LjcwNUwxMDAuNDQgMTYwLjE1NUwxMDkuNTUxIDE0OS41MDdMMTA5LjQ2MiAxNDcuOTY3TDEwOC45NTkgMTQ3LjkyNEw0Ni42OTc3IDE4OC41MTJMMzUuNjE4MiAxODkuOTNMMzAuNzc4OCAxODUuNDRMMzEuNDE1NiAxNzguMTE1TDMzLjcwNzkgMTc1Ljc1Mkw1Mi40Mjg1IDE2Mi44NzNaIiBmaWxsPSIjRDk3NzU3Ii8+Cjwvc3ZnPgo=">
 </span>Anthropic</button>
-              <button class="chip" type="button"><span class="mark sm gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
-</span>Google Gemini</button>
-              <button class="chip is-selected" type="button"><span class="mark sm mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
-</span>xAI Grok</button>
+              <button class="chip is-selected" type="button"><span class="mark sm gemini"><img class="logo" alt="" width="22" height="22" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbDpzcGFjZT0icHJlc2VydmUiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmFkaWFsR3JhZGllbnQgaWQ9Imdvb2dsZS1nZW1pbmlfc3ZnX19hIiBjeD0iLTgwLjc4OSIgY3k9IjIuOTg1IiByPSIzMiIgZ3JhZGllbnRUcmFuc2Zvcm09Im1hdHJpeCgxNi4xMzI2IDUuNDU1MyAtNDMuNzAwNSAxMjkuMjMyMiAxNDg0LjYxNiAyNjMuMTI1KSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA2NyIgc3R5bGU9InN0b3AtY29sb3I6IzkxNjhjMCIvPjxzdG9wIG9mZnNldD0iLjM0MyIgc3R5bGU9InN0b3AtY29sb3I6IzU2ODRkMSIvPjxzdG9wIG9mZnNldD0iLjY3MiIgc3R5bGU9InN0b3AtY29sb3I6IzFiYTFlMyIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUxMiAyNTYuNWMtMTM3LjUgOC40LTI0Ny4xIDExOC0yNTUuNSAyNTUuNWgtMUMyNDcuMSAzNzQuNSAxMzcuNSAyNjQuOSAwIDI1Ni41di0xYzEzNy41LTguNCAyNDcuMS0xMTggMjU1LjUtMjU1LjVoMWM4LjQgMTM3LjUgMTE4IDI0Ny4xIDI1NS41IDI1NS41eiIgc3R5bGU9ImZpbGw6dXJsKCNnb29nbGUtZ2VtaW5pX3N2Z19fYSkiLz48L3N2Zz4=">
+</span>Gemini</button>
+              <button class="chip" type="button"><span class="mark sm mono"><svg width="22" height="22" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd" height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>Grok</title><path d="M9.27 15.29l7.978-5.897c.391-.29.95-.177 1.137.272.98 2.369.542 5.215-1.41 7.169-1.951 1.954-4.667 2.382-7.149 1.406l-2.711 1.257c3.889 2.661 8.611 2.003 11.562-.953 2.341-2.344 3.066-5.539 2.388-8.42l.006.007c-.983-4.232.242-5.924 2.75-9.383.06-.082.12-.164.179-.248l-3.301 3.305v-.01L9.267 15.292M7.623 16.723c-2.792-2.67-2.31-6.801.071-9.184 1.761-1.763 4.647-2.483 7.166-1.425l2.705-1.25a7.808 7.808 0 00-1.829-1A8.975 8.975 0 005.984 5.83c-2.533 2.536-3.33 6.436-1.962 9.764 1.022 2.487-.653 4.246-2.34 6.022-.599.63-1.199 1.259-1.682 1.925l7.62-6.815"></path></svg>
+</span>Grok</button>
               <button class="chip" type="button"><span class="mark sm mistral"><img class="logo" alt="" width="24" height="24" src="data:image/svg+xml;base64,PHN2ZyB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJzdmciIHZlcnNpb249IjEuMSIgc29kaXBvZGk6ZG9jbmFtZT0ibWlzdHJhbC5zdmciIGlua3NjYXBlOmV4cG9ydC1maWxlbmFtZT0ibWlzdHJhbC5wbmciIGlua3NjYXBlOmV4cG9ydC14ZHBpPSI5NiIgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9Ijk2IiBpbmtzY2FwZTp2ZXJzaW9uPSIxLjQuMiAoZWJmMGU5NDBkMCwgMjAyNS0wNS0wOCkiIHZpZXdCb3g9IjAgMCAzOTcuNDYgMjgxLjY0Ij4KICA8ZGVmcyBpZD0iZGVmczEiLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3IGlkPSJuYW1lZHZpZXcxIiBwYWdlY29sb3I9IiNmZmZmZmYiIGJvcmRlcmNvbG9yPSIjMDAwMDAwIiBib3JkZXJvcGFjaXR5PSIwLjI1IiBpbmtzY2FwZTpzaG93cGFnZXNoYWRvdz0iMiIgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAuMCIgaW5rc2NhcGU6cGFnZWNoZWNrZXJib2FyZD0iMCIgaW5rc2NhcGU6ZGVza2NvbG9yPSIjZDFkMWQxIiBpbmtzY2FwZTp6b29tPSIxLjA3MDIwNzUiIGlua3NjYXBlOmN4PSIyMzkuMjA1OTUiIGlua3NjYXBlOmN5PSI2LjA3MzU4ODUiIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjY0OCIgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTQxOCIgaW5rc2NhcGU6d2luZG93LXg9IjAiIGlua3NjYXBlOndpbmRvdy15PSIwIiBpbmtzY2FwZTp3aW5kb3ctbWF4aW1pemVkPSIxIiBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJzdmciLz4KICA8ZyBpZD0ic3ZnZyI+CiAgICA8cGF0aCBpZD0icGF0aDAiIGQ9Ik0zNDAuODE0IDg0LjE4MSBDIDM0MC44MTQgOTkuNjQwLDM0MC44NDggMTA1Ljk2NCwzNDAuODkwIDk4LjIzNCBDIDM0MC45MzIgOTAuNTA1LDM0MC45MzIgNzcuODU3LDM0MC44OTAgNzAuMTI3IEMgMzQwLjg0OCA2Mi4zOTgsMzQwLjgxNCA2OC43MjIsMzQwLjgxNCA4NC4xODEgTTE3MC4zMzkgMTEyLjE0NyBDIDE3MC4wNjkgMTEyLjMyMSwxNDkuMzMwIDExMi40MjIsMTEzLjIwNiAxMTIuNDI1IEwgNTYuNDk3IDExMi40MjkgNTYuNDk3IDE0MC40OTQgTCA1Ni40OTcgMTY4LjU1OCAxMDYuMjg1IDE2OC42OTEgQyAxNTcuMzE2IDE2OC44MjcsMjYxLjA0NSAxNjguODM4LDMxMi4xNDcgMTY4LjcxNCBMIDM0MC44MTkgMTY4LjY0NCAzNDAuNzQ2IDE0MC41MzcgTCAzNDAuNjczIDExMi40MjkgMjgzLjc3MSAxMTIuNDI5IEMgMjQ2LjE0MSAxMTIuNDI5LDIyNi44MTAgMTEyLjMzNCwyMjYuNjk1IDExMi4xNDcgQyAyMjYuNDU5IDExMS43NjUsMTcwLjkyOSAxMTEuNzY1LDE3MC4zMzkgMTEyLjE0NyAiIHN0cm9rZT0ibm9uZSIgZmlsbD0iI2ZjODMwNCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgICA8cGF0aCBpZD0icGF0aDEiIGQ9Ik0zNDAuODE0IDE0MC4zOTUgQyAzNDAuODE0IDE1NS44NTUsMzQwLjg0OCAxNjIuMTc5LDM0MC44OTAgMTU0LjQ0OSBDIDM0MC45MzIgMTQ2LjcyMCwzNDAuOTMyIDEzNC4wNzEsMzQwLjg5MCAxMjYuMzQyIEMgMzQwLjg0OCAxMTguNjEyLDM0MC44MTQgMTI0LjkzNiwzNDAuODE0IDE0MC4zOTUgTTU2LjU2NiAxOTYuNjc5IEwgNTYuNjM4IDIyNC43MTggODQuNjA1IDIyNC43OTUgQyA5OS45ODYgMjI0LjgzOCwxMTIuODU3IDIyNC44MDMsMTEzLjIwOCAyMjQuNzE5IEwgMTEzLjg0NSAyMjQuNTY1IDExMy43NzMgMTk2LjY3NSBMIDExMy43MDEgMTY4Ljc4NSA4NS4wOTcgMTY4LjcxMyBMIDU2LjQ5NCAxNjguNjQxIDU2LjU2NiAxOTYuNjc5IE0xNjkuOTYyIDE2OC44MzIgQyAxNjkuNTU1IDE2OS4yNDAsMTY5Ljc0OCAyMjQuNDg1LDE3MC4xNTggMjI0LjgyNiBDIDE3MC40MzggMjI1LjA1OCwxNzguMTQ0IDIyNS4xMjUsMTk4Ljc1OSAyMjUuMDcyIEwgMjI2Ljk3NyAyMjUuMDAwIDIyNy4wNDkgMTk2LjgyMiBMIDIyNy4xMjEgMTY4LjY0NCAxOTguNjM2IDE2OC42NDQgQyAxODIuOTY5IDE2OC42NDQsMTcwLjA2NiAxNjguNzI5LDE2OS45NjIgMTY4LjgzMiBNMjgzLjQ2NCAxNjguOTk3IEMgMjgzLjM4OSAxNjkuMTkxLDI4My4zNjIgMTgxLjgwOCwyODMuNDAyIDE5Ny4wMzQgTCAyODMuNDc1IDIyNC43MTggMzEyLjAwNiAyMjQuNzE4IEwgMzQwLjUzNyAyMjQuNzE4IDM0MC42NzggMTk2LjY4MSBMIDM0MC44MTkgMTY4LjY0NCAzMTIuMjA5IDE2OC42NDQgQyAyODkuNTgwIDE2OC42NDQsMjgzLjU3MCAxNjguNzE4LDI4My40NjQgMTY4Ljk5NyAiIHN0cm9rZT0ibm9uZSIgZmlsbD0iI2ZjNGMwNCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgICA8cGF0aCBpZD0icGF0aDIiIGQ9Ik0zNDAuODE0IDI3Ljk2NiBDIDM0MC44MTQgNDMuNDI1LDM0MC44NDggNDkuNzQ5LDM0MC44OTAgNDIuMDIwIEMgMzQwLjkzMiAzNC4yOTAsMzQwLjkzMiAyMS42NDIsMzQwLjg5MCAxMy45MTIgQyAzNDAuODQ4IDYuMTgzLDM0MC44MTQgMTIuNTA3LDM0MC44MTQgMjcuOTY2IE0xMTMuNzAyIDU1LjkzMCBDIDExMy41ODYgNTYuMTE4LDEwMy44OTAgNTYuMjE1LDg1LjAxMiA1Ni4yMTUgTCA1Ni40OTcgNTYuMjE1IDU2LjQ5NyA4NC4zMjIgTCA1Ni40OTcgMTEyLjQyOSAxMTMuMTEyIDExMi40MjkgQyAxNDQuMjUxIDExMi40MjksMTY5LjkyOSAxMTIuMzUyLDE3MC4xNzUgMTEyLjI1OCBDIDE3MC42MzAgMTEyLjA4MywxNzAuOTAwIDU3LjI3MSwxNzAuNDUyIDU2LjEwMiBDIDE3MC4yNDYgNTUuNTY2LDExNC4wMzIgNTUuMzk2LDExMy43MDIgNTUuOTMwIE0yMjYuODY5IDU2LjAzMyBDIDIyNi42MzcgNTYuMzE0LDIyNi41NzAgNjMuOTQ2LDIyNi42MjMgODQuMzUzIEwgMjI2LjY5NSAxMTIuMjg4IDI4My43NTcgMTEyLjM1OSBMIDM0MC44MTkgMTEyLjQzMSAzNDAuNzQ2IDg0LjMyMyBMIDM0MC42NzMgNTYuMjE1IDMxMi4xNjEgNTYuMjE1IEMgMjkzLjQ1OCA1Ni4yMTUsMjgzLjU4OSA1Ni4xMTgsMjgzLjQ3NSA1NS45MzIgQyAyODMuMTc4IDU1LjQ1MiwyMjcuMjY5IDU1LjU1MiwyMjYuODY5IDU2LjAzMyAiIHN0cm9rZT0ibm9uZSIgZmlsbD0iI2ZjYjQwNCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgICA8cGF0aCBpZD0icGF0aDMiIGQ9Ik01Ni40OTcgMjguMTA5IEwgNTYuNDk3IDU2LjIxNyA4NS4wOTkgNTYuMTQ1IEwgMTEzLjcwMSA1Ni4wNzMgMTEzLjc3MyAyOC4wMzcgTCAxMTMuODQ1IDAuMDAwIDg1LjE3MSAwLjAwMCBMIDU2LjQ5NyAwLjAwMCA1Ni40OTcgMjguMTA5IE0yODMuNDAzIDI4LjAzNyBMIDI4My40NzUgNTYuMDczIDMxMi4xNDcgNTYuMTQ1IEwgMzQwLjgxOSA1Ni4yMTcgMzQwLjc0NiAyOC4xMDkgTCAzNDAuNjczIDAuMDAwIDMxMi4wMDIgLTAuMDAwIEwgMjgzLjMzMSAtMC4wMDAgMjgzLjQwMyAyOC4wMzcgTTIyNi40MDcgODQuMTgxIEMgMjI2LjQwNyA5OS40ODQsMjI2LjQ0MSAxMDUuNzQ1LDIyNi40ODMgOTguMDkzIEMgMjI2LjUyNSA5MC40NDEsMjI2LjUyNSA3Ny45MjAsMjI2LjQ4MyA3MC4yNjggQyAyMjYuNDQxIDYyLjYxNywyMjYuNDA3IDY4Ljg3NywyMjYuNDA3IDg0LjE4MSAiIHN0cm9rZT0ibm9uZSIgZmlsbD0iI2ZjZGIwNCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgICA8cGF0aCBpZD0icGF0aDQiIGQ9Ik0zNDAuNjc3IDE5Ni43NTEgTCAzNDAuNTM3IDIyNC43MTggMjg0LjA4NCAyMjQuNjEzIEMgMjM4LjQwOCAyMjQuNTI5LDIyNy41MDEgMjI0LjU3OCwyMjYuOTUxIDIyNC44NzMgTCAyMjYuMjcxIDIyNS4yMzcgMjI2LjI3MSAyNTMuMDk5IEMgMjI2LjI3MSAyNzQuMzkyLDIyNi4zNTEgMjgxLjA0MCwyMjYuNjEwIDI4MS4yOTkgQyAyMjYuODcyIDI4MS41NjIsMjQ2LjI3MSAyODEuNjM4LDMxMi4yMDMgMjgxLjYzOCBMIDM5Ny40NTggMjgxLjYzOCAzOTcuNDU4IDI1My4xMDcgTCAzOTcuNDU4IDIyNC41NzYgMzY5LjIxMCAyMjQuNTc2IEwgMzQwLjk2MyAyMjQuNTc2IDM0MC44OTEgMTk2LjY4MSBMIDM0MC44MTggMTY4Ljc4NSAzNDAuNjc3IDE5Ni43NTEgTTAuMDAwIDI1My4xNTUgTCAwLjAwMCAyODEuNjM5IDg1LjI0MCAyODEuNTY4IEwgMTcwLjQ4MCAyODEuNDk3IDE3MC41NTIgMjUzLjQyMCBDIDE3MC41OTkgMjM1LjIwOSwxNzAuNTI2IDIyNS4yMjUsMTcwLjM0NSAyMjUuMDA3IEMgMTcwLjEyOSAyMjQuNzQ4LDE1MC41MTYgMjI0LjY3MCw4NS4wMzMgMjI0LjY3MCBMIDAuMDAwIDIyNC42NzAgMC4wMDAgMjUzLjE1NSAiIHN0cm9rZT0ibm9uZSIgZmlsbD0iI2U0MDQwNCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPC9nPgo8L3N2Zz4=">
 </span>Mistral</button>
               <button class="chip" type="button"><span class="mark sm mono"><svg width="22" height="22" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" viewBox="-45 32.23 556.5 433.48">
@@ -761,11 +775,154 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
             </div>
           </div>
           <div class="field">
-            <label for="key">Chiave Grok</label>
-            <div class="control"><input id="key" type="password" placeholder="xai-" aria-describedby="key-help"></div>
+            <label for="key">Chiave Gemini</label>
+            <div class="control"><input id="key" type="password" placeholder="AIza" aria-describedby="key-help"></div>
             <p class="help" id="key-help">Resta nel portachiavi del sistema. Qui si vedono solo le ultime quattro cifre.</p>
           </div>
+          <button class="model-row" type="button" data-goto="model/scelta/lista">
+            <span class="text"><span class="sub">Modello</span><strong>gemini-2.5-flash</strong></span>
+            <span class="tag inuse">Consigliato</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
+          </button>
           <button class="btn block" type="button">Salva</button>
+        </div>
+      </div></div>
+    </div>
+  </article>
+</section>
+
+    <section class="v-page" data-page="model" data-title="Modello" data-group="Account">
+  <h1>Modello</h1>
+  <p class="v-lead">Ogni provider ha un modello predefinito. Qui si sceglie quello che risponde, con una lista che dice cosa cambia: velocità, costo, adatto a questa app. Nessun prezzo per token: cambia nel tempo, e il dettaglio sta sulla pagina del provider.</p>
+
+  <article class="v-screen" data-screen="scelta" data-title="Scelta modello" data-purpose="Cambiare il modello di un provider la cui chiave è già salvata.">
+    <div class="v-state" data-state="lista" data-label="Gemini · lista" data-trigger="Tocco su Modello sotto la chiave Gemini" data-note="Il consiglio compare una sola volta, su gemini-2.5-flash. Il modello in uso è già selezionato: niente sorprese al salvataggio.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
+</button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave Gemini</label><div class="control"><input type="password" value="AIzaSy••••••••5d2k" readonly aria-label="Chiave Gemini salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m1-t" aria-describedby="m1-d">
+            <h2 id="m1-t">Modello di Gemini</h2>
+            <p id="m1-d">Scegli quello che risponde. Cambia la velocità e il costo, non la qualità delle risposte sugli orari.</p>
+            <div class="model-list" role="radiogroup" aria-labelledby="m1-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash-lite</strong><span class="sub">Il più rapido e il meno costoso. Risponde su orari e film senza attese.</span><span class="tags"><span class="tag">Più veloce</span><span class="tag">Più economico</span></span><span class="sub">Velocità alta · Costo basso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>gemini-2.5-flash</strong><span class="sub">Veloce e preciso: copre le richieste del foglio vocale senza attese evidenti.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span><span class="sub">Velocità alta · Costo basso-medio · In uso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-pro</strong><span class="sub">Ragiona più a fondo. Più lento e più costoso: utile per richieste lunghe o ambigue.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span><span class="sub">Velocità media · Costo alto</span></span>
+              </button>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="altro-id" data-label="OpenRouter · ID libero" data-trigger="Tocco su Modello sotto la chiave OpenRouter" data-note="OpenRouter ha centinaia di modelli: la lista mostra i consigliati, la ricerca e il campo ID coprono il resto. Un ID sbagliato si segnala dopo il salvataggio, non qui." >
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
+</button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave OpenRouter</label><div class="control"><input type="password" value="sk-or-••••••••8d21" readonly aria-label="Chiave OpenRouter salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m2-t">
+            <h2 id="m2-t">Modello di OpenRouter</h2>
+            <p>Consigliati per questa app. Per tutti gli altri, cerca o incolla l'ID.</p>
+            <div class="field">
+              <label for="m2-q">Cerca modello</label>
+              <div class="control"><input id="m2-q" type="search" placeholder="gpt, claude, gemini…"></div>
+            </div>
+            <div class="model-list" role="radiogroup" aria-labelledby="m2-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>openai/gpt-5-mini</strong><span class="sub">Predefinito del provider. Buon equilibrio tra risposta e costo.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>anthropic/claude-haiku-5-5</strong><span class="sub">Rapido, per risposte brevi e frequenti.</span><span class="tags"><span class="tag">Più veloce</span></span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>anthropic/claude-sonnet-5-5</strong><span class="sub">Più accurato su richieste ambigue. Più costoso.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span></span>
+              </button>
+            </div>
+            <div class="field">
+              <label for="m2-id">Oppure scrivi l'ID</label>
+              <div class="control"><input id="m2-id" type="text" placeholder="provider/modello" aria-describedby="m2-help"></div>
+              <p class="help" id="m2-help">Copia l'ID dalla pagina del modello su openrouter.ai/models.</p>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="non-disponibile" data-label="Modello non disponibile" data-trigger="Gemini 2.5 Pro scelto con una chiave che non vi accede" data-note="T1: l'errore sta sotto la lista, legato al modello che lo causa. Il modello in uso resta attivo finché non ne scegli un altro.">
+      <div class="app"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
+</button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave Gemini</label><div class="control"><input type="password" value="AIzaSy••••••••5d2k" readonly aria-label="Chiave Gemini salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m3-t" aria-describedby="m3-d">
+            <h2 id="m3-t">Modello di Gemini</h2>
+            <p id="m3-d">Scegli quello che risponde. Cambia la velocità e il costo, non la qualità delle risposte sugli orari.</p>
+            <div class="model-list" role="radiogroup" aria-labelledby="m3-t" aria-describedby="m3-err">
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash-lite</strong><span class="sub">Il più rapido e il meno costoso. Risponde su orari e film senza attese.</span><span class="tags"><span class="tag">Più veloce</span><span class="tag">Più economico</span></span><span class="sub">Velocità alta · Costo basso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="false">
+                <span class="radio"></span>
+                <span class="text"><strong>gemini-2.5-flash</strong><span class="sub">Veloce e preciso: copre le richieste del foglio vocale senza attese evidenti.</span><span class="tags"><span class="tag inuse">Consigliato</span><span class="tag">Adatto all'app</span></span><span class="sub">Velocità alta · Costo basso-medio · In uso</span></span>
+              </button>
+              <button class="model-opt" type="button" role="radio" aria-checked="true" aria-describedby="m3-err">
+                <span class="radio on"></span>
+                <span class="text"><strong>gemini-2.5-pro</strong><span class="sub">Ragiona più a fondo. Più lento e più costoso: utile per richieste lunghe o ambigue.</span><span class="tags"><span class="tag">Più potente</span><span class="tag">Più costoso</span></span><span class="sub">Velocità media · Costo alto</span></span>
+              </button>
+            </div>
+            <div class="field is-error" id="m3-err">
+              <p class="help" role="alert">Questa chiave non ha accesso a gemini-2.5-pro. Scegline un altro: il modello in uso resta gemini-2.5-flash.</p>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="v-state" data-state="stress" data-label="Stress 200%" data-trigger="Testo ingrandito, ID lungo su OpenRouter" data-note="Le righe si allungano e i tag vanno a capo. L'ID lungo va a capo, non si taglia. I pulsanti restano a 48 dp.">
+      <div class="app stress"><div class="column">
+        <header class="topbar"><button class="icon-btn" type="button" aria-label="Indietro" data-goto="key/entry/pristine"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/></svg>
+</button><div class="title">Chiave API</div></header>
+        <div class="scroll"><div class="field-block"><div class="field"><label>Chiave OpenRouter</label><div class="control"><input type="password" value="sk-or-••••••••8d21" readonly aria-label="Chiave OpenRouter salvata"></div></div></div></div>
+        <div class="sheet-wrap" data-overlay data-static>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m4-t">
+            <h2 id="m4-t">Modello di OpenRouter</h2>
+            <div class="model-list" role="radiogroup" aria-labelledby="m4-t">
+              <button class="model-opt" type="button" role="radio" aria-checked="true">
+                <span class="radio on"></span>
+                <span class="text"><strong>openai/gpt-5-mini-con-nome-molto-lungo</strong><span class="sub">Predefinito del provider.</span><span class="tags"><span class="tag inuse">Consigliato</span></span></span>
+              </button>
+            </div>
+            <div class="actions">
+              <button class="btn text" type="button" data-close>Annulla</button>
+              <button class="btn" type="button" data-goto="key/entry/pristine">Usa questo modello</button>
+            </div>
+          </div>
         </div>
       </div></div>
     </div>
@@ -786,7 +943,7 @@ svg.lucide { width: 1.25em; height: 1.25em; stroke-width: var(--icon-stroke, 2);
             <p>Serve un motore per capire la richiesta. Scegline uno.</p>
             <div class="sheet-stack">
             <article class="card elevated pcard">
-              <div class="who"><div class="text"><strong>Chiave API</strong><span class="sub">OpenAI, Anthropic, Google Gemini, xAI Grok, Mistral, OpenRouter. Una chiave basta.</span></div></div>
+              <div class="who"><div class="text"><strong>Chiave API</strong><span class="sub">OpenAI, Anthropic, Gemini, Grok, Mistral, OpenRouter. Una chiave basta.</span></div></div>
               <button class="btn block" type="button" data-goto="providers/cards/empty">Scegli provider</button>
             </article>
             <article class="card elevated pcard">
